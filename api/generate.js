@@ -100,7 +100,7 @@ Format OBLIGATOIRE :
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-5',
         max_tokens: 1200,
         system: `Tu es StudyAI, un assistant pédagogique expert. ${langInstruction} Sois précis, structuré et pédagogique.`,
         messages: [{
