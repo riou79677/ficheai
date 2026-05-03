@@ -1,15 +1,49 @@
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Méthode non autorisée' });
 
-  const { course, format, language } = req.body;
+  const { course, format, language, email } = req.body;
 
   if (!course || !format) {
     return res.status(400).json({ error: 'Paramètres manquants' });
+  }
+
+  // Connexion Supabase
+  const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_ANON_KEY
+  );
+
+  // Vérifier l'utilisateur et ses générations
+  if (email) {
+    const { data: user } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .single();
+
+    if (user && user.generations_used >= user.generations_limit) {
+      return res.status(403).json({ 
+        error: 'Limite de générations atteinte. Passe à Pro pour continuer !' 
+      });
+    }
+
+    // Incrémenter le compteur
+    if (user) {
+      await supabase
+        .from('users')
+        .update({ 
+          generations_used: user.generations_used + 1,
+          updated_at: new Date().toISOString()
+        })
+        .eq('email', email);
+    }
   }
 
   const prompts = {
