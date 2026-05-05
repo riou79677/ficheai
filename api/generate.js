@@ -1,7 +1,7 @@
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Méthode non autorisée' });
@@ -12,41 +12,45 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Paramètres manquants' });
   }
 
-  // Connexion Supabase
   if (email) {
-    const userRes = await fetch(
-      `${process.env.SUPABASE_URL}/rest/v1/users?email=eq.${encodeURIComponent(email)}&select=plan,generations_used,generations_limit`,
-      {
-        headers: {
-          'apikey': process.env.sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ,
-          'Authorization': `Bearer ${process.env.sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ}`
-        }
-      }
-    );
-    const users = await userRes.json();
-    const user = users[0];
-
-    if (user && user.generations_used >= user.generations_limit) {
-      return res.status(403).json({
-        error: 'Limite de générations atteinte. Passe à Pro pour continuer !'
-      });
-    }
-
-    if (user) {
-      await fetch(
-        `${process.env.https://qyjqtjrqnlbgtxvnjvnk.supabase.co}/rest/v1/users?email=eq.${encodeURIComponent(email)}`,
+    try {
+      const userRes = await fetch(
+        'https://qyjqtjrqnlbgtxvnjvnk.supabase.co/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=plan,generations_used,generations_limit',
         {
-          method: 'PATCH',
           headers: {
-            'apikey': process.env.sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ,
-            'Authorization': `Bearer ${process.env.sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ generations_used: user.generations_used + 1 })
+            'apikey': 'sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ',
+            'Authorization': 'Bearer sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ'
+          }
         }
       );
+      const users = await userRes.json();
+      const user = users[0];
+
+      if (user && user.generations_used >= user.generations_limit) {
+        return res.status(403).json({
+          error: 'Limite de générations atteinte. Passe à Pro pour continuer !'
+        });
+      }
+
+      if (user) {
+        await fetch(
+          'https://qyjqtjrqnlbgtxvnjvnk.supabase.co/rest/v1/users?email=eq.' + encodeURIComponent(email),
+          {
+            method: 'PATCH',
+            headers: {
+              'apikey': 'sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ',
+              'Authorization': 'Bearer sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ generations_used: user.generations_used + 1 })
+          }
+        );
+      }
+    } catch(e) {
+      console.log('Erreur Supabase:', e);
     }
   }
+
   const prompts = {
     fiche: `Tu es un expert en pédagogie. À partir du cours ci-dessous, génère une FICHE DE RÉVISION complète, structurée et détaillée.
 
@@ -155,7 +159,7 @@ Format OBLIGATOIRE :
   const langMap = { fr: 'français', en: 'English', es: 'Español', de: 'Deutsch' };
   const langInstruction = language === 'auto'
     ? 'Réponds dans la même langue que le cours fourni.'
-    : `Réponds obligatoirement en ${langMap[language] || 'français'}.`;
+    : 'Réponds obligatoirement en ' + (langMap[language] || 'français') + '.';
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -168,10 +172,10 @@ Format OBLIGATOIRE :
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
         max_tokens: 1500,
-        system: `Tu es StudyAI, un assistant pédagogique expert. ${langInstruction} Sois précis, structuré et pédagogique.`,
+        system: 'Tu es StudyAI, un assistant pédagogique expert. ' + langInstruction + ' Sois précis, structuré et pédagogique.',
         messages: [{
           role: 'user',
-          content: `${prompts[format]}\n\n---\nCOURS :\n${course}\n---\n\nGénère maintenant le contenu demandé.`
+          content: prompts[format] + '\n\n---\nCOURS :\n' + course + '\n---\n\nGénère maintenant le contenu demandé.'
         }]
       })
     });
