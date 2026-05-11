@@ -60,7 +60,8 @@
   <div class="nav-right">
     <span class="plan-badge">Plan <span id="plan-name">Starter</span> · <span id="tok-nav">5</span> générations restantes</span>
     <span id="user-display" style="display:none" class="user-badge"></span>
-    <a href="/login.html" class="nav-login" id="nav-login-link">Se connecter</a>
+   <a href="/dashboard.html" class="nav-login" id="nav-dashboard-link" style="display:none">📚 Ma bibliothèque</a>
+<a href="/login.html" class="nav-login" id="nav-login-link">Se connecter</a>
     <a href="https://buy.stripe.com/dRmcN68KF5N9bAj9Aq43S00" target="_blank" class="nav-upgrade">Passer à Pro →</a>
   </div>
 </nav>
@@ -237,6 +238,7 @@ if (savedUser && savedUser.email) {
   document.getElementById('user-display').textContent = '👤 ' + displayName;
   document.getElementById('user-display').style.display = 'inline-block';
   document.getElementById('nav-login-link').style.display = 'none';
+  document.getElementById('nav-dashboard-link').style.display = 'inline-block';
   if (savedUser.remaining !== undefined) {
     tokensLeft = savedUser.remaining;
     document.getElementById('tok-nav').textContent = tokensLeft;
@@ -371,7 +373,27 @@ document.getElementById('gen-btn').addEventListener('click', async function() {
       savedUser.remaining = tokensLeft;
       localStorage.setItem('studyai_user', JSON.stringify(savedUser));
     }
-
+// Sauvegarder dans Supabase si connecté
+if (currentUserEmail) {
+  var titre = data.result.split('\n')[2] || currentFormatName;
+  titre = titre.replace(/[📚🎯📖⚡❓🔗━▸]/g, '').trim().substring(0, 80);
+  fetch('https://qyjqtjrqnlbgtxvnjvnk.supabase.co/rest/v1/fiches', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': 'sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ',
+      'Authorization': 'Bearer sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ',
+      'Prefer': 'return=minimal'
+    },
+    body: JSON.stringify({
+      user_email: currentUserEmail,
+      format: currentFormat,
+      format_icon: currentFormatIcon,
+      titre: titre,
+      contenu: data.result
+    })
+  }).catch(function(e){ console.log('Erreur sauvegarde:', e); });
+}
     sessionHistory.unshift({ icon: currentFormatIcon, name: currentFormatName, preview: input.substring(0, 55) + '…', result: data.result });
     if (sessionHistory.length > 6) sessionHistory.pop();
     renderHistory();
