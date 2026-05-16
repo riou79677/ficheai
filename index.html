@@ -7,42 +7,19 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <style>
-.import-zone { margin-bottom: 0.8rem; }
-.import-btn-row { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
-.import-btn {
-  background: var(--bg2);
-  border: 1.5px dashed var(--border2);
-  border-radius: 10px;
-  padding: 0.65rem 1.2rem;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--purple2);
-  cursor: pointer;
-  font-family: var(--font-b);
-  transition: all 0.2s;
-}
-.import-btn:hover { border-color: var(--purple); background: rgba(124,109,250,0.06); }
-.import-or { font-size: 0.8rem; color: var(--text3); }
-.import-hint { font-size: 0.8rem; color: var(--text3); }
-.file-name {
-  margin-top: 0.5rem;
-  font-size: 0.78rem;
-  color: var(--cyan);
-  padding: 0.3rem 0.8rem;
-  background: rgba(34,211,238,0.08);
-  border-radius: 8px;
-  border: 1px solid rgba(34,211,238,0.2);
-  display: inline-block;
-}
-.user-badge {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--purple2);
-  background: rgba(124,109,250,0.1);
-  border: 1px solid rgba(124,109,250,0.2);
-  padding: 0.35rem 0.8rem;
-  border-radius: 100px;
-}
+.import-zone{margin-bottom:0.8rem}
+.import-btn-row{display:flex;align-items:center;gap:0.8rem;flex-wrap:wrap}
+.import-btn{background:var(--bg2);border:1.5px dashed var(--border2);border-radius:10px;padding:0.65rem 1.2rem;font-size:0.85rem;font-weight:600;color:var(--purple2);cursor:pointer;font-family:var(--font-b);transition:all 0.2s}
+.import-btn:hover{border-color:var(--purple);background:rgba(124,109,250,0.06)}
+.import-or{font-size:0.8rem;color:var(--text3)}
+.import-hint{font-size:0.8rem;color:var(--text3)}
+.file-name{margin-top:0.5rem;font-size:0.78rem;color:var(--cyan);padding:0.3rem 0.8rem;background:rgba(34,211,238,0.08);border-radius:8px;border:1px solid rgba(34,211,238,0.2);display:inline-block}
+.user-badge{font-size:0.82rem;font-weight:600;color:var(--purple2);background:rgba(124,109,250,0.1);border:1px solid rgba(124,109,250,0.2);padding:0.35rem 0.8rem;border-radius:100px;cursor:pointer;user-select:none}
+.user-menu{display:none;position:absolute;right:0;top:120%;background:#13131f;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:0.5rem;min-width:200px;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,0.4)}
+.user-menu a{display:block;padding:0.6rem 0.8rem;color:#a0a0c0;text-decoration:none;font-size:0.85rem;border-radius:8px;transition:background 0.2s}
+.user-menu a:hover{background:#1a1a2e}
+.user-menu .danger{color:#f472b6}
+.user-menu hr{border:none;border-top:1px solid rgba(255,255,255,0.07);margin:0.3rem 0}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
@@ -59,17 +36,16 @@
   </div>
   <div class="nav-right">
     <span class="plan-badge">Plan <span id="plan-name">Starter</span> · <span id="tok-nav">5</span> générations restantes</span>
-   <div style="position:relative;display:inline-block">
-  <span id="user-display" style="display:none;cursor:pointer;" class="user-badge"></span>
-  <div id="user-menu" style="display:none;position:absolute;right:0;top:120%;background:#13131f;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:0.5rem;min-width:180px;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,0.4);">
-    <a href="/dashboard.html" style="display:block;padding:0.6rem 0.8rem;color:#a0a0c0;text-decoration:none;font-size:0.85rem;border-radius:8px;" onmouseover="this.style.background='#1a1a2e'" onmouseout="this.style.background='none'">📚 Ma bibliothèque</a>
-    <a href="#" style="display:block;padding:0.6rem 0.8rem;color:#a0a0c0;text-decoration:none;font-size:0.85rem;border-radius:8px;" onmouseover="this.style.background='#1a1a2e'" onmouseout="this.style.background='none'">⚙️ Paramètres</a>
-    <hr style="border:none;border-top:1px solid rgba(255,255,255,0.07);margin:0.3rem 0;">
-    <a href="#" onclick="localStorage.removeItem('studyai_user');window.location.reload();" style="display:block;padding:0.6rem 0.8rem;color:#f472b6;text-decoration:none;font-size:0.85rem;border-radius:8px;" onmouseover="this.style.background='#1a1a2e'" onmouseout="this.style.background='none'">🚪 Se déconnecter</a>
-  </div>
-</div>
-   <a href="/dashboard.html" class="nav-login" id="nav-dashboard-link" style="display:none">📚 Ma bibliothèque</a>
-<a href="/login.html" class="nav-login" id="nav-login-link">Se connecter</a>
+    <div style="position:relative;display:inline-block">
+      <span id="user-display" style="display:none" class="user-badge" onclick="toggleMenu()"></span>
+      <div id="user-menu" class="user-menu">
+        <a href="/dashboard.html">📚 Ma bibliothèque</a>
+        <a href="#">⚙️ Paramètres</a>
+        <hr>
+        <a href="#" class="danger" onclick="deconnexion()">🚪 Se déconnecter</a>
+      </div>
+    </div>
+    <a href="/login.html" class="nav-login" id="nav-login-link">Se connecter</a>
     <a href="https://buy.stripe.com/dRmcN68KF5N9bAj9Aq43S00" target="_blank" class="nav-upgrade">Passer à Pro →</a>
   </div>
 </nav>
@@ -85,35 +61,21 @@
     <div class="step-card">
       <div class="step-label">01 — Choisis ton format</div>
       <div class="format-grid">
-        <div class="fmt active" data-fmt="fiche" data-icon="📄" data-name="Fiche de révision">
-          <span class="fmt-icon">📄</span><span class="fmt-name">Fiche</span>
-        </div>
-        <div class="fmt" data-fmt="quiz" data-icon="✅" data-name="Quiz QCM">
-          <span class="fmt-icon">✅</span><span class="fmt-name">Quiz QCM</span>
-        </div>
-        <div class="fmt" data-fmt="flash" data-icon="🃏" data-name="Flashcards">
-          <span class="fmt-icon">🃏</span><span class="fmt-name">Flashcards</span>
-        </div>
-        <div class="fmt" data-fmt="mindmap" data-icon="🧠" data-name="Mind Map">
-          <span class="fmt-icon">🧠</span><span class="fmt-name">Mind Map</span>
-        </div>
-        <div class="fmt" data-fmt="questions" data-icon="💬" data-name="Questions ouvertes">
-          <span class="fmt-icon">💬</span><span class="fmt-name">Questions</span>
-        </div>
-        <div class="fmt" data-fmt="chrono" data-icon="📅" data-name="Chronologie">
-          <span class="fmt-icon">📅</span><span class="fmt-name">Chronologie</span>
-        </div>
+        <div class="fmt active" data-fmt="fiche" data-icon="📄" data-name="Fiche de révision"><span class="fmt-icon">📄</span><span class="fmt-name">Fiche</span></div>
+        <div class="fmt" data-fmt="quiz" data-icon="✅" data-name="Quiz QCM"><span class="fmt-icon">✅</span><span class="fmt-name">Quiz QCM</span></div>
+        <div class="fmt" data-fmt="flash" data-icon="🃏" data-name="Flashcards"><span class="fmt-icon">🃏</span><span class="fmt-name">Flashcards</span></div>
+        <div class="fmt" data-fmt="mindmap" data-icon="🧠" data-name="Mind Map"><span class="fmt-icon">🧠</span><span class="fmt-name">Mind Map</span></div>
+        <div class="fmt" data-fmt="questions" data-icon="💬" data-name="Questions ouvertes"><span class="fmt-icon">💬</span><span class="fmt-name">Questions</span></div>
+        <div class="fmt" data-fmt="chrono" data-icon="📅" data-name="Chronologie"><span class="fmt-icon">📅</span><span class="fmt-name">Chronologie</span></div>
       </div>
     </div>
 
     <div class="step-card">
       <div class="step-label">02 — Importe ou colle ton cours</div>
-      <div class="import-zone" id="import-zone">
+      <div class="import-zone">
         <input type="file" id="file-input" accept=".pdf,.txt" style="display:none">
         <div class="import-btn-row">
-          <button class="import-btn" id="import-file-btn">
-            📎 Importer un fichier (PDF ou TXT)
-          </button>
+          <button class="import-btn" id="import-file-btn">📎 Importer un fichier (PDF ou TXT)</button>
           <span class="import-or">ou</span>
           <span class="import-hint">colle ton cours ci-dessous</span>
         </div>
@@ -157,7 +119,6 @@
       <div class="history-title">📂 Historique de session</div>
       <div id="history-list"></div>
     </div>
-
   </div>
 </main>
 
@@ -172,12 +133,12 @@
         <div class="plan-price">0<span class="plan-cur">€</span></div>
         <div class="plan-freq">Pour toujours · Aucune CB requise</div>
         <div class="plan-desc">Parfait pour découvrir la puissance de StudyAI.</div>
-       <ul class="plan-feats">
-  <li>✓ 5 générations IA / mois</li>
-  <li>✓ Tous les formats</li>
-  <li>✓ Import PDF jusqu'à 15 pages</li>
-  <li>✓ Téléchargement en .txt</li>
-</ul>
+        <ul class="plan-feats">
+          <li>✓ 5 générations IA / mois</li>
+          <li>✓ Tous les formats</li>
+          <li>✓ Import PDF jusqu'à 15 pages</li>
+          <li>✓ Téléchargement en .txt</li>
+        </ul>
         <a href="/signup.html" class="plan-btn plan-btn-ghost" style="text-align:center;display:block;">Commencer gratuitement</a>
       </div>
       <div class="pricing-card pricing-card-pop">
@@ -186,14 +147,14 @@
         <div class="plan-price">4,99<span class="plan-cur">€</span></div>
         <div class="plan-freq">par mois · ou <b>39,99€/an</b> (−34%)</div>
         <div class="plan-desc">Pour les étudiants sérieux qui veulent tout maîtriser.</div>
-       <ul class="plan-feats">
-  <li>✓ 50 générations IA / mois</li>
-  <li>✓ Tous les formats</li>
-  <li>✓ Import PDF jusqu'à 40 pages</li>
-  <li>✓ 📚 Bibliothèque de fiches sauvegardées</li>
-  <li>✓ IA multilingue</li>
-  <li>✓ Support prioritaire</li>
-</ul>
+        <ul class="plan-feats">
+          <li>✓ 50 générations IA / mois</li>
+          <li>✓ Tous les formats</li>
+          <li>✓ Import PDF jusqu'à 40 pages</li>
+          <li>✓ 📚 Bibliothèque de fiches sauvegardées</li>
+          <li>✓ IA multilingue</li>
+          <li>✓ Support prioritaire</li>
+        </ul>
         <div class="plan-btns">
           <a href="https://buy.stripe.com/dRmcN68KF5N9bAj9Aq43S00" target="_blank" class="plan-btn plan-btn-grad">Essayer 7 jours gratuits</a>
           <a href="https://buy.stripe.com/bJe5kE1idb7t47ReUK43S01" target="_blank" class="plan-btn plan-btn-outline">Annuel — 39,99€/an</a>
@@ -204,14 +165,14 @@
         <div class="plan-price">9,99<span class="plan-cur">€</span></div>
         <div class="plan-freq">par mois · ou <b>79,99€/an</b> (−34%)</div>
         <div class="plan-desc">Performance maximale, zéro compromis.</div>
-       <ul class="plan-feats">
-  <li>✓ Générations illimitées</li>
-  <li>✓ Import PDF jusqu'à 100 pages</li>
-  <li>✓ 📚 Bibliothèque illimitée</li>
-  <li>✓ Mode examen chronométré</li>
-  <li>✓ Suivi de progression</li>
-  <li>✓ Accès anticipé nouveautés</li>
-</ul>
+        <ul class="plan-feats">
+          <li>✓ Générations illimitées</li>
+          <li>✓ Import PDF jusqu'à 100 pages</li>
+          <li>✓ 📚 Bibliothèque illimitée</li>
+          <li>✓ Mode examen chronométré</li>
+          <li>✓ Suivi de progression</li>
+          <li>✓ Accès anticipé nouveautés</li>
+        </ul>
         <div class="plan-btns">
           <a href="https://buy.stripe.com/6oUdRa0e95N96fZ4g643S02" target="_blank" class="plan-btn plan-btn-gold">Essayer 7 jours gratuits</a>
           <a href="https://buy.stripe.com/eVqbJ22mhfnJbAj5ka43S04" target="_blank" class="plan-btn plan-btn-outline">Annuel — 79,99€/an</a>
@@ -229,7 +190,27 @@
   </div>
 </footer>
 
+<!-- PANEL DÉVELOPPEUR - visible uniquement pour l'admin -->
+<div id="dev-panel" style="display:none;position:fixed;bottom:1rem;right:1rem;z-index:9999;">
+  <div style="background:#13131f;border:1px solid rgba(124,109,250,0.4);border-radius:12px;padding:1rem;min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,0.5);">
+    <div style="font-size:0.75rem;font-weight:700;color:#a78bfa;margin-bottom:0.8rem;letter-spacing:0.08em;">🛠️ MODE DÉVELOPPEUR</div>
+    <div style="display:flex;flex-direction:column;gap:0.4rem;">
+      <button onclick="simulatePlan('starter')" style="background:#1a1a2e;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:0.4rem 0.8rem;color:#a0a0c0;font-size:0.78rem;cursor:pointer;text-align:left;font-family:DM Sans,sans-serif;">👤 Simuler Starter (5)</button>
+      <button onclick="simulatePlan('pro')" style="background:#1a1a2e;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:0.4rem 0.8rem;color:#a0a0c0;font-size:0.78rem;cursor:pointer;text-align:left;font-family:DM Sans,sans-serif;">⚡ Simuler Pro (50)</button>
+      <button onclick="simulatePlan('ultimate')" style="background:#1a1a2e;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:0.4rem 0.8rem;color:#a0a0c0;font-size:0.78rem;cursor:pointer;text-align:left;font-family:DM Sans,sans-serif;">👑 Simuler Ultimate (∞)</button>
+      <button onclick="simulatePlan('reset')" style="background:#1a1a2e;border:1px solid rgba(124,109,250,0.3);border-radius:8px;padding:0.4rem 0.8rem;color:#a78bfa;font-size:0.78rem;cursor:pointer;text-align:left;font-family:DM Sans,sans-serif;">🔄 Réinitialiser</button>
+      <button onclick="document.getElementById('dev-panel').style.display='none'" style="background:transparent;border:none;color:#5a5a7a;font-size:0.72rem;cursor:pointer;text-align:left;margin-top:0.2rem;font-family:DM Sans,sans-serif;">✕ Fermer le panel</button>
+    </div>
+  </div>
+</div>
+
 <script>
+// ── CONSTANTES ──
+var SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
+var SUPABASE_KEY = 'sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ';
+var DEV_EMAIL = 'ilanmoh228@gmail.com';
+
+// ── VARIABLES GLOBALES ──
 var currentFormat = 'fiche';
 var currentFormatName = 'Fiche de révision';
 var currentFormatIcon = '📄';
@@ -237,25 +218,18 @@ var tokensLeft = 5;
 var lastResult = '';
 var sessionHistory = [];
 var currentUserEmail = null;
-
-// ── DÉTECTION SESSION ──
 var savedUser = null;
-try { savedUser = JSON.parse(localStorage.getItem('studyai_user')); } catch(e) {}
-if (savedUser && savedUser.email) {
-  currentUserEmail = savedUser.email;
-  var displayName = savedUser.email.split('@')[0];
-  document.getElementById('user-display').textContent = '👤 ' + displayName;
-  document.getElementById('user-display').style.display = 'inline-block';
-  document.getElementById('nav-login-link').style.display = 'none';
-  document.getElementById('nav-dashboard-link').style.display = 'inline-block';
-  if (savedUser.remaining !== undefined) {
-    tokensLeft = savedUser.remaining;
-    document.getElementById('tok-nav').textContent = tokensLeft;
-  }
-  // Mode développeur - uniquement pour ton email
-var DEV_EMAIL = 'ilanmoh228@gmail.com';
-if (savedUser && savedUser.email === DEV_EMAIL) {
-  document.getElementById('dev-panel').style.display = 'block';
+
+// ── FONCTIONS GLOBALES (doivent être en dehors de tout bloc) ──
+
+function toggleMenu() {
+  var menu = document.getElementById('user-menu');
+  menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+}
+
+function deconnexion() {
+  localStorage.removeItem('studyai_user');
+  window.location.reload();
 }
 
 function simulatePlan(plan) {
@@ -268,20 +242,45 @@ function simulatePlan(plan) {
   savedUser.plan = plan;
   savedUser.remaining = limits[plan];
   localStorage.setItem('studyai_user', JSON.stringify(savedUser));
-  document.getElementById('plan-name').textContent = plan.charAt(0).toUpperCase() + plan.slice(1);
+  var planDisplay = plan.charAt(0).toUpperCase() + plan.slice(1);
+  document.getElementById('plan-name').textContent = planDisplay;
   document.getElementById('tok-nav').textContent = limits[plan] === 999999 ? '∞' : limits[plan];
-  alert('✅ Plan simulé : ' + plan);
+  tokensLeft = limits[plan];
+  alert('✅ Plan simulé : ' + planDisplay);
 }
+
+// Fermer le menu si on clique ailleurs
+document.addEventListener('click', function(e) {
+  var menu = document.getElementById('user-menu');
+  var display = document.getElementById('user-display');
+  if (menu && display && !display.contains(e.target) && !menu.contains(e.target)) {
+    menu.style.display = 'none';
+  }
+});
+
+// ── DÉTECTION SESSION ──
+try { savedUser = JSON.parse(localStorage.getItem('studyai_user')); } catch(e) {}
+
+if (savedUser && savedUser.email) {
+  currentUserEmail = savedUser.email;
+  var displayName = savedUser.email.split('@')[0];
+  document.getElementById('user-display').textContent = '👤 ' + displayName;
+  document.getElementById('user-display').style.display = 'inline-block';
+  document.getElementById('nav-login-link').style.display = 'none';
+
+  if (savedUser.remaining !== undefined) {
+    tokensLeft = savedUser.remaining;
+    document.getElementById('tok-nav').textContent = tokensLeft === 999999 ? '∞' : tokensLeft;
+  }
   if (savedUser.plan) {
     var planDisplay = savedUser.plan.charAt(0).toUpperCase() + savedUser.plan.slice(1);
     document.getElementById('plan-name').textContent = planDisplay;
   }
-  // Clic sur le nom = déconnexion
-  document.getElementById('user-display').style.cursor = 'pointer';
- document.getElementById('user-display').addEventListener('click', function() {
-  document.getElementById('user-menu').style.display =
-    document.getElementById('user-menu').style.display === 'none' ? 'block' : 'none';
-});
+
+  // Panel développeur uniquement pour l'admin
+  if (savedUser.email === DEV_EMAIL) {
+    document.getElementById('dev-panel').style.display = 'block';
+  }
 }
 
 // ── FORMAT ──
@@ -327,10 +326,10 @@ document.getElementById('file-input').addEventListener('change', async function(
         var pdfjsLib = window['pdfjs-dist/build/pdf'];
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         var pdf = await pdfjsLib.getDocument({data: ev.target.result}).promise;
-        var text = '';
         var plan = savedUser ? (savedUser.plan || 'starter') : 'starter';
-var pageLimit = plan === 'ultimate' ? 100 : plan === 'pro' ? 40 : 15;
-var maxPages = Math.min(pdf.numPages, pageLimit);
+        var pageLimit = plan === 'ultimate' ? 100 : plan === 'pro' ? 40 : 15;
+        var maxPages = Math.min(pdf.numPages, pageLimit);
+        var text = '';
         for (var i = 1; i <= maxPages; i++) {
           var page = await pdf.getPage(i);
           var content = await page.getTextContent();
@@ -338,7 +337,7 @@ var maxPages = Math.min(pdf.numPages, pageLimit);
         }
         document.getElementById('course-input').value = text;
         document.getElementById('char-count').textContent = text.length + ' caractères';
-        fileNameEl.textContent = '✅ PDF lu — ' + maxPages + '/' + pdf.numPages + ' pages (max ' + pageLimit + ' pour ton plan)';
+        fileNameEl.textContent = '✅ PDF lu — ' + maxPages + '/' + pdf.numPages + ' pages (limite ' + pageLimit + ' p. pour ton plan)';
       } catch(err) {
         fileNameEl.textContent = '⚠️ Erreur lecture PDF — colle le texte manuellement';
       }
@@ -394,35 +393,39 @@ document.getElementById('gen-btn').addEventListener('click', async function() {
     document.getElementById('result-title').textContent = currentFormatIcon + ' ' + currentFormatName;
     spinner.style.display = 'none';
     content.style.display = 'block';
-    tokensLeft--;
-    document.getElementById('tok-nav').textContent = tokensLeft;
 
-    // Mettre à jour localStorage
-    if (savedUser) {
-      savedUser.remaining = tokensLeft;
-      localStorage.setItem('studyai_user', JSON.stringify(savedUser));
+    // Décrémenter seulement si pas Ultimate
+    if (tokensLeft !== 999999) {
+      tokensLeft--;
+      document.getElementById('tok-nav').textContent = tokensLeft;
+      if (savedUser) {
+        savedUser.remaining = tokensLeft;
+        localStorage.setItem('studyai_user', JSON.stringify(savedUser));
+      }
     }
-// Sauvegarder dans Supabase si connecté
-if (currentUserEmail) {
-  var titre = data.result.split('\n')[2] || currentFormatName;
-  titre = titre.replace(/[📚🎯📖⚡❓🔗━▸]/g, '').trim().substring(0, 80);
-  fetch('https://qyjqtjrqnlbgtxvnjvnk.supabase.co/rest/v1/fiches', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'apikey': 'sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ',
-      'Authorization': 'Bearer sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ',
-      'Prefer': 'return=minimal'
-    },
-    body: JSON.stringify({
-      user_email: currentUserEmail,
-      format: currentFormat,
-      format_icon: currentFormatIcon,
-      titre: titre,
-      contenu: data.result
-    })
-  }).catch(function(e){ console.log('Erreur sauvegarde:', e); });
-}
+
+    // Sauvegarder dans Supabase si connecté
+    if (currentUserEmail) {
+      var lignes = data.result.split('\n').filter(function(l){ return l.trim().length > 3; });
+      var titre = (lignes[1] || lignes[0] || currentFormatName).replace(/[📚🎯📖⚡❓🔗━▸✦]/g, '').trim().substring(0, 80);
+      fetch(SUPABASE_URL + '/rest/v1/fiches', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({
+          user_email: currentUserEmail,
+          format: currentFormat,
+          format_icon: currentFormatIcon,
+          titre: titre,
+          contenu: data.result
+        })
+      }).catch(function(e){ console.log('Erreur sauvegarde:', e); });
+    }
+
     sessionHistory.unshift({ icon: currentFormatIcon, name: currentFormatName, preview: input.substring(0, 55) + '…', result: data.result });
     if (sessionHistory.length > 6) sessionHistory.pop();
     renderHistory();
@@ -480,17 +483,5 @@ function loadHistory(i) {
   lastResult = h.result;
 }
 </script>
-<!-- MODE DEV - visible uniquement pour le compte admin -->
-<div id="dev-panel" style="display:none;position:fixed;bottom:1rem;right:1rem;z-index:9999;">
-  <div style="background:#13131f;border:1px solid rgba(124,109,250,0.4);border-radius:12px;padding:1rem;min-width:200px;">
-    <div style="font-size:0.75rem;font-weight:700;color:#a78bfa;margin-bottom:0.8rem;letter-spacing:0.08em;">🛠️ MODE DÉVELOPPEUR</div>
-    <div style="display:flex;flex-direction:column;gap:0.4rem;">
-      <button onclick="simulatePlan('starter')" style="background:#1a1a2e;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:0.4rem 0.8rem;color:#a0a0c0;font-size:0.78rem;cursor:pointer;text-align:left;">👤 Simuler Starter</button>
-      <button onclick="simulatePlan('pro')" style="background:#1a1a2e;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:0.4rem 0.8rem;color:#a0a0c0;font-size:0.78rem;cursor:pointer;text-align:left;">⚡ Simuler Pro</button>
-      <button onclick="simulatePlan('ultimate')" style="background:#1a1a2e;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:0.4rem 0.8rem;color:#a0a0c0;font-size:0.78rem;cursor:pointer;text-align:left;">👑 Simuler Ultimate</button>
-      <button onclick="simulatePlan('reset')" style="background:#1a1a2e;border:1px solid rgba(124,109,250,0.3);border-radius:8px;padding:0.4rem 0.8rem;color:#a78bfa;font-size:0.78rem;cursor:pointer;text-align:left;">🔄 Réinitialiser</button>
-    </div>
-  </div>
-</div>
 </body>
 </html>
