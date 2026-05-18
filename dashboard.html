@@ -7,15 +7,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#09090f;--bg2:#0f0f1a;--bg3:#13131f;--surface:#1a1a2e;
-  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
-  --purple:#7c6dfa;--purple2:#a78bfa;--pink:#f472b6;--cyan:#22d3ee;--gold:#fbbf24;
-  --text:#f1f0ff;--text2:#a0a0c0;--text3:#5a5a7a;
-  --font-h:'Syne',sans-serif;--font-b:'DM Sans',sans-serif;
-}
+:root{--bg:#09090f;--bg2:#0f0f1a;--bg3:#13131f;--surface:#1a1a2e;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);--purple:#7c6dfa;--purple2:#a78bfa;--pink:#f472b6;--cyan:#22d3ee;--gold:#fbbf24;--text:#f1f0ff;--text2:#a0a0c0;--text3:#5a5a7a;--font-h:'Syne',sans-serif;--font-b:'DM Sans',sans-serif;}
 body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
-
 nav{padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:rgba(9,9,15,0.9);backdrop-filter:blur(20px);position:sticky;top:0;z-index:100;}
 .logo{font-family:var(--font-h);font-size:1.3rem;font-weight:800;background:linear-gradient(135deg,var(--purple2),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-decoration:none;display:flex;align-items:center;gap:10px;}
 .logo-icon{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--purple),var(--pink));display:flex;align-items:center;justify-content:center;flex-shrink:0;}
@@ -30,25 +23,19 @@ nav{padding:1rem 2rem;display:flex;align-items:center;justify-content:space-betw
 .user-menu a:hover{background:#1a1a2e;}
 .user-menu .danger{color:#f472b6;}
 .user-menu hr{border:none;border-top:1px solid rgba(255,255,255,0.07);margin:0.3rem 0;}
-
 main{flex:1;max-width:900px;margin:0 auto;padding:2.5rem 1.5rem;width:100%;}
-
 .page-header{margin-bottom:2rem;}
 .page-header h1{font-family:var(--font-h);font-size:1.8rem;font-weight:800;margin-bottom:0.4rem;}
 .page-header p{color:var(--text2);font-size:0.9rem;}
-
 .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2rem;}
 .stat-card{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:1.2rem;text-align:center;}
 .stat-val{font-family:var(--font-h);font-size:1.8rem;font-weight:800;background:linear-gradient(135deg,var(--purple2),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .stat-label{font-size:0.78rem;color:var(--text3);margin-top:2px;}
-
 .filters{display:flex;gap:0.5rem;margin-bottom:1.5rem;flex-wrap:wrap;}
 .filter-btn{background:var(--bg3);border:1px solid var(--border);border-radius:100px;padding:0.4rem 1rem;font-size:0.8rem;font-weight:600;cursor:pointer;font-family:var(--font-b);color:var(--text2);transition:all 0.2s;}
 .filter-btn:hover,.filter-btn.active{border-color:var(--purple);color:var(--purple2);background:rgba(124,109,250,0.08);}
-
 .fiches-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem;}
-
-.fiche-card{background:var(--bg3);border:1px solid var(--border);border-radius:16px;padding:1.2rem;cursor:pointer;transition:all 0.25s;position:relative;}
+.fiche-card{background:var(--bg3);border:1px solid var(--border);border-radius:16px;padding:1.2rem;cursor:pointer;transition:all 0.25s;}
 .fiche-card:hover{border-color:rgba(124,109,250,0.4);transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,0.3);}
 .fiche-icon{font-size:1.5rem;margin-bottom:0.7rem;}
 .fiche-format{font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);margin-bottom:0.3rem;}
@@ -59,52 +46,41 @@ main{flex:1;max-width:900px;margin:0 auto;padding:2.5rem 1.5rem;width:100%;}
 .fiche-btn{background:var(--bg2);border:1px solid var(--border);border-radius:7px;padding:0.3rem 0.7rem;font-size:0.72rem;font-weight:600;cursor:pointer;font-family:var(--font-b);color:var(--text2);transition:all 0.2s;}
 .fiche-btn:hover{border-color:var(--purple);color:var(--purple2);}
 .fiche-btn.delete:hover{border-color:var(--pink);color:var(--pink);}
-
 .empty-state{text-align:center;padding:4rem 2rem;color:var(--text3);}
 .empty-icon{font-size:3rem;margin-bottom:1rem;}
 .empty-state h3{font-family:var(--font-h);font-size:1.1rem;color:var(--text2);margin-bottom:0.5rem;}
 .empty-state p{font-size:0.85rem;margin-bottom:1.5rem;}
 .btn-primary{background:linear-gradient(135deg,var(--purple),var(--pink));color:white;border:none;padding:0.8rem 1.8rem;border-radius:100px;font-size:0.9rem;font-weight:700;cursor:pointer;font-family:var(--font-b);text-decoration:none;display:inline-block;}
-
 .loading{text-align:center;padding:3rem;color:var(--text3);}
 .spinner{width:32px;height:32px;border:3px solid var(--border2);border-top-color:var(--purple);border-radius:50%;animation:spin 0.75s linear infinite;margin:0 auto 1rem;}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-/* MODAL FICHE */
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:500;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto;}
 .modal-bg.open{display:flex;}
 .modal-fiche{background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:2rem;max-width:700px;width:100%;position:relative;margin:auto;}
-.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;gap:1rem;}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;gap:1rem;flex-wrap:wrap;}
 .modal-title{font-family:var(--font-h);font-size:1.1rem;font-weight:700;}
-.modal-actions{display:flex;gap:0.5rem;flex-wrap:wrap;}
+.modal-actions{display:flex;gap:0.5rem;}
 .modal-close{background:var(--surface);border:1px solid var(--border);width:32px;height:32px;border-radius:50%;cursor:pointer;color:var(--text2);font-size:1rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .modal-content{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:1.2rem;font-size:0.85rem;line-height:1.8;color:var(--text2);white-space:pre-wrap;word-break:break-word;max-height:60vh;overflow-y:auto;}
-
-/* MODAL CONFIRMATION */
-.confirm-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:600;align-items:center;justify-content:center;padding:1rem;}
-.confirm-modal.open{display:flex;}
-.confirm-box{background:var(--bg2);border:1px solid rgba(244,114,182,0.3);border-radius:20px;padding:2rem;max-width:420px;width:100%;text-align:center;}
+.confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:600;align-items:center;justify-content:center;padding:1rem;}
+.confirm-overlay.open{display:flex;}
+.confirm-box{background:var(--bg2);border:1px solid rgba(244,114,182,0.3);border-radius:20px;padding:2rem;max-width:400px;width:100%;text-align:center;}
 .confirm-box h3{font-family:var(--font-h);font-size:1.1rem;margin-bottom:0.6rem;}
 .confirm-box p{font-size:0.85rem;color:var(--text2);margin-bottom:1.5rem;line-height:1.6;}
 .confirm-btns{display:flex;gap:0.8rem;justify-content:center;}
 .btn-cancel{background:var(--surface);border:1px solid var(--border2);color:var(--text2);padding:0.65rem 1.4rem;border-radius:10px;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:var(--font-b);}
-.btn-confirm-delete{background:rgba(244,114,182,0.15);border:1px solid rgba(244,114,182,0.4);color:var(--pink);padding:0.65rem 1.4rem;border-radius:10px;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:var(--font-b);}
-
+.btn-delete{background:rgba(244,114,182,0.15);border:1px solid rgba(244,114,182,0.4);color:var(--pink);padding:0.65rem 1.4rem;border-radius:10px;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:var(--font-b);}
 .not-logged{text-align:center;padding:5rem 2rem;}
 .not-logged h2{font-family:var(--font-h);font-size:1.5rem;margin-bottom:0.8rem;}
 .not-logged p{color:var(--text2);margin-bottom:2rem;}
-
 footer{padding:1.5rem;text-align:center;font-size:0.78rem;color:var(--text3);border-top:1px solid var(--border);}
 </style>
 </head>
 <body>
-
 <nav>
   <a href="/" class="logo">
     <div class="logo-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
     </div>
     StudyAI
   </a>
@@ -125,19 +101,15 @@ footer{padding:1.5rem;text-align:center;font-size:0.78rem;color:var(--text3);bor
 </nav>
 
 <main id="main-content">
-  <div class="loading">
-    <div class="spinner"></div>
-    <p>Chargement...</p>
-  </div>
+  <div class="loading"><div class="spinner"></div><p>Chargement...</p></div>
 </main>
 
-<!-- MODAL FICHE -->
 <div class="modal-bg" id="fiche-modal">
   <div class="modal-fiche">
     <div class="modal-header">
       <div class="modal-title" id="modal-title">Fiche</div>
       <div class="modal-actions">
-        <button class="fiche-btn" onclick="copyModal()">📋 Copier</button>
+        <button class="fiche-btn" id="modal-copy-btn" onclick="copyModal()">📋 Copier</button>
         <button class="fiche-btn" onclick="downloadModal()">⬇️ Télécharger</button>
         <button class="modal-close" onclick="document.getElementById('fiche-modal').classList.remove('open')">✕</button>
       </div>
@@ -146,14 +118,13 @@ footer{padding:1.5rem;text-align:center;font-size:0.78rem;color:var(--text3);bor
   </div>
 </div>
 
-<!-- MODAL CONFIRMATION -->
-<div class="confirm-modal" id="confirm-modal">
+<div class="confirm-overlay" id="confirm-overlay">
   <div class="confirm-box">
-    <h3 id="confirm-title">Confirmer la suppression</h3>
+    <h3 id="confirm-title">Confirmer</h3>
     <p id="confirm-text">Cette action est irréversible.</p>
     <div class="confirm-btns">
       <button class="btn-cancel" onclick="closeConfirm()">Annuler</button>
-      <button class="btn-confirm-delete" id="confirm-action-btn">Supprimer</button>
+      <button class="btn-delete" id="confirm-ok">Supprimer</button>
     </div>
   </div>
 </div>
@@ -161,202 +132,135 @@ footer{padding:1.5rem;text-align:center;font-size:0.78rem;color:var(--text3);bor
 <footer>StudyAI · Fait pour les étudiants 🎓 · © 2025</footer>
 
 <script>
-var SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
-var SUPABASE_KEY = 'sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ';
-var currentUser = null;
-var allFiches = [];
-var currentFilter = 'all';
-var modalContent = '';
-var modalTitle = '';
-var confirmCallback = null;
+var SUPABASE_URL='https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
+var SUPABASE_KEY='sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ';
+var currentUser=null,allFiches=[],currentFilter='all',modalContent='',modalTitle='';
 
-// Fermer menus au clic extérieur
-document.addEventListener('click', function(e) {
-  var menu = document.getElementById('user-menu');
-  var badge = document.getElementById('user-badge');
-  if (menu && badge && !badge.contains(e.target) && !menu.contains(e.target)) {
-    menu.style.display = 'none';
-  }
+document.addEventListener('click',function(e){
+  var menu=document.getElementById('user-menu'),badge=document.getElementById('user-badge');
+  if(menu&&badge&&!badge.contains(e.target)&&!menu.contains(e.target))menu.style.display='none';
 });
+function toggleUserMenu(){var m=document.getElementById('user-menu');m.style.display=m.style.display==='block'?'none':'block';}
+function logout(){localStorage.removeItem('studyai_user');window.location.href='/';}
 
-function toggleUserMenu() {
-  var menu = document.getElementById('user-menu');
-  menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-}
+var savedUser=null;
+try{savedUser=JSON.parse(localStorage.getItem('studyai_user'));}catch(e){}
 
-function logout() {
-  localStorage.removeItem('studyai_user');
-  window.location.href = '/';
-}
-
-// ── INIT ──
-var savedUser = null;
-try { savedUser = JSON.parse(localStorage.getItem('studyai_user')); } catch(e) {}
-
-if (!savedUser || !savedUser.email) {
-  document.getElementById('main-content').innerHTML = '<div class="not-logged"><h2>🔐 Connecte-toi pour accéder à ta bibliothèque</h2><p>Tes fiches sont sauvegardées et accessibles depuis n\'importe quel appareil.</p><a href="/login.html" class="btn-primary">Se connecter</a><br><br><a href="/signup.html" style="color:var(--text3);font-size:0.85rem;">Pas encore de compte ? S\'inscrire gratuitement</a></div>';
-} else {
-  currentUser = savedUser;
-  document.getElementById('user-badge').textContent = '👤 ' + savedUser.email.split('@')[0];
-  document.getElementById('user-badge').style.display = 'inline-block';
+if(!savedUser||!savedUser.email){
+  document.getElementById('main-content').innerHTML='<div class="not-logged"><h2>🔐 Connecte-toi pour accéder à ta bibliothèque</h2><p>Tes fiches sont sauvegardées et accessibles depuis n\'importe quel appareil.</p><a href="/login.html" class="btn-primary">Se connecter</a><br><br><a href="/signup.html" style="color:var(--text3);font-size:0.85rem;margin-top:1rem;display:inline-block;">Pas encore de compte ? S\'inscrire gratuitement</a></div>';
+}else{
+  currentUser=savedUser;
+  document.getElementById('user-badge').textContent='👤 '+savedUser.email.split('@')[0];
+  document.getElementById('user-badge').style.display='inline-block';
   loadFiches();
 }
 
-async function loadFiches() {
-  try {
-    var response = await fetch(
-      SUPABASE_URL + '/rest/v1/fiches?user_email=eq.' + encodeURIComponent(currentUser.email) + '&order=created_at.desc',
-      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } }
-    );
-    allFiches = await response.json();
+async function loadFiches(){
+  try{
+    var r=await fetch(SUPABASE_URL+'/rest/v1/fiches?user_email=eq.'+encodeURIComponent(currentUser.email)+'&order=created_at.desc',{headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}});
+    allFiches=await r.json();
     renderPage();
-  } catch(e) {
-    document.getElementById('main-content').innerHTML = '<div class="empty-state"><p>Erreur de chargement. Réessaie.</p></div>';
-  }
+  }catch(e){document.getElementById('main-content').innerHTML='<div class="empty-state"><p>Erreur de chargement. Réessaie.</p></div>';}
 }
 
-function renderPage() {
-  var plan = currentUser.plan || 'starter';
-  var planDisplay = plan.charAt(0).toUpperCase() + plan.slice(1);
-  var remaining = currentUser.remaining === 999999 ? '∞' : (currentUser.remaining !== undefined ? currentUser.remaining : 5);
-
-  var formats = ['all','fiche','quiz','flash','mindmap','questions','chrono'];
-  var formatLabels = {'all':'Tout','fiche':'📄 Fiches','quiz':'✅ Quiz','flash':'🃏 Flashcards','mindmap':'🧠 Mind Maps','questions':'💬 Questions','chrono':'📅 Chronologies'};
-  var filtered = currentFilter === 'all' ? allFiches : allFiches.filter(function(f){ return f.format === currentFilter; });
-
-  var html = '<div class="page-header"><h1>📚 Ma bibliothèque</h1><p>Plan <b>' + planDisplay + '</b> · ' + remaining + ' générations restantes ce mois</p></div>';
-  html += '<div class="stats-row">';
-  html += '<div class="stat-card"><div class="stat-val">' + allFiches.length + '</div><div class="stat-label">Fiches sauvegardées</div></div>';
-  html += '<div class="stat-card"><div class="stat-val">' + [...new Set(allFiches.map(function(f){return f.format;}))].length + '</div><div class="stat-label">Formats utilisés</div></div>';
-  html += '<div class="stat-card"><div class="stat-val">' + planDisplay + '</div><div class="stat-label">Ton plan actuel</div></div>';
-  html += '</div>';
-
-  html += '<div class="filters">';
-  formats.forEach(function(f) {
-    html += '<button class="filter-btn ' + (currentFilter===f?'active':'') + '" onclick="setFilter(\'' + f + '\')">' + formatLabels[f] + '</button>';
-  });
-  html += '</div>';
-
-  if (filtered.length === 0) {
-    html += '<div class="empty-state"><div class="empty-icon">📭</div><h3>' + (currentFilter==='all'?'Aucune fiche sauvegardée':'Aucune fiche dans ce format') + '</h3><p>Génère ta première fiche et elle apparaîtra ici !</p><a href="/" class="btn-primary">Générer une fiche</a></div>';
-  } else {
-    html += '<div class="fiches-grid">';
-    filtered.forEach(function(fiche, i) {
-      var date = new Date(fiche.created_at);
-      var dateStr = date.toLocaleDateString('fr-FR', {day:'numeric',month:'short',year:'numeric'});
-      html += '<div class="fiche-card" onclick="openFiche(\'' + fiche.id + '\')">';
-      html += '<div class="fiche-icon">' + (fiche.format_icon||'📄') + '</div>';
-      html += '<div class="fiche-format">' + fiche.format + '</div>';
-      html += '<div class="fiche-titre">' + (fiche.titre||'Fiche du '+dateStr) + '</div>';
-      html += '<div class="fiche-preview">' + fiche.contenu.substring(0,120) + '...</div>';
-      html += '<div class="fiche-date">' + dateStr + '</div>';
-      html += '<div class="fiche-actions" onclick="event.stopPropagation()">';
-      html += '<button class="fiche-btn" onclick="copierFiche(\'' + fiche.id + '\')">📋 Copier</button>';
-      html += '<button class="fiche-btn" onclick="telechargerFiche(\'' + fiche.id + '\')">⬇️ Télécharger</button>';
-      html += '<button class="fiche-btn delete" onclick="confirmerSuppression(\'' + fiche.id + '\')">🗑️ Supprimer</button>';
-      html += '</div></div>';
+function renderPage(){
+  var plan=currentUser.plan||'starter';
+  var planDisplay=plan.charAt(0).toUpperCase()+plan.slice(1);
+  var remaining=currentUser.remaining===999999?'∞':(currentUser.remaining!==undefined?currentUser.remaining:5);
+  var formats=['all','fiche','quiz','flash','mindmap','questions','chrono'];
+  var labels={'all':'Tout','fiche':'📄 Fiches','quiz':'✅ Quiz','flash':'🃏 Flashcards','mindmap':'🧠 Mind Maps','questions':'💬 Questions','chrono':'📅 Chronologies'};
+  var filtered=currentFilter==='all'?allFiches:allFiches.filter(function(f){return f.format===currentFilter;});
+  var html='<div class="page-header"><h1>📚 Ma bibliothèque</h1><p>Plan <b>'+planDisplay+'</b> · '+remaining+' générations restantes ce mois</p></div>';
+  html+='<div class="stats-row"><div class="stat-card"><div class="stat-val">'+allFiches.length+'</div><div class="stat-label">Fiches sauvegardées</div></div><div class="stat-card"><div class="stat-val">'+[...new Set(allFiches.map(function(f){return f.format;}))].length+'</div><div class="stat-label">Formats utilisés</div></div><div class="stat-card"><div class="stat-val">'+planDisplay+'</div><div class="stat-label">Ton plan actuel</div></div></div>';
+  html+='<div class="filters">'+formats.map(function(f){return '<button class="filter-btn '+(currentFilter===f?'active':'')+'" onclick="setFilter(\''+f+'\')">'+labels[f]+'</button>';}).join('')+'</div>';
+  if(filtered.length===0){
+    html+='<div class="empty-state"><div class="empty-icon">📭</div><h3>'+(currentFilter==='all'?'Aucune fiche sauvegardée':'Aucune fiche dans ce format')+'</h3><p>Génère ta première fiche et elle apparaîtra ici !</p><a href="/" class="btn-primary">Générer une fiche</a></div>';
+  }else{
+    html+='<div class="fiches-grid">';
+    filtered.forEach(function(fiche){
+      var date=new Date(fiche.created_at);
+      var dateStr=date.toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'});
+      html+='<div class="fiche-card" onclick="openFiche(\''+fiche.id+'\')">';
+      html+='<div class="fiche-icon">'+(fiche.format_icon||'📄')+'</div>';
+      html+='<div class="fiche-format">'+fiche.format+'</div>';
+      html+='<div class="fiche-titre">'+(fiche.titre||'Fiche du '+dateStr)+'</div>';
+      html+='<div class="fiche-preview">'+fiche.contenu.substring(0,120)+'...</div>';
+      html+='<div class="fiche-date">'+dateStr+'</div>';
+      html+='<div class="fiche-actions" onclick="event.stopPropagation()">';
+      html+='<button class="fiche-btn" onclick="copierFiche(\''+fiche.id+'\')">📋 Copier</button>';
+      html+='<button class="fiche-btn" onclick="telechargerFiche(\''+fiche.id+'\')">⬇️ Télécharger</button>';
+      html+='<button class="fiche-btn delete" onclick="confirmerSuppression(\''+fiche.id+'\')">🗑️ Supprimer</button>';
+      html+='</div></div>';
     });
-    html += '</div>';
+    html+='</div>';
   }
-
-  document.getElementById('main-content').innerHTML = html;
+  document.getElementById('main-content').innerHTML=html;
 }
 
-function setFilter(f) { currentFilter = f; renderPage(); }
+function setFilter(f){currentFilter=f;renderPage();}
+function getFicheById(id){return allFiches.find(function(f){return f.id===id;});}
 
-function getFicheById(id) {
-  return allFiches.find(function(f){ return f.id === id; });
-}
-
-function openFiche(id) {
-  var fiche = getFicheById(id);
-  if (!fiche) return;
-  modalContent = fiche.contenu;
-  modalTitle = (fiche.format_icon||'📄') + ' ' + (fiche.titre||'Fiche');
-  document.getElementById('modal-title').textContent = modalTitle;
-  document.getElementById('modal-content').textContent = fiche.contenu;
+function openFiche(id){
+  var fiche=getFicheById(id);if(!fiche)return;
+  modalContent=fiche.contenu;
+  modalTitle=(fiche.format_icon||'📄')+' '+(fiche.titre||'Fiche');
+  document.getElementById('modal-title').textContent=modalTitle;
+  document.getElementById('modal-content').textContent=fiche.contenu;
   document.getElementById('fiche-modal').classList.add('open');
 }
 
-document.getElementById('fiche-modal').addEventListener('click', function(e) {
-  if (e.target === this) this.classList.remove('open');
-});
+document.getElementById('fiche-modal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
 
-function copyModal() {
-  navigator.clipboard.writeText(modalContent).then(function() {
-    var btn = document.querySelector('#fiche-modal .fiche-btn');
-    btn.textContent = '✅ Copié !';
-    setTimeout(function(){ btn.textContent = '📋 Copier'; }, 2000);
+function copyModal(){
+  navigator.clipboard.writeText(modalContent).then(function(){
+    var btn=document.getElementById('modal-copy-btn');
+    btn.textContent='✅ Copié !';setTimeout(function(){btn.textContent='📋 Copier';},2000);
   });
 }
 
-function downloadModal() {
-  var blob = new Blob([modalContent], {type:'text/plain;charset=utf-8'});
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'StudyAI_fiche.txt';
-  a.click();
+function downloadModal(){
+  var blob=new Blob([modalContent],{type:'text/plain;charset=utf-8'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='StudyAI_fiche.txt';a.click();
 }
 
-function copierFiche(id) {
-  var fiche = getFicheById(id);
-  if (!fiche) return;
-  navigator.clipboard.writeText(fiche.contenu).then(function() { showToast('✅ Fiche copiée !'); });
+function copierFiche(id){
+  var fiche=getFicheById(id);if(!fiche)return;
+  navigator.clipboard.writeText(fiche.contenu).then(function(){showToast('✅ Fiche copiée !');});
 }
 
-function telechargerFiche(id) {
-  var fiche = getFicheById(id);
-  if (!fiche) return;
-  var blob = new Blob([fiche.contenu], {type:'text/plain;charset=utf-8'});
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'StudyAI_' + (fiche.format||'fiche') + '.txt';
-  a.click();
+function telechargerFiche(id){
+  var fiche=getFicheById(id);if(!fiche)return;
+  var blob=new Blob([fiche.contenu],{type:'text/plain;charset=utf-8'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='StudyAI_'+(fiche.format||'fiche')+'.txt';a.click();
 }
 
-function confirmerSuppression(id) {
-  document.getElementById('confirm-title').textContent = 'Supprimer cette fiche ?';
-  document.getElementById('confirm-text').textContent = 'Cette action est irréversible. La fiche sera définitivement supprimée de ta bibliothèque.';
-  document.getElementById('confirm-action-btn').onclick = function() { supprimerFiche(id); };
-  document.getElementById('confirm-modal').classList.add('open');
+function confirmerSuppression(id){
+  document.getElementById('confirm-title').textContent='Supprimer cette fiche ?';
+  document.getElementById('confirm-text').textContent='Cette action est irréversible. La fiche sera définitivement supprimée de ta bibliothèque.';
+  document.getElementById('confirm-ok').onclick=function(){supprimerFiche(id);};
+  document.getElementById('confirm-overlay').classList.add('open');
 }
 
-function closeConfirm() {
-  document.getElementById('confirm-modal').classList.remove('open');
-}
+function closeConfirm(){document.getElementById('confirm-overlay').classList.remove('open');}
 
-async function supprimerFiche(id) {
+async function supprimerFiche(id){
   closeConfirm();
-  await fetch(SUPABASE_URL + '/rest/v1/fiches?id=eq.' + id, {
-    method: 'DELETE',
-    headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
-  });
-  allFiches = allFiches.filter(function(f){ return f.id !== id; });
-  renderPage();
-  showToast('🗑️ Fiche supprimée');
+  await fetch(SUPABASE_URL+'/rest/v1/fiches?id=eq.'+id,{method:'DELETE',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}});
+  allFiches=allFiches.filter(function(f){return f.id!==id;});
+  renderPage();showToast('🗑️ Fiche supprimée');
 }
 
-function showToast(msg) {
-  var toast = document.createElement('div');
-  toast.textContent = msg;
-  toast.style.cssText = 'position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:#13131f;border:1px solid rgba(124,109,250,0.4);color:#f1f0ff;padding:0.7rem 1.5rem;border-radius:100px;font-size:0.85rem;font-weight:600;z-index:1000;box-shadow:0 4px 20px rgba(0,0,0,0.4);';
-  document.body.appendChild(toast);
-  setTimeout(function(){ toast.remove(); }, 2500);
+function showToast(msg){
+  var t=document.createElement('div');
+  t.textContent=msg;
+  t.style.cssText='position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:#13131f;border:1px solid rgba(124,109,250,0.4);color:#f1f0ff;padding:0.7rem 1.5rem;border-radius:100px;font-size:0.85rem;font-weight:600;z-index:1000;box-shadow:0 4px 20px rgba(0,0,0,0.4);';
+  document.body.appendChild(t);setTimeout(function(){t.remove();},2500);
 }
 
 // Déconnexion automatique après 30 min d'inactivité
 var inactivityTimer;
-function resetInactivityTimer() {
-  clearTimeout(inactivityTimer);
-  inactivityTimer = setTimeout(function() {
-    localStorage.removeItem('studyai_user');
-    window.location.href = '/login.html?reason=inactivity';
-  }, 30 * 60 * 1000);
-}
-document.addEventListener('mousemove', resetInactivityTimer);
-document.addEventListener('keypress', resetInactivityTimer);
-document.addEventListener('click', resetInactivityTimer);
-resetInactivityTimer();
+function resetTimer(){clearTimeout(inactivityTimer);inactivityTimer=setTimeout(function(){localStorage.removeItem('studyai_user');window.location.href='/login.html';},30*60*1000);}
+document.addEventListener('mousemove',resetTimer);document.addEventListener('keypress',resetTimer);document.addEventListener('click',resetTimer);resetTimer();
 </script>
 </body>
 </html>
