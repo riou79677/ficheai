@@ -32,7 +32,7 @@ export default async function handler(req, res) {
       }
 
       // Bloquer les Starters
-      if (user.plan === 'starter') {
+      if (!user || user.plan === 'starter') {
         return res.status(403).json({ error: 'Le chat IA est disponible à partir du plan Pro.' });
       }
 
