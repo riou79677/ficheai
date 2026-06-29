@@ -12,11 +12,11 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Paramètres manquants' });
   }
 
-  // Vérifier le plan et la limite de messages chat
+  // Vérification plan via Supabase
   if (email) {
     try {
       const userRes = await fetch(
-        'https://qyjqtjrqnlbgtxvnjvnk.supabase.co/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=plan,chat_messages_used,chat_messages_limit',
+        'https://qyjqtjrqnlbgtxvnjvnk.supabase.co/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=plan',
         {
           headers: {
             'apikey': 'sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ',
@@ -27,35 +27,9 @@ export default async function handler(req, res) {
       const users = await userRes.json();
       const user = users[0];
 
-      if (!user) {
-        return res.status(403).json({ error: 'Compte introuvable.' });
-      }
-
-      // Bloquer les Starters
-      if (!user || user.plan === 'starter') {
+      if (user && user.plan === 'starter') {
         return res.status(403).json({ error: 'Le chat IA est disponible à partir du plan Pro.' });
       }
-
-      // Vérifier limite messages chat
-      const chatLimit = user.plan === 'ultimate' ? 999999 : 20;
-      const chatUsed = user.chat_messages_used || 0;
-      if (chatUsed >= chatLimit) {
-        return res.status(403).json({ error: 'Limite de messages chat atteinte ce mois. Passe à Ultimate pour des messages illimités !' });
-      }
-
-      // Incrémenter le compteur
-      await fetch(
-        'https://qyjqtjrqnlbgtxvnjvnk.supabase.co/rest/v1/users?email=eq.' + encodeURIComponent(email),
-        {
-          method: 'PATCH',
-          headers: {
-            'apikey': 'sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ',
-            'Authorization': 'Bearer sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ',
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ chat_messages_used: chatUsed + 1 })
-        }
-      );
     } catch(e) {
       console.log('Erreur Supabase chat:', e);
     }
@@ -68,16 +42,10 @@ export default async function handler(req, res) {
 
   const systemPrompt = `Tu es FicheAI, un assistant pédagogique expert et bienveillant. Tu aides les étudiants à réviser leurs cours de façon efficace.
 ${langInstruction}
-${courseContent ? '\n\nVoici le cours de l\'étudiant sur lequel tu dois travailler :\n---\n' + courseContent.substring(0, 6000) + '\n---' : ''}
+${courseContent ? '\n\nVoici le cours de l\'étudiant :\n---\n' + courseContent.substring(0, 6000) + '\n---' : ''}
 
-Tes capacités :
-- Générer des fiches de révision structurées avec émojis
-- Créer des quiz, flashcards, mind maps, chronologies
-- Expliquer des notions complexes simplement
-- Anticiper les questions d'examen probables
-- Donner des conseils de mémorisation
-
-Sois toujours clair, structuré, encourageant et pédagogique.`;
+Tu peux générer des fiches de révision, quiz, flashcards, mind maps, expliquer des notions, anticiper les questions d'examen.
+Sois toujours clair, structuré, encourageant et pédagogique. Utilise des émojis pour structurer tes réponses.`;
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
