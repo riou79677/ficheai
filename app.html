@@ -6,7 +6,6 @@
 <title>FicheAI — Générateur de fiches IA</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -611,7 +610,7 @@ document.getElementById('chat-input').addEventListener('input',function(){this.s
 document.getElementById('chat-input').addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChatMessage();}});
 
 // ═══════════════════════════════════════════
-// EXPORT PDF — rendu HTML propre
+// EXPORT PDF — via impression navigateur (s'adapte à la longueur)
 // ═══════════════════════════════════════════
 function escapePdf(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function boldify(t){return t.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');}
@@ -637,60 +636,34 @@ function exportToPDF(content,title,format){
   var plan=savedUser?(savedUser.plan||'starter'):'starter';
   if(plan==='starter'){showToast('⚠️ Export PDF disponible à partir du plan Pro !');return;}
   if(!content){showToast('⚠️ Rien à exporter.');return;}
-  showToast('📄 Génération du PDF...');
 
   var cleanTitle=title.replace(/[\u{1F4DA}\u{1F3AF}\u{1F4D6}\u26A1\u2753\u{1F517}\u2501\u25B8\u2726\u{1F4C4}\u2705\u{1F0CF}\u{1F9E0}\u{1F4AC}\u{1F4C5}]/gu,'').trim();
   var bodyHtml=formatContentForPDF(content);
 
-  // Conteneur hors-écran
-  var wrap=document.createElement('div');
-  wrap.style.cssText='position:fixed;left:-9999px;top:0;width:794px;background:#fff;';
-  wrap.innerHTML='<div id="pdf-inner" style="padding:48px 56px;font-family:Georgia,Times,serif;color:#1a1a2e;font-size:13px;line-height:1.7;">'+
-    '<div style="display:flex;align-items:center;justify-content:space-between;border-bottom:2.5px solid #6c5ce7;padding-bottom:12px;margin-bottom:20px;">'+
-      '<div style="display:flex;align-items:center;gap:10px;">'+
-        '<div style="width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#6c5ce7,#fd79a8);flex-shrink:0;"></div>'+
-        '<span style="font-family:Helvetica,Arial,sans-serif;font-size:18px;font-weight:800;color:#6c5ce7;letter-spacing:-0.5px;">FicheAI</span>'+
-      '</div>'+
-      '<span style="font-family:Helvetica,Arial,sans-serif;font-size:10px;color:#aaa;">ficheai.fr</span>'+
-    '</div>'+
-    '<h1 style="font-family:Helvetica,Arial,sans-serif;font-size:22px;font-weight:800;color:#1a1a2e;margin:0 0 6px;line-height:1.2;">'+escapePdf(cleanTitle)+'</h1>'+
-    '<span style="display:inline-block;background:#f0edff;color:#6c5ce7;font-family:Helvetica,Arial,sans-serif;font-size:10px;font-weight:700;padding:4px 12px;border-radius:100px;margin-bottom:20px;letter-spacing:0.5px;">'+(format||'FICHE').toUpperCase()+'</span>'+
-    '<div>'+bodyHtml+'</div>'+
-    '<div style="margin-top:32px;padding-top:12px;border-top:1px solid #eee;font-family:Helvetica,Arial,sans-serif;font-size:9px;color:#ccc;text-align:center;">FicheAI · Fait pour les étudiants 🎓</div>'+
-  '</div>'+
-  '<style>'+
-    '.pdf-section{font-family:Helvetica,Arial,sans-serif;font-size:14px;font-weight:700;color:#6c5ce7;margin:18px 0 8px;padding-left:10px;border-left:3px solid #fd79a8;}'+
-    '.pdf-p{font-size:13px;line-height:1.7;margin:0 0 8px;color:#222;}'+
+  var printWindow=window.open('','_blank');
+  printWindow.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+escapePdf(cleanTitle)+'</title><style>'+
+    '*{box-sizing:border-box;margin:0;padding:0}'+
+    'body{font-family:Georgia,Times,serif;color:#1a1a2e;font-size:13px;line-height:1.7;padding:48px 56px;max-width:800px;margin:0 auto;}'+
+    '.header{display:flex;align-items:center;justify-content:space-between;border-bottom:2.5px solid #6c5ce7;padding-bottom:12px;margin-bottom:20px;}'+
+    '.logo-box{display:flex;align-items:center;gap:10px;}'+
+    '.logo-square{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#6c5ce7,#fd79a8);}'+
+    '.logo-text{font-family:Helvetica,Arial,sans-serif;font-size:18px;font-weight:800;color:#6c5ce7;}'+
+    '.logo-url{font-family:Helvetica,Arial,sans-serif;font-size:10px;color:#aaa;}'+
+    'h1{font-family:Helvetica,Arial,sans-serif;font-size:22px;font-weight:800;color:#1a1a2e;margin:0 0 6px;line-height:1.2;}'+
+    '.format-badge{display:inline-block;background:#f0edff;color:#6c5ce7;font-family:Helvetica,Arial,sans-serif;font-size:10px;font-weight:700;padding:4px 12px;border-radius:100px;margin-bottom:20px;letter-spacing:0.5px;}'+
+    '.pdf-section{font-family:Helvetica,Arial,sans-serif;font-size:14px;font-weight:700;color:#6c5ce7;margin:18px 0 8px;padding-left:10px;border-left:3px solid #fd79a8;page-break-after:avoid;}'+
+    '.pdf-p{font-size:13px;line-height:1.7;margin:0 0 8px;color:#222;page-break-inside:avoid;}'+
     '.pdf-list{margin:0 0 10px;padding-left:0;list-style:none;}'+
-    '.pdf-list li{font-size:13px;line-height:1.65;margin-bottom:6px;padding-left:16px;position:relative;color:#222;}'+
+    '.pdf-list li{font-size:13px;line-height:1.65;margin-bottom:6px;padding-left:16px;position:relative;color:#222;page-break-inside:avoid;}'+
     '.pdf-list li::before{content:"●";color:#fd79a8;position:absolute;left:0;font-size:8px;top:5px;}'+
     '.pdf-sep{border-top:1px solid #e8e4f5;margin:14px 0;}'+
     'strong{color:#111;font-weight:700;}'+
-  '</style>';
-  document.body.appendChild(wrap);
-
-  var opt={
-    margin:0,
-    filename:'FicheAI_'+cleanTitle.replace(/[^a-zA-Z0-9]/g,'_').substring(0,40)+'.pdf',
-    image:{type:'jpeg',quality:0.95},
-    html2canvas:{scale:2,useCORS:true,logging:false,windowWidth:794},
-    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
-    pagebreak:{mode:'avoid-all'}
-  };
-
-  html2pdf().set(opt).from(wrap).save().then(function(){
-    document.body.removeChild(wrap);
-    showToast('✅ PDF téléchargé !');
-  }).catch(function(){
-    document.body.removeChild(wrap);
-    showToast('⚠️ Erreur génération PDF');
-  });
-}
-
-function exportMsgToPDF(btn){
-  var content=btn.closest('.msg').querySelector('.msg-content').innerText;
-  exportToPDF(content,currentFormatIcon+' '+currentFormatName,currentFormatName);
-}
-</script>
-</body>
-</html>
+    '.footer{margin-top:32px;padding-top:12px;border-top:1px solid #eee;font-family:Helvetica,Arial,sans-serif;font-size:9px;color:#ccc;text-align:center;}'+
+    '@media print{body{padding:0;}@page{margin:15mm 15mm 15mm 15mm;}}'+
+  '</style></head><body>'+
+    '<div class="header"><div class="logo-box"><div class="logo-square"></div><span class="logo-text">FicheAI</span></div><span class="logo-url">ficheai.fr</span></div>'+
+    '<h1>'+escapePdf(cleanTitle)+'</h1>'+
+    '<div class="format-badge">'+(format||'FICHE').toUpperCase()+'</div>'+
+    '<div>'+bodyHtml+'</div>'+
+    '<div class="footer">FicheAI · Fait pour les étudiants 🎓</div>'+
+  '</body></html>
