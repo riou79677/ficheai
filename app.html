@@ -460,11 +460,11 @@ function updateNavUpgradeBtn() {
   var plan = savedUser ? (savedUser.plan || 'starter') : 'starter';
   if (plan === 'starter') {
     btn.textContent = 'Passer à Pro →';
-    btn.href =  + PRO_M + ;
+    btn.href = 'https://buy.stripe.com/00wfZibWR8Zl8o7eUK43S05';
     btn.style.display = 'inline-block';
   } else if (plan === 'pro') {
     btn.textContent = 'Passer à Ultimate →';
-    btn.href =  + ULT_M + ;
+    btn.href = 'https://buy.stripe.com/aFadRaaSN2AX33NeUK43S07';
     btn.style.display = 'inline-block';
     btn.style.background = 'linear-gradient(135deg,#fdcb6e,#fd79a8)';
   } else {
