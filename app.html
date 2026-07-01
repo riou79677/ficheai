@@ -227,7 +227,7 @@ textarea::placeholder{color:var(--text3)}
       </div>
     </div>
     <a href="/login.html" class="nav-login" id="nav-login-link">Se connecter</a>
-    <a href="https://buy.stripe.com/dRmcN68KF5N9bAj9Aq43S00" target="_blank" class="nav-upgrade">Passer à Pro →</a>
+    <a href="#" id="nav-upgrade-btn" target="_blank" class="nav-upgrade" style="display:none">Passer à Pro →</a>
   </div>
 </nav>
 
@@ -443,6 +443,7 @@ function simulatePlan(plan){
   document.getElementById('tok-nav').textContent=limits[plan]===999999?'∞':limits[plan];
   tokensLeft=limits[plan];
   showToast('✅ Plan simulé : '+plan);
+  updateNavUpgradeBtn();
   if(currentMode==='chat')renderChatMode();
 }
 function resetGenerations(){
@@ -452,6 +453,30 @@ function resetGenerations(){
 }
 
 try{savedUser=JSON.parse(localStorage.getItem('ficheai_user'));}catch(e){}
+// Bouton nav adaptatif selon plan
+function updateNavUpgradeBtn() {
+  var btn = document.getElementById('nav-upgrade-btn');
+  if (!btn) return;
+  var plan = savedUser ? (savedUser.plan || 'starter') : 'starter';
+  if (plan === 'starter') {
+    btn.textContent = 'Passer à Pro →';
+    btn.href =  + PRO_M + ;
+    btn.style.display = 'inline-block';
+  } else if (plan === 'pro') {
+    btn.textContent = 'Passer à Ultimate →';
+    btn.href =  + ULT_M + ;
+    btn.style.display = 'inline-block';
+    btn.style.background = 'linear-gradient(135deg,#fdcb6e,#fd79a8)';
+  } else {
+    btn.textContent = '👑 Ultimate';
+    btn.href = '#';
+    btn.style.display = 'inline-block';
+    btn.style.background = 'linear-gradient(135deg,#fdcb6e,#e17055)';
+    btn.style.cursor = 'default';
+    btn.style.pointerEvents = 'none';
+  }
+}
+
 if(savedUser&&savedUser.email){
   currentUserEmail=savedUser.email;
   document.getElementById('user-display').textContent='👤 '+savedUser.email.split('@')[0];
@@ -463,6 +488,7 @@ if(savedUser&&savedUser.email){
   document.getElementById('stats-card').style.display='block';
   document.getElementById('stat-gen').textContent=tokensLeft===999999?'∞':tokensLeft;
   loadFichesCount();
+  updateNavUpgradeBtn();
 }
 
 if(/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)){
@@ -495,7 +521,7 @@ function renderChatMode(){
   var plan=savedUser?(savedUser.plan||'starter'):'starter';
   var chatArea=document.getElementById('chat-area');
   if(plan==='starter'){
-    chatArea.innerHTML='<div class="plan-lock"><div class="plan-lock-icon">💬</div><h3>Chat IA — Plan Pro requis</h3><p>Discute librement avec l\'IA sur ton cours, demande des explications personnalisées et génère du contenu sur mesure.</p><div class="plan-lock-features"><span class="plan-lock-feat">💬 20 messages/mois</span><span class="plan-lock-feat">🧠 Contexte de cours</span><span class="plan-lock-feat">💾 Sauvegarde des réponses</span><span class="plan-lock-feat">🎯 Questions d\'exam</span></div><a href="https://buy.stripe.com/dRmcN68KF5N9bAj9Aq43S00" target="_blank">Passer à Pro — 4,99€/mois</a></div>';
+    chatArea.innerHTML='<div class="plan-lock"><div class="plan-lock-icon">💬</div><h3>Chat IA — Plan Pro requis</h3><p>Discute librement avec l\'IA sur ton cours, demande des explications personnalisées et génère du contenu sur mesure.</p><div class="plan-lock-features"><span class="plan-lock-feat">💬 20 messages/mois</span><span class="plan-lock-feat">🧠 Contexte de cours</span><span class="plan-lock-feat">💾 Sauvegarde des réponses</span><span class="plan-lock-feat">🎯 Questions d\'exam</span></div><a href="https://buy.stripe.com/00wfZibWR8Zl8o7eUK43S05" target="_blank">Passer à Pro — 4,99€/mois</a></div>';
   }
 }
 
