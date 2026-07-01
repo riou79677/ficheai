@@ -24,7 +24,6 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   background:radial-gradient(ellipse at 15% 20%,rgba(108,92,231,0.07) 0%,transparent 55%),
              radial-gradient(ellipse at 85% 80%,rgba(253,121,168,0.04) 0%,transparent 55%)}
-
 nav{position:sticky;top:0;z-index:100;background:rgba(7,7,15,0.85);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 2rem}
 .logo{font-family:var(--font-h);font-size:1.3rem;font-weight:800;display:flex;align-items:center;gap:10px;text-decoration:none;background:linear-gradient(135deg,var(--purple2),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .logo-icon{width:32px;height:32px;border-radius:9px;flex-shrink:0;background:linear-gradient(135deg,var(--purple),var(--pink));display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(108,92,231,0.3);transition:transform 0.2s}
@@ -41,13 +40,9 @@ nav{position:sticky;top:0;z-index:100;background:rgba(7,7,15,0.85);backdrop-filt
 .user-menu hr{border:none;border-top:1px solid var(--border);margin:0.3rem 0}
 .nav-login{background:transparent;border:1px solid var(--border2);color:var(--text);padding:0.38rem 1rem;border-radius:100px;font-size:0.82rem;font-weight:600;text-decoration:none;transition:all 0.2s}
 .nav-login:hover{border-color:var(--purple2);color:var(--purple2)}
-.nav-upgrade{background:linear-gradient(135deg,var(--purple),var(--pink));color:white;padding:0.38rem 1rem;border-radius:100px;font-size:0.82rem;font-weight:700;text-decoration:none;transition:all 0.2s;box-shadow:0 2px 12px rgba(108,92,231,0.3)}
-.nav-upgrade:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(108,92,231,0.45)}
-
-/* LAYOUT */
+.nav-upgrade{color:white;padding:0.38rem 1rem;border-radius:100px;font-size:0.82rem;font-weight:700;text-decoration:none;transition:all 0.2s}
+.nav-upgrade:hover{transform:translateY(-1px)}
 .app-layout{flex:1;display:flex;max-width:1100px;margin:0 auto;width:100%;padding:1.5rem;gap:1.5rem;position:relative;z-index:1}
-
-/* SIDEBAR */
 .sidebar{width:260px;flex-shrink:0;display:flex;flex-direction:column;gap:1rem}
 .sidebar-card{background:var(--bg2);border:1px solid var(--border);border-radius:18px;padding:1.2rem}
 .sidebar-label{font-size:0.68rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:0.8rem}
@@ -75,8 +70,6 @@ nav{position:sticky;top:0;z-index:100;background:rgba(7,7,15,0.85);backdrop-filt
 .stat-mini{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:0.7rem;text-align:center}
 .stat-mini-val{font-family:var(--font-h);font-size:1.2rem;font-weight:800;background:linear-gradient(135deg,var(--purple2),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .stat-mini-label{font-size:0.65rem;color:var(--text3);margin-top:2px}
-
-/* MAIN */
 .main-area{flex:1;display:flex;flex-direction:column;gap:1rem;min-width:0}
 .express-area{display:flex;flex-direction:column;gap:1rem}
 .course-zone{background:var(--bg2);border:1.5px solid var(--border2);border-radius:16px;overflow:hidden;transition:border 0.2s,box-shadow 0.2s}
@@ -113,8 +106,6 @@ textarea::placeholder{color:var(--text3)}
 .hist-item:hover{border-color:var(--purple2);transform:translateX(4px)}
 .hist-fmt{font-size:1rem;flex-shrink:0}
 .hist-preview{font-size:0.78rem;color:var(--text3);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-
-/* CHAT */
 .chat-area{display:none;flex-direction:column;gap:0.8rem}
 .chat-context-bar{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:0.8rem 1rem;display:flex;align-items:center;gap:10px}
 .chat-context-text{font-size:0.82rem;color:var(--text3);flex:1}
@@ -129,8 +120,6 @@ textarea::placeholder{color:var(--text3)}
 .chat-suggestions{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
 .chat-sug{background:var(--bg3);border:1px solid var(--border2);border-radius:100px;padding:0.4rem 0.9rem;font-size:0.76rem;color:var(--text2);cursor:pointer;font-family:var(--font-b);transition:all 0.18s}
 .chat-sug:hover{border-color:var(--purple2);color:var(--purple2)}
-
-/* MESSAGES REDESIGN */
 .msg{display:flex;gap:10px;align-items:flex-start;animation:fadeUp 0.3s var(--ease)}
 .msg.user{flex-direction:row-reverse}
 .msg-avatar{width:30px;height:30px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;margin-top:2px}
@@ -141,40 +130,27 @@ textarea::placeholder{color:var(--text3)}
 .msg-content{border-radius:16px;padding:0.9rem 1.1rem;font-size:0.86rem;line-height:1.75;word-break:break-word}
 .msg.ai .msg-content{background:var(--bg3);border:1px solid var(--border);color:var(--text2);border-radius:4px 16px 16px 16px}
 .msg.user .msg-content{background:linear-gradient(135deg,rgba(108,92,231,0.25),rgba(253,121,168,0.15));border:1px solid rgba(108,92,231,0.3);color:var(--text);border-radius:16px 4px 16px 16px}
-
-/* Rendu markdown basique dans les messages IA */
 .msg-content strong{color:var(--text);font-weight:700}
-.msg-content em{color:var(--purple2);font-style:normal}
-.msg-content code{background:rgba(108,92,231,0.15);border:1px solid rgba(108,92,231,0.2);border-radius:4px;padding:0.1rem 0.4rem;font-family:monospace;font-size:0.82rem;color:var(--purple2)}
-.msg-content .msg-line{display:block;margin-bottom:0.3rem}
-.msg-content .msg-line:last-child{margin-bottom:0}
-.msg-content .msg-separator{border:none;border-top:1px solid var(--border);margin:0.6rem 0}
-.msg-content .msg-bold-line{display:block;color:var(--text);font-weight:700;margin:0.5rem 0 0.2rem}
-.msg-content .msg-emoji-line{display:block;margin:0.4rem 0}
-
 .msg-actions-row{display:flex;gap:5px}
 .msg-act{background:transparent;border:1px solid var(--border);border-radius:7px;padding:0.22rem 0.55rem;font-size:0.68rem;color:var(--text3);cursor:pointer;font-family:var(--font-b);transition:all 0.18s}
 .msg-act:hover{border-color:var(--purple2);color:var(--purple2)}
 .msg-time{font-size:0.65rem;color:var(--text3)}
-
 .typing-bubble{background:var(--bg3);border:1px solid var(--border);border-radius:4px 16px 16px 16px;padding:0.85rem 1rem;display:flex;gap:4px;align-items:center}
 .typing-dot{width:6px;height:6px;background:var(--text3);border-radius:50%;animation:typeBounce 1.2s infinite}
 .typing-dot:nth-child(2){animation-delay:0.2s}
 .typing-dot:nth-child(3){animation-delay:0.4s}
 @keyframes typeBounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-7px)}}
-
 .chat-input-zone{background:var(--bg2);border:1px solid var(--border);border-top:none;border-radius:0 0 18px 18px;padding:0.8rem}
 .chat-input-row{display:flex;gap:8px;align-items:flex-end}
 .chat-input{flex:1;background:var(--bg3);border:1.5px solid var(--border2);border-radius:12px;padding:0.72rem 1rem;font-size:0.88rem;color:var(--text);font-family:var(--font-b);outline:none;resize:none;max-height:120px;min-height:44px;line-height:1.5;transition:border 0.2s}
 .chat-input:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(108,92,231,0.1)}
 .chat-input::placeholder{color:var(--text3)}
 .chat-send{width:44px;height:44px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--purple),var(--pink));color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s;box-shadow:0 2px 12px rgba(108,92,231,0.3)}
-.chat-send:hover{transform:scale(1.08);box-shadow:0 4px 20px rgba(108,92,231,0.45)}
+.chat-send:hover{transform:scale(1.08)}
 .chat-send:disabled{opacity:0.4;cursor:not-allowed;transform:none}
 .chat-footer{display:flex;align-items:center;justify-content:space-between;margin-top:0.5rem}
 .chat-count{font-size:0.7rem;color:var(--text3)}
 .chat-hint{font-size:0.7rem;color:var(--text3)}
-
 .plan-lock{background:linear-gradient(135deg,rgba(108,92,231,0.08),rgba(253,121,168,0.05));border:1px solid rgba(108,92,231,0.2);border-radius:18px;padding:2.5rem;text-align:center}
 .plan-lock-icon{font-size:2.5rem;margin-bottom:1rem}
 .plan-lock h3{font-family:var(--font-h);font-size:1.2rem;margin-bottom:0.6rem}
@@ -182,37 +158,17 @@ textarea::placeholder{color:var(--text3)}
 .plan-lock-features{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:1.5rem}
 .plan-lock-feat{background:rgba(108,92,231,0.1);border:1px solid rgba(108,92,231,0.2);border-radius:100px;padding:0.3rem 0.8rem;font-size:0.76rem;color:var(--purple2)}
 .plan-lock a{background:linear-gradient(135deg,var(--purple),var(--pink));color:white;padding:0.75rem 2rem;border-radius:100px;font-size:0.9rem;font-weight:700;text-decoration:none;display:inline-block;transition:all 0.2s;box-shadow:0 4px 20px rgba(108,92,231,0.35)}
-.plan-lock a:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(108,92,231,0.5)}
-
+.plan-lock a:hover{transform:translateY(-2px)}
 .dev-toggle{position:fixed;bottom:1rem;left:1rem;z-index:9998;background:#0d0d1a;border:1px solid rgba(108,92,231,0.3);border-radius:100px;padding:0.4rem 0.9rem;font-size:0.72rem;font-weight:700;color:#a29bfe;cursor:pointer;display:none;font-family:DM Sans,sans-serif}
-
 @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-
-@media(max-width:900px){
-  .app-layout{flex-direction:column;padding:1rem}
-  .sidebar{width:100%}
-  .format-list{display:grid;grid-template-columns:repeat(2,1fr)}
-  .fmt-desc{display:none}
-  .tips-row{grid-template-columns:repeat(2,1fr)}
-}
-@media(max-width:480px){
-  nav{padding:0 1rem}
-  .tips-row{grid-template-columns:1fr}
-  .format-list{grid-template-columns:repeat(2,1fr)}
-  .chat-messages{min-height:300px;max-height:400px}
-}
+@media(max-width:900px){.app-layout{flex-direction:column;padding:1rem}.sidebar{width:100%}.format-list{display:grid;grid-template-columns:repeat(2,1fr)}.fmt-desc{display:none}.tips-row{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){nav{padding:0 1rem}.tips-row{grid-template-columns:1fr}.chat-messages{min-height:300px;max-height:400px}}
 </style>
 </head>
 <body>
-
 <nav>
   <a href="/" class="logo">
-    <div class="logo-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
-      </svg>
-    </div>
+    <div class="logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
     FicheAI
   </a>
   <div class="nav-right">
@@ -227,7 +183,7 @@ textarea::placeholder{color:var(--text3)}
       </div>
     </div>
     <a href="/login.html" class="nav-login" id="nav-login-link">Se connecter</a>
-    <a href="#" id="nav-upgrade-btn" target="_blank" class="nav-upgrade" style="display:none">Passer à Pro →</a>
+    <a href="#" id="nav-upgrade-btn" class="nav-upgrade" style="display:none"></a>
   </div>
 </nav>
 
@@ -240,44 +196,21 @@ textarea::placeholder{color:var(--text3)}
       </div>
       <div class="sidebar-label">Format de sortie</div>
       <div class="format-list">
-        <div class="fmt active" data-fmt="fiche" data-icon="📄" data-name="Fiche de révision" onclick="selectFormat(this)">
-          <span class="fmt-icon">📄</span>
-          <div class="fmt-info"><span class="fmt-name">Fiche de révision</span><span class="fmt-desc">Structurée & complète</span></div>
-        </div>
-        <div class="fmt" data-fmt="quiz" data-icon="✅" data-name="Quiz QCM" onclick="selectFormat(this)">
-          <span class="fmt-icon">✅</span>
-          <div class="fmt-info"><span class="fmt-name">Quiz QCM</span><span class="fmt-desc">6 questions & corrections</span></div>
-        </div>
-        <div class="fmt" data-fmt="flash" data-icon="🃏" data-name="Flashcards" onclick="selectFormat(this)">
-          <span class="fmt-icon">🃏</span>
-          <div class="fmt-info"><span class="fmt-name">Flashcards</span><span class="fmt-desc">10 cartes recto/verso</span></div>
-        </div>
-        <div class="fmt" data-fmt="mindmap" data-icon="🧠" data-name="Mind Map" onclick="selectFormat(this)">
-          <span class="fmt-icon">🧠</span>
-          <div class="fmt-info"><span class="fmt-name">Mind Map</span><span class="fmt-desc">Carte mentale visuelle</span></div>
-        </div>
-        <div class="fmt" data-fmt="questions" data-icon="💬" data-name="Questions ouvertes" onclick="selectFormat(this)">
-          <span class="fmt-icon">💬</span>
-          <div class="fmt-info"><span class="fmt-name">Questions ouvertes</span><span class="fmt-desc">Pour préparer les oraux</span></div>
-        </div>
-        <div class="fmt" data-fmt="chrono" data-icon="📅" data-name="Chronologie" onclick="selectFormat(this)">
-          <span class="fmt-icon">📅</span>
-          <div class="fmt-info"><span class="fmt-name">Chronologie</span><span class="fmt-desc">Plan & frise temporelle</span></div>
-        </div>
+        <div class="fmt active" data-fmt="fiche" data-icon="📄" data-name="Fiche de révision" onclick="selectFormat(this)"><span class="fmt-icon">📄</span><div class="fmt-info"><span class="fmt-name">Fiche de révision</span><span class="fmt-desc">Structurée & complète</span></div></div>
+        <div class="fmt" data-fmt="quiz" data-icon="✅" data-name="Quiz QCM" onclick="selectFormat(this)"><span class="fmt-icon">✅</span><div class="fmt-info"><span class="fmt-name">Quiz QCM</span><span class="fmt-desc">6 questions & corrections</span></div></div>
+        <div class="fmt" data-fmt="flash" data-icon="🃏" data-name="Flashcards" onclick="selectFormat(this)"><span class="fmt-icon">🃏</span><div class="fmt-info"><span class="fmt-name">Flashcards</span><span class="fmt-desc">10 cartes recto/verso</span></div></div>
+        <div class="fmt" data-fmt="mindmap" data-icon="🧠" data-name="Mind Map" onclick="selectFormat(this)"><span class="fmt-icon">🧠</span><div class="fmt-info"><span class="fmt-name">Mind Map</span><span class="fmt-desc">Carte mentale visuelle</span></div></div>
+        <div class="fmt" data-fmt="questions" data-icon="💬" data-name="Questions ouvertes" onclick="selectFormat(this)"><span class="fmt-icon">💬</span><div class="fmt-info"><span class="fmt-name">Questions ouvertes</span><span class="fmt-desc">Pour préparer les oraux</span></div></div>
+        <div class="fmt" data-fmt="chrono" data-icon="📅" data-name="Chronologie" onclick="selectFormat(this)"><span class="fmt-icon">📅</span><div class="fmt-info"><span class="fmt-name">Chronologie</span><span class="fmt-desc">Plan & frise temporelle</span></div></div>
       </div>
     </div>
-
     <div class="sidebar-card">
       <div class="sidebar-label">Importer ton cours</div>
       <input type="file" id="file-input" accept=".pdf,.txt" style="display:none">
       <input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none">
       <div class="import-btns">
-        <button class="import-btn-item" onclick="document.getElementById('file-input').click()">
-          <span class="icon">📎</span> PDF ou fichier TXT
-        </button>
-        <button class="import-btn-item" id="camera-btn" style="display:none" onclick="document.getElementById('camera-input').click()">
-          <span class="icon">📷</span> Prendre en photo
-        </button>
+        <button class="import-btn-item" onclick="document.getElementById('file-input').click()"><span class="icon">📎</span> PDF ou fichier TXT</button>
+        <button class="import-btn-item" id="camera-btn" style="display:none" onclick="document.getElementById('camera-input').click()"><span class="icon">📷</span> Prendre en photo</button>
       </div>
       <div class="file-badge" id="file-badge"></div>
       <div class="sidebar-label" style="margin-top:1rem">Langue de sortie</div>
@@ -289,24 +222,16 @@ textarea::placeholder{color:var(--text3)}
         <option value="de">🇩🇪 Deutsch</option>
       </select>
     </div>
-
     <div class="sidebar-card" id="stats-card" style="display:none">
       <div class="sidebar-label">Ton activité</div>
       <div class="stats-mini">
-        <div class="stat-mini">
-          <div class="stat-mini-val" id="stat-gen">–</div>
-          <div class="stat-mini-label">Générations</div>
-        </div>
-        <div class="stat-mini">
-          <div class="stat-mini-val" id="stat-fiches">–</div>
-          <div class="stat-mini-label">Fiches sauvées</div>
-        </div>
+        <div class="stat-mini"><div class="stat-mini-val" id="stat-gen">–</div><div class="stat-mini-label">Générations</div></div>
+        <div class="stat-mini"><div class="stat-mini-val" id="stat-fiches">–</div><div class="stat-mini-label">Fiches sauvées</div></div>
       </div>
     </div>
   </div>
 
   <div class="main-area">
-    <!-- EXPRESS -->
     <div class="express-area" id="express-area">
       <div class="course-zone">
         <div class="course-zone-header">
@@ -316,21 +241,9 @@ textarea::placeholder{color:var(--text3)}
         <textarea id="course-input" placeholder="Colle ici le contenu de ton cours… FicheAI va l'analyser et générer ton outil de révision parfait en quelques secondes."></textarea>
       </div>
       <div class="tips-row">
-        <div class="tip-card" onclick="genererDirectement()">
-          <div class="tip-icon">⚡</div>
-          <div class="tip-title">Générer maintenant</div>
-          <div class="tip-desc">Lance la génération avec le format choisi</div>
-        </div>
-        <div class="tip-card" onclick="switchMode('chat')">
-          <div class="tip-icon">💬</div>
-          <div class="tip-title">Mode Chat IA</div>
-          <div class="tip-desc">Discute librement sur ton cours</div>
-        </div>
-        <div class="tip-card" onclick="document.getElementById('file-input').click()">
-          <div class="tip-icon">📎</div>
-          <div class="tip-title">Importer un fichier</div>
-          <div class="tip-desc">PDF ou TXT depuis tes documents</div>
-        </div>
+        <div class="tip-card" onclick="genererDirectement()"><div class="tip-icon">⚡</div><div class="tip-title">Générer maintenant</div><div class="tip-desc">Lance la génération avec le format choisi</div></div>
+        <div class="tip-card" onclick="switchMode('chat')"><div class="tip-icon">💬</div><div class="tip-title">Mode Chat IA</div><div class="tip-desc">Discute librement sur ton cours</div></div>
+        <div class="tip-card" onclick="document.getElementById('file-input').click()"><div class="tip-icon">📎</div><div class="tip-title">Importer un fichier</div><div class="tip-desc">PDF ou TXT depuis tes documents</div></div>
       </div>
       <div id="error-box" class="error-box" style="display:none"></div>
       <button id="gen-btn" class="gen-btn">
@@ -347,10 +260,7 @@ textarea::placeholder{color:var(--text3)}
             <button id="reset-btn">↩ Nouveau</button>
           </div>
         </div>
-        <div id="result-spinner" class="result-spinner">
-          <div class="spinner"></div>
-          <p>L'IA analyse ton cours…</p>
-        </div>
+        <div id="result-spinner" class="result-spinner"><div class="spinner"></div><p>L'IA analyse ton cours…</p></div>
         <pre id="result-content" class="result-content" style="display:none"></pre>
       </div>
       <div class="history-section" id="history-section">
@@ -359,7 +269,6 @@ textarea::placeholder{color:var(--text3)}
       </div>
     </div>
 
-    <!-- CHAT -->
     <div class="chat-area" id="chat-area">
       <div class="chat-context-bar">
         <span style="font-size:1rem">📄</span>
@@ -375,7 +284,7 @@ textarea::placeholder{color:var(--text3)}
             <div class="chat-sug" onclick="sendSuggestion('Génère une fiche de révision complète sur mon cours')">📄 Faire une fiche</div>
             <div class="chat-sug" onclick="sendSuggestion('Crée un quiz de 5 questions sur mon cours')">✅ Créer un quiz</div>
             <div class="chat-sug" onclick="sendSuggestion('Explique-moi les points les plus importants')">💡 Points clés</div>
-            <div class="chat-sug" onclick="sendSuggestion('Quelles questions risquent de tomber à l\'examen ?')">🎯 Questions d\'exam</div>
+            <div class="chat-sug" onclick="sendSuggestion('Quelles questions risquent de tomber à l\'examen ?')">🎯 Questions d'exam</div>
             <div class="chat-sug" onclick="sendSuggestion('Fais-moi 10 flashcards sur ce cours')">🃏 Flashcards</div>
           </div>
         </div>
@@ -403,7 +312,7 @@ textarea::placeholder{color:var(--text3)}
     <div style="display:flex;flex-direction:column;gap:0.4rem;">
       <button onclick="simulatePlan('starter')" style="background:#181830;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:0.4rem 0.8rem;color:#9898b8;font-size:0.78rem;cursor:pointer;text-align:left;font-family:DM Sans,sans-serif;">👤 Simuler Starter (5)</button>
       <button onclick="simulatePlan('pro')" style="background:#181830;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:0.4rem 0.8rem;color:#9898b8;font-size:0.78rem;cursor:pointer;text-align:left;font-family:DM Sans,sans-serif;">⚡ Simuler Pro (50)</button>
-      <button onclick="simulatePlan('ultimate')" style="background:#181830;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:0.4rem 0.8rem;color:#9898b8;font-size:0.78rem;cursor:pointer;text-align:left;font-family:DM Sans,sans-serif;">👑 Simuler Ultimate (∞)</button>
+      <button onclick="simulatePlan('ultimate')" style="background:#181830;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:0.4rem 0.8rem;color:#9898b8;font-size:0.78rem;cursor:pointer;text-align:left;font-family:DM Sans,sans-serif;">👑 Simuler Ultimate</button>
       <button onclick="resetGenerations()" style="background:#181830;border:1px solid rgba(255,165,0,0.25);border-radius:8px;padding:0.4rem 0.8rem;color:#fb923c;font-size:0.78rem;cursor:pointer;text-align:left;font-family:DM Sans,sans-serif;">🔢 Générations à 0</button>
       <button onclick="simulatePlan('reset')" style="background:#181830;border:1px solid rgba(108,92,231,0.25);border-radius:8px;padding:0.4rem 0.8rem;color:#a29bfe;font-size:0.78rem;cursor:pointer;text-align:left;font-family:DM Sans,sans-serif;">🔄 Réinitialiser</button>
     </div>
@@ -414,6 +323,8 @@ textarea::placeholder{color:var(--text3)}
 var SUPABASE_URL='https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
 var SUPABASE_KEY='sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ';
 var DEV_EMAIL='ilanmoh228@gmail.com';
+var PRO_M='https://buy.stripe.com/00wfZibWR8Zl8o7eUK43S05';
+var ULT_M='https://buy.stripe.com/aFadRaaSN2AX33NeUK43S07';
 var currentFormat='fiche',currentFormatName='Fiche de révision',currentFormatIcon='📄';
 var tokensLeft=5,lastResult='',sessionHistory=[],currentUserEmail=null,savedUser=null;
 var devPanelOpen=false,currentMode='express';
@@ -433,6 +344,7 @@ document.addEventListener('click',function(e){
 });
 
 function toggleDevPanel(){devPanelOpen=!devPanelOpen;document.getElementById('dev-panel').style.display=devPanelOpen?'block':'none';document.getElementById('dev-toggle').textContent=devPanelOpen?'✕ Dev':'🛠️ Dev';}
+
 function simulatePlan(plan){
   if(!savedUser)return;
   if(plan==='reset'){window.location.reload();return;}
@@ -446,36 +358,38 @@ function simulatePlan(plan){
   updateNavUpgradeBtn();
   if(currentMode==='chat')renderChatMode();
 }
+
 function resetGenerations(){
   if(!savedUser)return;tokensLeft=0;savedUser.remaining=0;
   localStorage.setItem('ficheai_user',JSON.stringify(savedUser));
   document.getElementById('tok-nav').textContent='0';showToast('🔢 Générations à 0 !');
 }
 
-try{savedUser=JSON.parse(localStorage.getItem('ficheai_user'));}catch(e){}
-// Bouton nav adaptatif selon plan
-function updateNavUpgradeBtn() {
-  var btn = document.getElementById('nav-upgrade-btn');
-  if (!btn) return;
-  var plan = savedUser ? (savedUser.plan || 'starter') : 'starter';
-  if (plan === 'starter') {
-    btn.textContent = 'Passer à Pro →';
-    btn.href = 'https://buy.stripe.com/00wfZibWR8Zl8o7eUK43S05';
-    btn.style.display = 'inline-block';
-  } else if (plan === 'pro') {
-    btn.textContent = 'Passer à Ultimate →';
-    btn.href = 'https://buy.stripe.com/aFadRaaSN2AX33NeUK43S07';
-    btn.style.display = 'inline-block';
-    btn.style.background = 'linear-gradient(135deg,#fdcb6e,#fd79a8)';
-  } else {
-    btn.textContent = '👑 Ultimate';
-    btn.href = '#';
-    btn.style.display = 'inline-block';
-    btn.style.background = 'linear-gradient(135deg,#fdcb6e,#e17055)';
-    btn.style.cursor = 'default';
-    btn.style.pointerEvents = 'none';
+function updateNavUpgradeBtn(){
+  var btn=document.getElementById('nav-upgrade-btn');
+  if(!btn)return;
+  var plan=savedUser?(savedUser.plan||'starter'):'starter';
+  btn.removeAttribute('style');
+  btn.className='nav-upgrade';
+  if(plan==='starter'){
+    btn.textContent='Passer à Pro →';
+    btn.href=PRO_M;
+    btn.target='_blank';
+    btn.style.cssText='background:linear-gradient(135deg,#6c5ce7,#fd79a8);box-shadow:0 2px 12px rgba(108,92,231,0.3);display:inline-block;';
+  }else if(plan==='pro'){
+    btn.textContent='✨ Passer à Ultimate →';
+    btn.href=ULT_M;
+    btn.target='_blank';
+    btn.style.cssText='background:linear-gradient(135deg,#f6d365,#fda085);box-shadow:0 2px 12px rgba(253,163,133,0.4);display:inline-block;color:white;';
+  }else{
+    btn.textContent='👑 Ultimate';
+    btn.href='#';
+    btn.target='_self';
+    btn.style.cssText='background:linear-gradient(135deg,#fdcb6e,#e17055);box-shadow:0 2px 12px rgba(225,112,85,0.35);display:inline-block;cursor:default;pointer-events:none;opacity:0.85;';
   }
 }
+
+try{savedUser=JSON.parse(localStorage.getItem('ficheai_user'));}catch(e){}
 
 if(savedUser&&savedUser.email){
   currentUserEmail=savedUser.email;
@@ -488,8 +402,8 @@ if(savedUser&&savedUser.email){
   document.getElementById('stats-card').style.display='block';
   document.getElementById('stat-gen').textContent=tokensLeft===999999?'∞':tokensLeft;
   loadFichesCount();
-  updateNavUpgradeBtn();
 }
+updateNavUpgradeBtn();
 
 if(/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)){
   document.getElementById('camera-btn').style.display='flex';
@@ -521,7 +435,7 @@ function renderChatMode(){
   var plan=savedUser?(savedUser.plan||'starter'):'starter';
   var chatArea=document.getElementById('chat-area');
   if(plan==='starter'){
-    chatArea.innerHTML='<div class="plan-lock"><div class="plan-lock-icon">💬</div><h3>Chat IA — Plan Pro requis</h3><p>Discute librement avec l\'IA sur ton cours, demande des explications personnalisées et génère du contenu sur mesure.</p><div class="plan-lock-features"><span class="plan-lock-feat">💬 20 messages/mois</span><span class="plan-lock-feat">🧠 Contexte de cours</span><span class="plan-lock-feat">💾 Sauvegarde des réponses</span><span class="plan-lock-feat">🎯 Questions d\'exam</span></div><a href="https://buy.stripe.com/00wfZibWR8Zl8o7eUK43S05" target="_blank">Passer à Pro — 4,99€/mois</a></div>';
+    chatArea.innerHTML='<div class="plan-lock"><div class="plan-lock-icon">💬</div><h3>Chat IA — Plan Pro requis</h3><p>Discute librement avec l\'IA sur ton cours, demande des explications personnalisées et génère du contenu sur mesure.</p><div class="plan-lock-features"><span class="plan-lock-feat">💬 20 messages/mois</span><span class="plan-lock-feat">🧠 Contexte de cours</span><span class="plan-lock-feat">💾 Sauvegarde des réponses</span><span class="plan-lock-feat">🎯 Questions d\'exam</span></div><a href="'+PRO_M+'" target="_blank">Passer à Pro — 7,99€/mois</a></div>';
   }
 }
 
@@ -531,20 +445,14 @@ function selectFormat(el){
   currentFormat=el.dataset.fmt;currentFormatName=el.dataset.name;currentFormatIcon=el.dataset.icon;
 }
 
-function genererDirectement(){
-  document.getElementById('gen-btn').click();
-}
+function genererDirectement(){document.getElementById('gen-btn').click();}
 
 function handleFileLoad(file){
   var badge=document.getElementById('file-badge');badge.style.display='block';
   if(file.type==='text/plain'){
     var reader=new FileReader();
-    reader.onload=function(ev){
-      courseContent=ev.target.result;
-      document.getElementById('course-input').value=courseContent;
-      document.getElementById('char-count').textContent=courseContent.length+' caractères';
-      badge.textContent='✅ '+file.name;updateChatContext(file.name);
-    };reader.readAsText(file);
+    reader.onload=function(ev){courseContent=ev.target.result;document.getElementById('course-input').value=courseContent;document.getElementById('char-count').textContent=courseContent.length+' caractères';badge.textContent='✅ '+file.name;updateChatContext(file.name);};
+    reader.readAsText(file);
   }else if(file.type==='application/pdf'){
     badge.textContent='⏳ Lecture PDF...';
     var reader=new FileReader();
@@ -558,8 +466,7 @@ function handleFileLoad(file){
         var maxPages=Math.min(pdf.numPages,pageLimit);
         var text='';
         for(var i=1;i<=maxPages;i++){var page=await pdf.getPage(i);var content=await page.getTextContent();text+=content.items.map(function(item){return item.str;}).join(' ')+'\n';}
-        courseContent=text;document.getElementById('course-input').value=text;
-        document.getElementById('char-count').textContent=text.length+' caractères';
+        courseContent=text;document.getElementById('course-input').value=text;document.getElementById('char-count').textContent=text.length+' caractères';
         badge.textContent='✅ '+file.name+' ('+maxPages+'/'+pdf.numPages+' p.)';updateChatContext(file.name);
       }catch(err){badge.textContent='⚠️ Erreur lecture PDF';}
     };reader.readAsArrayBuffer(file);
@@ -572,11 +479,7 @@ function handleFileLoad(file){
 document.getElementById('file-input').addEventListener('change',function(e){if(e.target.files[0])handleFileLoad(e.target.files[0]);});
 document.getElementById('camera-input').addEventListener('change',function(e){if(e.target.files[0])handleFileLoad(e.target.files[0]);});
 document.getElementById('course-input').addEventListener('input',function(){document.getElementById('char-count').textContent=this.value.length+' caractères';courseContent=this.value;});
-
-function updateChatContext(filename){
-  var el=document.getElementById('chat-context-text');
-  if(el)el.innerHTML='Cours chargé : <span>'+filename+'</span>';
-}
+function updateChatContext(filename){var el=document.getElementById('chat-context-text');if(el)el.innerHTML='Cours chargé : <span>'+filename+'</span>';}
 
 document.getElementById('gen-btn').addEventListener('click',async function(){
   var input=document.getElementById('course-input').value.trim();
@@ -585,9 +488,7 @@ document.getElementById('gen-btn').addEventListener('click',async function(){
   if(input.length<30){errBox.textContent='⚠️ Le cours est trop court.';errBox.style.display='block';return;}
   if(tokensLeft<=0){errBox.textContent='⚠️ Tu as utilisé toutes tes générations. Passe à Pro !';errBox.style.display='block';return;}
   var btn=this;btn.disabled=true;btn.textContent='Génération en cours…';
-  var resultCard=document.getElementById('result-card');
-  var spinner=document.getElementById('result-spinner');
-  var content=document.getElementById('result-content');
+  var resultCard=document.getElementById('result-card'),spinner=document.getElementById('result-spinner'),content=document.getElementById('result-content');
   resultCard.style.display='block';spinner.style.display='flex';content.style.display='none';
   resultCard.scrollIntoView({behavior:'smooth',block:'nearest'});
   try{
@@ -632,7 +533,6 @@ function loadHistory(i){
   lastResult=h.result;
 }
 
-// ── CHAT ──
 function getPlan(){return savedUser?(savedUser.plan||'starter'):'starter';}
 
 function useCourseInChat(){
@@ -645,15 +545,7 @@ function useCourseInChat(){
 }
 
 function formatChatText(text){
-  // Rendu basique : lignes avec émojis, séparateurs, gras
-  var html=text
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;')
-    .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
-    .replace(/━+/g,'<hr class="msg-separator">')
-    .replace(/\n/g,'<br>');
-  return html;
+  return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/━+/g,'<hr style="border:none;border-top:1px solid rgba(255,255,255,0.1);margin:0.6rem 0">').replace(/\n/g,'<br>');
 }
 
 function addMessage(role,text){
@@ -662,61 +554,45 @@ function addMessage(role,text){
   var messages=document.getElementById('chat-messages');
   var div=document.createElement('div');
   div.className='msg '+(role==='user'?'user':'ai');
-  var avatar=role==='user'?'👤':'✨';
   var now=new Date();
   var time=now.getHours()+':'+String(now.getMinutes()).padStart(2,'0');
   var contentHtml=role==='ai'?formatChatText(text):text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   var actionsHtml=role==='ai'?'<div class="msg-actions-row"><button class="msg-act" onclick="copyMsg(this)">📋 Copier</button><button class="msg-act" onclick="saveMsg(this)">💾 Sauvegarder</button><button class="msg-act" onclick="exportMsgToPDF(this)">📄 PDF</button></div>':'';
-  div.innerHTML='<div class="msg-avatar">'+avatar+'</div><div class="msg-bubble"><div class="msg-content">'+contentHtml+'</div>'+actionsHtml+'<span class="msg-time">'+time+'</span></div>';
+  div.innerHTML='<div class="msg-avatar">'+(role==='user'?'👤':'✨')+'</div><div class="msg-bubble"><div class="msg-content">'+contentHtml+'</div>'+actionsHtml+'<span class="msg-time">'+time+'</span></div>';
   messages.appendChild(div);
-  // Scroll vers le DÉBUT du nouveau message (pas la fin)
-  setTimeout(function(){
-    div.scrollIntoView({behavior:'smooth',block:'start'});
-  },50);
+  setTimeout(function(){div.scrollIntoView({behavior:'smooth',block:'start'});},50);
 }
 
-function copyMsg(btn){
-  var content=btn.closest('.msg').querySelector('.msg-content').innerText;
-  navigator.clipboard.writeText(content).then(function(){showToast('✅ Copié !');});
-}
-
+function copyMsg(btn){var content=btn.closest('.msg').querySelector('.msg-content').innerText;navigator.clipboard.writeText(content).then(function(){showToast('✅ Copié !');});}
 function saveMsg(btn){
   if(!currentUserEmail){showToast('⚠️ Connecte-toi pour sauvegarder');return;}
   var content=btn.closest('.msg').querySelector('.msg-content').innerText;
   fetch(SUPABASE_URL+'/rest/v1/fiches',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Prefer':'return=minimal'},body:JSON.stringify({user_email:currentUserEmail,format:currentFormat,format_icon:currentFormatIcon,titre:'Chat — '+new Date().toLocaleDateString('fr-FR'),contenu:content})})
-  .then(function(){showToast('✅ Sauvegardé dans ta bibliothèque !');loadFichesCount();})
-  .catch(function(){showToast('⚠️ Erreur sauvegarde');});
+  .then(function(){showToast('✅ Sauvegardé dans ta bibliothèque !');loadFichesCount();}).catch(function(){showToast('⚠️ Erreur sauvegarde');});
 }
 
 function addTyping(){
   var messages=document.getElementById('chat-messages');
   var div=document.createElement('div');div.className='msg ai';div.id='typing-msg';
   div.innerHTML='<div class="msg-avatar">✨</div><div class="msg-bubble"><div class="typing-bubble"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>';
-  messages.appendChild(div);
-  div.scrollIntoView({behavior:'smooth',block:'start'});
+  messages.appendChild(div);div.scrollIntoView({behavior:'smooth',block:'start'});
 }
 function removeTyping(){var t=document.getElementById('typing-msg');if(t)t.remove();}
 
 async function sendChatMessage(){
   var plan=getPlan();
   if(plan==='starter'){showToast('💬 Chat IA disponible à partir du plan Pro !');return;}
-  var chatLimits={pro:20,ultimate:999999};
-  var limit=chatLimits[plan]||20;
+  var limit=plan==='ultimate'?999999:20;
   if(chatMsgCount>=limit&&limit!==999999){showToast('⚠️ Limite de '+limit+' messages atteinte !');return;}
   var input=document.getElementById('chat-input');
-  var text=input.value.trim();
-  if(!text)return;
+  var text=input.value.trim();if(!text)return;
   input.value='';input.style.height='auto';
   addMessage('user',text);
   chatHistory.push({role:'user',content:text});
-  chatMsgCount++;updateChatCount();
-  addTyping();
+  chatMsgCount++;updateChatCount();addTyping();
   document.getElementById('chat-send-btn').disabled=true;
   try{
-    var response=await fetch('/api/chat',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({messages:chatHistory.slice(-12),courseContent:courseContent.substring(0,6000),email:currentUserEmail,language:document.getElementById('lang-sel').value})
-    });
+    var response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:chatHistory.slice(-12),courseContent:courseContent.substring(0,6000),email:currentUserEmail,language:document.getElementById('lang-sel').value})});
     var data=await response.json();
     removeTyping();
     if(data.error){addMessage('ai','⚠️ '+data.error);return;}
@@ -727,131 +603,94 @@ async function sendChatMessage(){
 }
 
 function updateChatCount(){
-  var plan=getPlan();
-  var limit=plan==='ultimate'?'∞':20;
-  var el=document.getElementById('chat-count');
-  if(el)el.textContent=chatMsgCount+' / '+limit+' messages ce mois';
+  var plan=getPlan();var limit=plan==='ultimate'?'∞':20;
+  var el=document.getElementById('chat-count');if(el)el.textContent=chatMsgCount+' / '+limit+' messages ce mois';
 }
-
 function sendSuggestion(text){document.getElementById('chat-input').value=text;sendChatMessage();}
-
 document.getElementById('chat-input').addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px';});
 document.getElementById('chat-input').addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChatMessage();}});
 
-
 // ═══════════════════════════════════════════
-// EXPORT PDF DESIGNÉ — Plan Pro/Ultimate (via HTML pour un rendu parfait)
+// EXPORT PDF — rendu HTML propre
 // ═══════════════════════════════════════════
-function formatContentForPDF(content) {
-  var lines = content.split('\n');
-  var html = '';
-  var inList = false;
+function escapePdf(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function boldify(t){return t.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');}
 
-  lines.forEach(function(line) {
-    var trimmed = line.trim();
-    if (!trimmed) { if(inList){html += '</ul>'; inList=false;} return; }
-
-    // Séparateurs
-    if (/^[━─=]{3,}$/.test(trimmed)) {
-      if(inList){html += '</ul>'; inList=false;}
-      html += '<hr class="pdf-sep">';
-      return;
-    }
-
-    // Titres de section (commence par emoji)
-    var sectionMatch = trimmed.match(/^([📚🎯📖⚡❓🔗🃏🧠💬📅✅])\s*(.+)/);
-    if (sectionMatch && sectionMatch[2].length < 70) {
-      if(inList){html += '</ul>'; inList=false;}
-      html += '<h2 class="pdf-section">' + escapePdf(sectionMatch[2]) + '</h2>';
-      return;
-    }
-
-    // Puces
-    var bulletMatch = trimmed.match(/^[▸→✦•-]\s*(.+)/);
-    if (bulletMatch) {
-      if(!inList){html += '<ul class="pdf-list">'; inList=true;}
-      html += '<li>' + boldify(escapePdf(bulletMatch[1])) + '</li>';
-      return;
-    }
-
-    if(inList){html += '</ul>'; inList=false;}
-    html += '<p class="pdf-p">' + boldify(escapePdf(trimmed)) + '</p>';
+function formatContentForPDF(content){
+  var lines=content.split('\n'),html='',inList=false;
+  lines.forEach(function(line){
+    var t=line.trim();
+    if(!t){if(inList){html+='</ul>';inList=false;}return;}
+    if(/^[━─=]{3,}$/.test(t)){if(inList){html+='</ul>';inList=false;}html+='<div class="pdf-sep"></div>';return;}
+    var sm=t.match(/^([📚🎯📖⚡❓🔗🃏🧠💬📅✅])\s*(.+)/u);
+    if(sm&&sm[2].length<70){if(inList){html+='</ul>';inList=false;}html+='<div class="pdf-section">'+escapePdf(sm[2])+'</div>';return;}
+    var bm=t.match(/^[▸→✦•\-]\s*(.+)/);
+    if(bm){if(!inList){html+='<ul class="pdf-list">';inList=true;}html+='<li>'+boldify(escapePdf(bm[1]))+'</li>';return;}
+    if(inList){html+='</ul>';inList=false;}
+    html+='<p class="pdf-p">'+boldify(escapePdf(t))+'</p>';
   });
-  if(inList) html += '</ul>';
+  if(inList)html+='</ul>';
   return html;
 }
 
-function escapePdf(text) {
-  return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-function boldify(text) {
-  return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-}
-
-function exportToPDF(content, title, format) {
-  var plan = savedUser ? (savedUser.plan || 'starter') : 'starter';
-  if (plan === 'starter') { showToast('⚠️ Export PDF disponible à partir du plan Pro !'); return; }
-  if (!content) { showToast('⚠️ Rien à exporter.'); return; }
-
+function exportToPDF(content,title,format){
+  var plan=savedUser?(savedUser.plan||'starter'):'starter';
+  if(plan==='starter'){showToast('⚠️ Export PDF disponible à partir du plan Pro !');return;}
+  if(!content){showToast('⚠️ Rien à exporter.');return;}
   showToast('📄 Génération du PDF...');
 
-  var cleanTitle = title.replace(/[📚🎯📖⚡❓🔗━▸✦📄✅🃏🧠💬📅]/g, '').trim();
-  var bodyHtml = formatContentForPDF(content);
+  var cleanTitle=title.replace(/[\u{1F4DA}\u{1F3AF}\u{1F4D6}\u26A1\u2753\u{1F517}\u2501\u25B8\u2726\u{1F4C4}\u2705\u{1F0CF}\u{1F9E0}\u{1F4AC}\u{1F4C5}]/gu,'').trim();
+  var bodyHtml=formatContentForPDF(content);
 
-  var container = document.createElement('div');
-  container.style.cssText = 'width:780px;padding:50px 55px;font-family:Georgia,serif;background:#ffffff;color:#1a1a2e;';
-  container.innerHTML = '\
-    <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #6c5ce7;padding-bottom:14px;margin-bottom:24px;">\
-      <div style="display:flex;align-items:center;gap:10px;">\
-        <div style="width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#6c5ce7,#fd79a8);"></div>\
-        <span style="font-family:Helvetica,Arial,sans-serif;font-size:19px;font-weight:800;color:#6c5ce7;">FicheAI</span>\
-      </div>\
-      <span style="font-family:Helvetica,Arial,sans-serif;font-size:11px;color:#999;">ficheai.fr</span>\
-    </div>\
-    <h1 style="font-family:Helvetica,Arial,sans-serif;font-size:24px;font-weight:800;color:#1a1a2e;margin:0 0 8px;line-height:1.25;">' + escapePdf(cleanTitle) + '</h1>\
-    <span style="display:inline-block;background:#f3f0ff;color:#6c5ce7;font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:700;padding:5px 14px;border-radius:100px;margin-bottom:22px;letter-spacing:0.5px;">' + (format||'FICHE').toUpperCase() + '</span>\
-    <div class="pdf-body">' + bodyHtml + '</div>\
-    <div style="margin-top:40px;padding-top:14px;border-top:1px solid #eee;font-family:Helvetica,Arial,sans-serif;font-size:10px;color:#bbb;text-align:center;">FicheAI · Fait pour les étudiants</div>\
-  ';
+  // Conteneur hors-écran
+  var wrap=document.createElement('div');
+  wrap.style.cssText='position:fixed;left:-9999px;top:0;width:794px;background:#fff;';
+  wrap.innerHTML='<div id="pdf-inner" style="padding:48px 56px;font-family:Georgia,Times,serif;color:#1a1a2e;font-size:13px;line-height:1.7;">'+
+    '<div style="display:flex;align-items:center;justify-content:space-between;border-bottom:2.5px solid #6c5ce7;padding-bottom:12px;margin-bottom:20px;">'+
+      '<div style="display:flex;align-items:center;gap:10px;">'+
+        '<div style="width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#6c5ce7,#fd79a8);flex-shrink:0;"></div>'+
+        '<span style="font-family:Helvetica,Arial,sans-serif;font-size:18px;font-weight:800;color:#6c5ce7;letter-spacing:-0.5px;">FicheAI</span>'+
+      '</div>'+
+      '<span style="font-family:Helvetica,Arial,sans-serif;font-size:10px;color:#aaa;">ficheai.fr</span>'+
+    '</div>'+
+    '<h1 style="font-family:Helvetica,Arial,sans-serif;font-size:22px;font-weight:800;color:#1a1a2e;margin:0 0 6px;line-height:1.2;">'+escapePdf(cleanTitle)+'</h1>'+
+    '<span style="display:inline-block;background:#f0edff;color:#6c5ce7;font-family:Helvetica,Arial,sans-serif;font-size:10px;font-weight:700;padding:4px 12px;border-radius:100px;margin-bottom:20px;letter-spacing:0.5px;">'+(format||'FICHE').toUpperCase()+'</span>'+
+    '<div>'+bodyHtml+'</div>'+
+    '<div style="margin-top:32px;padding-top:12px;border-top:1px solid #eee;font-family:Helvetica,Arial,sans-serif;font-size:9px;color:#ccc;text-align:center;">FicheAI · Fait pour les étudiants 🎓</div>'+
+  '</div>'+
+  '<style>'+
+    '.pdf-section{font-family:Helvetica,Arial,sans-serif;font-size:14px;font-weight:700;color:#6c5ce7;margin:18px 0 8px;padding-left:10px;border-left:3px solid #fd79a8;}'+
+    '.pdf-p{font-size:13px;line-height:1.7;margin:0 0 8px;color:#222;}'+
+    '.pdf-list{margin:0 0 10px;padding-left:0;list-style:none;}'+
+    '.pdf-list li{font-size:13px;line-height:1.65;margin-bottom:6px;padding-left:16px;position:relative;color:#222;}'+
+    '.pdf-list li::before{content:"●";color:#fd79a8;position:absolute;left:0;font-size:8px;top:5px;}'+
+    '.pdf-sep{border-top:1px solid #e8e4f5;margin:14px 0;}'+
+    'strong{color:#111;font-weight:700;}'+
+  '</style>';
+  document.body.appendChild(wrap);
 
-  var style = document.createElement('style');
-  style.textContent = '\
-    .pdf-section{font-family:Helvetica,Arial,sans-serif;font-size:15px;font-weight:700;color:#6c5ce7;margin:22px 0 10px;padding-left:12px;border-left:3px solid #fd79a8;page-break-after:avoid;break-after:avoid;page-break-inside:avoid;break-inside:avoid;}\
-    .pdf-p{font-size:13.5px;line-height:1.7;margin:0 0 10px;color:#2d2d3d;page-break-inside:avoid;break-inside:avoid;orphans:3;widows:3;}\
-    .pdf-list{margin:0 0 12px;padding-left:0;list-style:none;}\
-    .pdf-list li{font-size:13.5px;line-height:1.7;margin-bottom:8px;padding-left:18px;position:relative;color:#2d2d3d;page-break-inside:avoid;break-inside:avoid;}\
-    .pdf-list li::before{content:"●";color:#fd79a8;position:absolute;left:0;font-size:9px;top:6px;}\
-    .pdf-sep{border:none;border-top:1px solid #e8e6f5;margin:18px 0;page-break-inside:avoid;break-inside:avoid;}\
-    strong{color:#1a1a2e;font-weight:700;}\
-    .pdf-body{padding-bottom:30px;}\
-  ';
-  container.appendChild(style);
-  document.body.appendChild(container);
-
-  var opt = {
-    margin: [40, 0, 40, 0],
-    filename: 'FicheAI_' + cleanTitle.replace(/[^a-zA-Z0-9]/g,'_').substring(0,40) + '.pdf',
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, windowWidth: 780 },
-    jsPDF: { unit: 'pt', format: 'a4', orientation: 'portrait' },
-    pagebreak: { mode: ['css', 'avoid-all'], avoid: ['.pdf-p', '.pdf-list li', '.pdf-section', 'h1'] }
+  var opt={
+    margin:0,
+    filename:'FicheAI_'+cleanTitle.replace(/[^a-zA-Z0-9]/g,'_').substring(0,40)+'.pdf',
+    image:{type:'jpeg',quality:0.95},
+    html2canvas:{scale:2,useCORS:true,logging:false,windowWidth:794},
+    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
+    pagebreak:{mode:'avoid-all'}
   };
 
-  html2pdf().set(opt).from(container).save().then(function() {
-    document.body.removeChild(container);
+  html2pdf().set(opt).from(wrap).save().then(function(){
+    document.body.removeChild(wrap);
     showToast('✅ PDF téléchargé !');
-  }).catch(function(err) {
-    document.body.removeChild(container);
+  }).catch(function(){
+    document.body.removeChild(wrap);
     showToast('⚠️ Erreur génération PDF');
-    console.error(err);
   });
 }
 
-function exportMsgToPDF(btn) {
-  var content = btn.closest('.msg').querySelector('.msg-content').innerText;
-  exportToPDF(content, currentFormatIcon + ' ' + currentFormatName, currentFormatName);
+function exportMsgToPDF(btn){
+  var content=btn.closest('.msg').querySelector('.msg-content').innerText;
+  exportToPDF(content,currentFormatIcon+' '+currentFormatName,currentFormatName);
 }
-
 </script>
 </body>
 </html>
