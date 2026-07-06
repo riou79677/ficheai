@@ -45,24 +45,36 @@ main{flex:1;display:flex;gap:0;max-width:900px;margin:0 auto;width:100%;padding:
 .form-group input:focus,.form-group select:focus{border-color:var(--purple);}
 .form-group input::placeholder{color:var(--text3);}
 .form-group select option{background:var(--bg3);}
-.btn{padding:0.65rem 1.4rem;border:none;border-radius:10px;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:var(--font-b);transition:all 0.2s;}
+.btn{padding:0.65rem 1.4rem;border:none;border-radius:10px;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:var(--font-b);transition:all 0.2s;text-decoration:none;display:inline-block;}
 .btn-primary{background:linear-gradient(135deg,var(--purple),var(--pink));color:white;}
 .btn-primary:hover{opacity:0.9;transform:translateY(-1px);}
 .btn-secondary{background:var(--surface);border:1px solid var(--border2);color:var(--text2);}
 .btn-secondary:hover{border-color:var(--purple);color:var(--purple2);}
 .btn-danger{background:rgba(244,114,182,0.1);border:1px solid rgba(244,114,182,0.3);color:var(--pink);}
 .btn-danger:hover{background:rgba(244,114,182,0.2);}
+.btn-gold{background:linear-gradient(135deg,#f6d365,#fda085);color:white;}
+.btn-gold:hover{opacity:0.9;transform:translateY(-1px);}
 .msg{padding:0.7rem 1rem;border-radius:10px;font-size:0.82rem;margin-top:0.8rem;display:none;}
 .msg-success{background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);color:#4ade80;}
 .msg-error{background:rgba(244,114,182,0.08);border:1px solid rgba(244,114,182,0.2);color:#f09595;}
-.plan-display{display:flex;align-items:center;justify-content:space-between;background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:1rem 1.2rem;margin-bottom:1rem;}
-.plan-info{display:flex;align-items:center;gap:0.8rem;}
-.plan-icon{font-size:1.5rem;}
-.plan-label{font-size:0.78rem;color:var(--text3);margin-bottom:2px;}
-.plan-name-display{font-family:var(--font-h);font-size:1rem;font-weight:700;}
-.plan-name-display.starter{color:var(--text2);}
-.plan-name-display.pro{color:var(--cyan);}
-.plan-name-display.ultimate{color:var(--gold);}
+
+/* PLAN CARD */
+.plan-card{border-radius:14px;padding:1.2rem 1.4rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;}
+.plan-card.starter{background:rgba(255,255,255,0.03);border:1px solid var(--border);}
+.plan-card.pro{background:rgba(34,211,238,0.06);border:1px solid rgba(34,211,238,0.2);}
+.plan-card.ultimate{background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.2);}
+.plan-card-left{display:flex;align-items:center;gap:1rem;}
+.plan-card-icon{font-size:2rem;}
+.plan-card-name{font-family:var(--font-h);font-size:1.1rem;font-weight:800;}
+.plan-card-name.starter{color:var(--text2);}
+.plan-card-name.pro{color:var(--cyan);}
+.plan-card-name.ultimate{color:var(--gold);}
+.plan-card-desc{font-size:0.78rem;color:var(--text3);margin-top:2px;}
+.plan-feats{margin-top:1rem;display:flex;flex-direction:column;gap:6px;}
+.plan-feat{display:flex;align-items:center;gap:8px;font-size:0.82rem;color:var(--text2);}
+.plan-feat span{font-size:0.9rem;}
+.plan-feat.highlight{color:var(--text);font-weight:600;}
+
 .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:0.8rem 0;border-bottom:1px solid var(--border);}
 .toggle-row:last-child{border-bottom:none;}
 .toggle-info{flex:1;}
@@ -113,12 +125,14 @@ footer{padding:1.5rem;text-align:center;font-size:0.78rem;color:var(--text3);bor
     </div>
   </div>
 </nav>
+
 <main id="main-content">
   <div class="not-logged" id="not-logged-view" style="display:none">
     <h2>🔐 Connecte-toi pour accéder aux paramètres</h2>
     <p>Tes préférences sont liées à ton compte FicheAI.</p>
     <a href="/login.html" class="btn-main">Se connecter</a>
   </div>
+
   <div id="logged-view" style="display:none;width:100%;display:flex;gap:0">
     <div class="settings-sidebar">
       <div class="sidebar-title">Paramètres</div>
@@ -129,53 +143,129 @@ footer{padding:1.5rem;text-align:center;font-size:0.78rem;color:var(--text3);bor
       <button class="sidebar-item" onclick="showSection('securite',this)"><span class="sidebar-icon">🔒</span> Sécurité</button>
       <button class="sidebar-item" onclick="showSection('compte-actions',this)"><span class="sidebar-icon" style="color:var(--pink)">⚠️</span> <span style="color:var(--pink)">Actions du compte</span></button>
     </div>
+
     <div class="settings-content">
+
+      <!-- MON COMPTE -->
       <div class="settings-section active" id="section-compte">
         <div class="section-title">Mon compte</div>
         <div class="section-desc">Gère tes informations personnelles.</div>
-        <div class="settings-card"><h3>Email actuel</h3><p>Ton adresse email de connexion.</p><div class="form-group"><input type="email" id="current-email" readonly style="opacity:0.6;cursor:not-allowed;"></div></div>
-        <div class="settings-card"><h3>Changer mon email</h3><p>Un email de confirmation sera envoyé à ta nouvelle adresse.</p><div class="form-row"><div class="form-group"><label>Nouvel email</label><input type="email" id="new-email" placeholder="nouveau@email.com"></div><button class="btn btn-primary" onclick="changeEmail()">Mettre à jour</button></div><div id="msg-change-email" class="msg"></div></div>
-        <div class="settings-card"><h3>Changer mon mot de passe</h3><p>Utilise un mot de passe d'au moins 8 caractères.</p><div class="form-row"><div class="form-group"><label>Nouveau mot de passe</label><input type="password" id="new-password" placeholder="••••••••"></div><div class="form-group"><label>Confirmer</label><input type="password" id="confirm-password" placeholder="••••••••"></div></div><button class="btn btn-primary" style="margin-top:0.8rem" onclick="changePassword()">Changer le mot de passe</button><div id="msg-password" class="msg"></div></div>
+        <div class="settings-card">
+          <h3>Email actuel</h3><p>Ton adresse email de connexion.</p>
+          <div class="form-group"><input type="email" id="current-email" readonly style="opacity:0.6;cursor:not-allowed;"></div>
+        </div>
+        <div class="settings-card">
+          <h3>Changer mon email</h3><p>Un email de confirmation sera envoyé à ta nouvelle adresse.</p>
+          <div class="form-row">
+            <div class="form-group"><label>Nouvel email</label><input type="email" id="new-email" placeholder="nouveau@email.com"></div>
+            <button class="btn btn-primary" onclick="changeEmail()">Mettre à jour</button>
+          </div>
+          <div id="msg-change-email" class="msg"></div>
+        </div>
+        <div class="settings-card">
+          <h3>Changer mon mot de passe</h3><p>Utilise un mot de passe d'au moins 8 caractères.</p>
+          <div class="form-row">
+            <div class="form-group"><label>Nouveau mot de passe</label><input type="password" id="new-password" placeholder="••••••••"></div>
+            <div class="form-group"><label>Confirmer</label><input type="password" id="confirm-password" placeholder="••••••••"></div>
+          </div>
+          <button class="btn btn-primary" style="margin-top:0.8rem" onclick="changePassword()">Changer le mot de passe</button>
+          <div id="msg-password" class="msg"></div>
+        </div>
       </div>
+
+      <!-- ABONNEMENT -->
       <div class="settings-section" id="section-abonnement">
         <div class="section-title">Abonnement</div>
         <div class="section-desc">Gère ton plan FicheAI.</div>
-        <div class="settings-card"><h3>Ton plan actuel</h3><div class="plan-display"><div class="plan-info"><div class="plan-icon" id="plan-icon">🆓</div><div><div class="plan-label">Plan actuel</div><div class="plan-name-display" id="plan-name-settings">Starter</div></div></div><div style="text-align:right"><div style="font-size:0.78rem;color:var(--text3)" id="plan-gens">5 générations restantes</div></div></div></div>
-        <div class="settings-card"><h3>Annuler ou modifier mon abonnement</h3><p>Pour modifier ou annuler ton abonnement, clique ci-dessous pour accéder au portail Stripe sécurisé.</p><a href="https://billing.stripe.com" target="_blank" class="btn btn-secondary" style="text-decoration:none;display:inline-block;">Gérer mon abonnement →</a></div>
-        <div class="settings-card"><h3>Changer de plan</h3><p>Passe à un plan supérieur pour débloquer plus de fonctionnalités.</p><div style="display:flex;gap:0.8rem;flex-wrap:wrap"><a href="https://buy.stripe.com/dRmcN68KF5N9bAj9Aq43S00" target="_blank" class="btn btn-primary" style="text-decoration:none">⚡ Pro — 7,99€/mois</a><a href="https://buy.stripe.com/6oUdRa0e95N96fZ4g643S02" target="_blank" class="btn btn-secondary" style="text-decoration:none;border-color:rgba(251,191,36,0.4);color:#fbbf24">👑 Ultimate — 14,99€/mois</a></div></div>
+
+        <!-- Plan actuel -->
+        <div class="settings-card" id="plan-current-card">
+          <h3>Ton plan actuel</h3>
+          <div id="plan-display-zone"></div>
+        </div>
+
+        <!-- Actions selon plan -->
+        <div id="plan-actions-zone"></div>
       </div>
+
+      <!-- PREFERENCES -->
       <div class="settings-section" id="section-preferences">
         <div class="section-title">Préférences</div>
         <div class="section-desc">Personnalise ton expérience FicheAI.</div>
-        <div class="settings-card"><h3>Format par défaut</h3><p>Le format sélectionné automatiquement sur le générateur.</p><div class="form-group"><select id="pref-format" onchange="savePref('format',this.value)"><option value="fiche">📄 Fiche de révision</option><option value="quiz">✅ Quiz QCM</option><option value="flash">🃏 Flashcards</option><option value="mindmap">🧠 Mind Map</option><option value="questions">💬 Questions ouvertes</option><option value="chrono">📅 Chronologie</option></select></div></div>
-        <div class="settings-card"><h3>Thème</h3><p>Apparence de FicheAI. Bientôt disponible.</p><select disabled style="background:var(--bg3);border:1.5px solid var(--border2);border-radius:10px;padding:0.7rem 1rem;font-size:0.88rem;color:var(--text3);font-family:var(--font-b);opacity:0.5;width:100%;max-width:280px;"><option>🌙 Sombre (défaut)</option><option>☀️ Clair</option></select><p style="font-size:0.75rem;color:var(--text3);margin-top:0.5rem;margin-bottom:0">🚧 À venir</p></div>
+        <div class="settings-card">
+          <h3>Format par défaut</h3><p>Le format sélectionné automatiquement sur le générateur.</p>
+          <div class="form-group">
+            <select id="pref-format" onchange="savePref('format',this.value)">
+              <option value="fiche">📄 Fiche de révision</option>
+              <option value="quiz">✅ Quiz QCM</option>
+              <option value="flash">🃏 Flashcards</option>
+              <option value="mindmap">🧠 Mind Map</option>
+              <option value="questions">💬 Questions ouvertes</option>
+              <option value="chrono">📅 Chronologie</option>
+            </select>
+          </div>
+        </div>
+        <div class="settings-card">
+          <h3>Thème</h3><p>Apparence de FicheAI. Bientôt disponible.</p>
+          <select disabled style="background:var(--bg3);border:1.5px solid var(--border2);border-radius:10px;padding:0.7rem 1rem;font-size:0.88rem;color:var(--text3);font-family:var(--font-b);opacity:0.5;width:100%;max-width:280px;">
+            <option>🌙 Sombre (défaut)</option><option>☀️ Clair</option>
+          </select>
+          <p style="font-size:0.75rem;color:var(--text3);margin-top:0.5rem;margin-bottom:0">🚧 À venir</p>
+        </div>
       </div>
+
+      <!-- NOTIFICATIONS -->
       <div class="settings-section" id="section-notifications">
         <div class="section-title">Notifications</div>
         <div class="section-desc">Choisis comment FicheAI te contacte.</div>
-        <div class="settings-card"><h3>Notifications par email</h3>
-          <div class="toggle-row"><div class="toggle-info"><div class="toggle-title">Rappels de révision</div><div class="toggle-desc">Reçois des rappels pour réviser tes fiches sauvegardées</div></div><label class="toggle"><input type="checkbox" onchange="savePref('notif_rappels',this.checked)"><span class="toggle-slider"></span></label></div>
-          <div class="toggle-row"><div class="toggle-info"><div class="toggle-title">Nouvelles fonctionnalités</div><div class="toggle-desc">Sois informé des nouvelles mises à jour de FicheAI</div></div><label class="toggle"><input type="checkbox" checked onchange="savePref('notif_updates',this.checked)"><span class="toggle-slider"></span></label></div>
-          <div class="toggle-row"><div class="toggle-info"><div class="toggle-title">Promotions et offres</div><div class="toggle-desc">Reçois nos offres exclusives pendant les périodes d'examens</div></div><label class="toggle"><input type="checkbox" checked onchange="savePref('notif_promos',this.checked)"><span class="toggle-slider"></span></label></div>
+        <div class="settings-card">
+          <h3>Notifications par email</h3>
+          <div class="toggle-row"><div class="toggle-info"><div class="toggle-title">Rappels de révision</div><div class="toggle-desc">Reçois des rappels pour réviser tes fiches</div></div><label class="toggle"><input type="checkbox" onchange="savePref('notif_rappels',this.checked)"><span class="toggle-slider"></span></label></div>
+          <div class="toggle-row"><div class="toggle-info"><div class="toggle-title">Nouvelles fonctionnalités</div><div class="toggle-desc">Sois informé des mises à jour de FicheAI</div></div><label class="toggle"><input type="checkbox" checked onchange="savePref('notif_updates',this.checked)"><span class="toggle-slider"></span></label></div>
+          <div class="toggle-row"><div class="toggle-info"><div class="toggle-title">Promotions et offres</div><div class="toggle-desc">Reçois nos offres exclusives pendant les examens</div></div><label class="toggle"><input type="checkbox" checked onchange="savePref('notif_promos',this.checked)"><span class="toggle-slider"></span></label></div>
           <p style="font-size:0.75rem;color:var(--text3);margin-top:1rem;margin-bottom:0">🚧 Envoi d'emails à venir</p>
         </div>
       </div>
+
+      <!-- SECURITE -->
       <div class="settings-section" id="section-securite">
         <div class="section-title">Sécurité</div>
         <div class="section-desc">Protège ton compte FicheAI.</div>
-        <div class="settings-card"><h3>Sessions actives</h3><p>Déconnecte toutes les sessions ouvertes sur d'autres appareils.</p><button class="btn btn-secondary" onclick="deconnecterTout()">🚪 Déconnecter tous les appareils</button><div id="msg-sessions" class="msg"></div></div>
-        <div class="settings-card"><h3>Authentification à deux facteurs (2FA)</h3><p>Disponible bientôt.</p><button class="btn btn-secondary" disabled style="opacity:0.5">🔒 Activer 2FA — Bientôt disponible</button></div>
-        <div class="settings-card"><h3>Déconnexion automatique</h3><p>Ton compte se déconnecte automatiquement après 30 minutes d'inactivité.</p><div style="background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);border-radius:10px;padding:0.7rem 1rem;font-size:0.82rem;color:#4ade80;">✅ Activé — Déconnexion après 30 min d'inactivité</div></div>
+        <div class="settings-card">
+          <h3>Sessions actives</h3><p>Déconnecte toutes les sessions ouvertes sur d'autres appareils.</p>
+          <button class="btn btn-secondary" onclick="deconnecterTout()">🚪 Déconnecter tous les appareils</button>
+          <div id="msg-sessions" class="msg"></div>
+        </div>
+        <div class="settings-card">
+          <h3>Authentification à deux facteurs (2FA)</h3><p>Disponible bientôt.</p>
+          <button class="btn btn-secondary" disabled style="opacity:0.5">🔒 Activer 2FA — Bientôt disponible</button>
+        </div>
+        <div class="settings-card">
+          <h3>Déconnexion automatique</h3><p>Ton compte se déconnecte automatiquement après 30 minutes d'inactivité.</p>
+          <div style="background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);border-radius:10px;padding:0.7rem 1rem;font-size:0.82rem;color:#4ade80;">✅ Activé — Déconnexion après 30 min d'inactivité</div>
+        </div>
       </div>
+
+      <!-- ACTIONS COMPTE -->
       <div class="settings-section" id="section-compte-actions">
         <div class="section-title">Actions du compte</div>
         <div class="section-desc">Gère ou supprime tes données personnelles.</div>
-        <div class="settings-card critical-zone"><h3>Supprimer toutes mes fiches</h3><p>Supprime définitivement toutes les fiches de ta bibliothèque. Ton compte et ton abonnement sont conservés.</p><button class="btn btn-danger" onclick="confirmer('fiches')">🗑️ Supprimer toutes mes fiches</button><div id="msg-delete-fiches" class="msg"></div></div>
-        <div class="settings-card critical-zone"><h3>Supprimer mon compte</h3><p>Supprime définitivement ton compte et toutes tes données. Pense à annuler ton abonnement Stripe avant.</p><button class="btn btn-danger" onclick="confirmer('compte')">⚠️ Supprimer mon compte définitivement</button><div id="msg-delete-account" class="msg"></div></div>
+        <div class="settings-card critical-zone">
+          <h3>Supprimer toutes mes fiches</h3><p>Supprime définitivement toutes les fiches de ta bibliothèque. Ton compte et ton abonnement sont conservés.</p>
+          <button class="btn btn-danger" onclick="confirmer('fiches')">🗑️ Supprimer toutes mes fiches</button>
+          <div id="msg-delete-fiches" class="msg"></div>
+        </div>
+        <div class="settings-card critical-zone">
+          <h3>Supprimer mon compte</h3><p>Supprime définitivement ton compte et toutes tes données. Pense à annuler ton abonnement Stripe avant.</p>
+          <button class="btn btn-danger" onclick="confirmer('compte')">⚠️ Supprimer mon compte définitivement</button>
+          <div id="msg-delete-account" class="msg"></div>
+        </div>
       </div>
+
     </div>
   </div>
 </main>
+
 <div class="confirm-overlay" id="confirm-overlay">
   <div class="confirm-box">
     <h3 id="confirm-title">Confirmer</h3>
@@ -186,48 +276,160 @@ footer{padding:1.5rem;text-align:center;font-size:0.78rem;color:var(--text3);bor
     </div>
   </div>
 </div>
+
 <footer>FicheAI · Fait pour les étudiants 🎓 · © 2025</footer>
+
 <script>
-var SUPABASE_URL='https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
-var SUPABASE_KEY='sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ';
-var savedUser=null;
-document.addEventListener('click',function(e){var menu=document.getElementById('user-menu');var badge=document.getElementById('user-badge');if(menu&&badge&&!badge.contains(e.target)&&!menu.contains(e.target))menu.style.display='none';});
-function toggleUserMenu(){var m=document.getElementById('user-menu');m.style.display=m.style.display==='block'?'none':'block';}
-function deconnexion(){localStorage.removeItem('ficheai_user');window.location.href='/';}
-try{savedUser=JSON.parse(localStorage.getItem('ficheai_user'));}catch(e){}
-if(!savedUser||!savedUser.email){document.getElementById('not-logged-view').style.display='block';document.getElementById('logged-view').style.display='none';}
-else{
-  document.getElementById('not-logged-view').style.display='none';document.getElementById('logged-view').style.display='flex';
-  document.getElementById('user-badge').textContent='👤 '+savedUser.email.split('@')[0];document.getElementById('user-badge').style.display='inline-block';
+var SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
+var SUPABASE_KEY = 'sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ';
+var PRO_M = 'https://buy.stripe.com/00wfZibWR8Zl8o7eUK43S05';
+var PRO_A = 'https://buy.stripe.com/6oU9AU1idcbx6fZ6oe43S06';
+var ULT_M = 'https://buy.stripe.com/aFadRaaSN2AX33NeUK43S07';
+var ULT_A = 'https://buy.stripe.com/bJedRa5yt8ZlbAj8wm43S08';
+var STRIPE_PORTAL = 'https://billing.stripe.com/p/login/test_00000000'; // remplace par ton vrai lien portail Stripe
+var savedUser = null;
+
+document.addEventListener('click', function(e) {
+  var menu = document.getElementById('user-menu');
+  var badge = document.getElementById('user-badge');
+  if (menu && badge && !badge.contains(e.target) && !menu.contains(e.target)) menu.style.display = 'none';
+});
+
+function toggleUserMenu() {
+  var m = document.getElementById('user-menu');
+  m.style.display = m.style.display === 'block' ? 'none' : 'block';
+}
+
+function logout() {
+  localStorage.removeItem('ficheai_user');
+  window.location.href = '/';
+}
+
+try { savedUser = JSON.parse(localStorage.getItem('ficheai_user')); } catch(e) {}
+
+if (!savedUser || !savedUser.email) {
+  document.getElementById('not-logged-view').style.display = 'block';
+  document.getElementById('logged-view').style.display = 'none';
+} else {
+  document.getElementById('not-logged-view').style.display = 'none';
+  document.getElementById('logged-view').style.display = 'flex';
+  document.getElementById('user-badge').textContent = '👤 ' + savedUser.email.split('@')[0];
+  document.getElementById('user-badge').style.display = 'inline-block';
   initSettings();
 }
-function initSettings(){
-  document.getElementById('current-email').value=savedUser.email;
-  var plan=savedUser.plan||'starter';var remaining=savedUser.remaining===999999?'∞':(savedUser.remaining||5);
-  var icons={starter:'🆓',pro:'⚡',ultimate:'👑'};var names={starter:'Starter',pro:'Pro',ultimate:'Ultimate'};
-  document.getElementById('plan-icon').textContent=icons[plan]||'🆓';
-  var nameEl=document.getElementById('plan-name-settings');nameEl.textContent=names[plan]||'Starter';nameEl.className='plan-name-display '+plan;
-  document.getElementById('plan-gens').textContent=remaining+' générations restantes';
-  var prefs={};try{prefs=JSON.parse(localStorage.getItem('ficheai_prefs')||'{}');}catch(e){}
-  if(prefs.format)document.getElementById('pref-format').value=prefs.format;
+
+function initSettings() {
+  document.getElementById('current-email').value = savedUser.email;
+  var plan = savedUser.plan || 'starter';
+  renderPlanSection(plan);
+  var prefs = {};
+  try { prefs = JSON.parse(localStorage.getItem('ficheai_prefs') || '{}'); } catch(e) {}
+  if (prefs.format) document.getElementById('pref-format').value = prefs.format;
 }
-function showSection(name,btn){
-  document.querySelectorAll('.settings-section').forEach(function(s){s.classList.remove('active');});
-  document.querySelectorAll('.sidebar-item').forEach(function(b){b.classList.remove('active');});
-  document.getElementById('section-'+name).classList.add('active');btn.classList.add('active');
+
+function renderPlanSection(plan) {
+  var remaining = savedUser.remaining === 999999 ? '∞' : (savedUser.remaining || 5);
+  var displayZone = document.getElementById('plan-display-zone');
+  var actionsZone = document.getElementById('plan-actions-zone');
+
+  if (plan === 'starter') {
+    displayZone.innerHTML = '<div class="plan-card starter"><div class="plan-card-left"><div class="plan-card-icon">🆓</div><div><div class="plan-card-name starter">Starter</div><div class="plan-card-desc">Gratuit · ' + remaining + ' générations restantes</div></div></div></div><div class="plan-feats"><div class="plan-feat"><span>✅</span> 5 générations IA / mois</div><div class="plan-feat"><span>✅</span> Tous les formats</div><div class="plan-feat"><span>✅</span> Import PDF jusqu\'à 15 pages</div><div class="plan-feat"><span>❌</span> Chat IA — Pro requis</div><div class="plan-feat"><span>❌</span> Export PDF — Pro requis</div><div class="plan-feat"><span>❌</span> Bibliothèque illimitée — Pro requis</div></div>';
+    actionsZone.innerHTML = '<div class="settings-card"><h3>Passe à la vitesse supérieure 🚀</h3><p>Débloque le Chat IA, l\'export PDF, 50 générations par mois et bien plus.</p><div style="display:flex;gap:0.8rem;flex-wrap:wrap;margin-bottom:0.8rem;"><a href="' + PRO_M + '" target="_blank" class="btn btn-primary">⚡ Pro — 7,99€/mois</a><a href="' + PRO_A + '" target="_blank" class="btn btn-secondary">⚡ Pro — 59,99€/an</a></div><div style="display:flex;gap:0.8rem;flex-wrap:wrap;"><a href="' + ULT_M + '" target="_blank" class="btn btn-gold">👑 Ultimate — 14,99€/mois</a><a href="' + ULT_A + '" target="_blank" class="btn btn-secondary">👑 Ultimate — 99,99€/an</a></div></div>';
+
+  } else if (plan === 'pro') {
+    displayZone.innerHTML = '<div class="plan-card pro"><div class="plan-card-left"><div class="plan-card-icon">⚡</div><div><div class="plan-card-name pro">Pro</div><div class="plan-card-desc">' + remaining + ' générations restantes ce mois</div></div></div></div><div class="plan-feats"><div class="plan-feat highlight"><span>✅</span> 50 générations IA / mois</div><div class="plan-feat highlight"><span>✅</span> Chat IA — 20 messages/mois</div><div class="plan-feat highlight"><span>✅</span> Export PDF designé</div><div class="plan-feat highlight"><span>✅</span> Import PDF jusqu\'à 40 pages</div><div class="plan-feat highlight"><span>✅</span> Bibliothèque de fiches</div><div class="plan-feat"><span>❌</span> Chat illimité — Ultimate requis</div><div class="plan-feat"><span>❌</span> Générations illimitées — Ultimate requis</div></div>';
+    actionsZone.innerHTML = '<div class="settings-card"><h3>Passe à Ultimate 👑</h3><p>Générations illimitées, Chat IA sans limite, import PDF jusqu\'à 100 pages. La puissance maximale pour réviser sans contrainte.</p><div style="display:flex;gap:0.8rem;flex-wrap:wrap;margin-bottom:1rem;"><a href="' + ULT_M + '" target="_blank" class="btn btn-gold">👑 Ultimate — 14,99€/mois</a><a href="' + ULT_A + '" target="_blank" class="btn btn-secondary">👑 Ultimate — 99,99€/an</a></div></div><div class="settings-card"><h3>Gérer mon abonnement</h3><p>Modifie ou annule ton abonnement Pro via le portail Stripe sécurisé.</p><a href="https://billing.stripe.com" target="_blank" class="btn btn-secondary">⚙️ Gérer mon abonnement Stripe →</a></div>';
+
+  } else if (plan === 'ultimate') {
+    displayZone.innerHTML = '<div class="plan-card ultimate"><div class="plan-card-left"><div class="plan-card-icon">👑</div><div><div class="plan-card-name ultimate">Ultimate</div><div class="plan-card-desc">Le plan le plus puissant · Tout illimité</div></div></div></div><div class="plan-feats"><div class="plan-feat highlight"><span>✅</span> Générations illimitées</div><div class="plan-feat highlight"><span>✅</span> Chat IA illimité</div><div class="plan-feat highlight"><span>✅</span> Export PDF designé</div><div class="plan-feat highlight"><span>✅</span> Import PDF jusqu\'à 100 pages</div><div class="plan-feat highlight"><span>✅</span> Bibliothèque illimitée</div><div class="plan-feat highlight"><span>✅</span> Accès anticipé aux nouvelles fonctionnalités</div></div>';
+    actionsZone.innerHTML = '<div class="settings-card"><h3>👑 Tu es au maximum !</h3><p>Tu profites de toutes les fonctionnalités de FicheAI sans aucune limite. Merci pour ta confiance !</p><div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:0.8rem 1rem;font-size:0.83rem;color:var(--gold);">✨ Toutes les fonctionnalités débloquées</div></div><div class="settings-card"><h3>Gérer mon abonnement</h3><p>Modifie ou annule ton abonnement Ultimate via le portail Stripe sécurisé.</p><a href="https://billing.stripe.com" target="_blank" class="btn btn-secondary">⚙️ Gérer mon abonnement Stripe →</a></div>';
+  }
 }
-function savePref(key,value){var prefs={};try{prefs=JSON.parse(localStorage.getItem('ficheai_prefs')||'{}');}catch(e){}prefs[key]=value;localStorage.setItem('ficheai_prefs',JSON.stringify(prefs));}
-function showMsg(id,text,isError){var el=document.getElementById(id);el.textContent=text;el.className='msg '+(isError?'msg-error':'msg-success');el.style.display='block';setTimeout(function(){el.style.display='none';},4000);}
-async function changeEmail(){var newEmail=document.getElementById('new-email').value.trim();if(!newEmail){showMsg('msg-change-email','⚠️ Entre ton nouvel email.',true);return;}try{var r=await fetch(SUPABASE_URL+'/auth/v1/user',{method:'PUT',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+(savedUser.access_token||SUPABASE_KEY)},body:JSON.stringify({email:newEmail})});var d=await r.json();if(d.error){showMsg('msg-change-email','⚠️ '+d.error.message,true);return;}showMsg('msg-change-email','✅ Email mis à jour ! Vérifie ta boîte mail.',false);}catch(e){showMsg('msg-change-email','⚠️ Erreur. Réessaie.',true);}}
-async function changePassword(){var newPw=document.getElementById('new-password').value;var confirmPw=document.getElementById('confirm-password').value;if(!newPw||!confirmPw){showMsg('msg-password','⚠️ Remplis les deux champs.',true);return;}if(newPw.length<8){showMsg('msg-password','⚠️ 8 caractères minimum.',true);return;}if(newPw!==confirmPw){showMsg('msg-password','⚠️ Les mots de passe ne correspondent pas.',true);return;}try{var r=await fetch(SUPABASE_URL+'/auth/v1/user',{method:'PUT',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+(savedUser.access_token||SUPABASE_KEY)},body:JSON.stringify({password:newPw})});var d=await r.json();if(d.error){showMsg('msg-password','⚠️ '+d.error.message,true);return;}showMsg('msg-password','✅ Mot de passe mis à jour !',false);document.getElementById('new-password').value='';document.getElementById('confirm-password').value='';}catch(e){showMsg('msg-password','⚠️ Erreur. Réessaie.',true);}}
-function deconnecterTout(){localStorage.removeItem('ficheai_user');showMsg('msg-sessions','✅ Déconnecté de tous les appareils.',false);setTimeout(function(){window.location.href='/login.html';},1500);}
-var actionEnCours=null;
-function confirmer(type){actionEnCours=type;if(type==='fiches'){document.getElementById('confirm-title').textContent='Supprimer toutes mes fiches ?';document.getElementById('confirm-text').textContent='Cette action est irréversible. Toutes tes fiches seront définitivement supprimées.';document.getElementById('confirm-ok').textContent='Supprimer mes fiches';}else{document.getElementById('confirm-title').textContent='Supprimer mon compte ?';document.getElementById('confirm-text').textContent='ATTENTION : Toutes tes données seront définitivement supprimées. Pense à annuler ton abonnement Stripe avant.';document.getElementById('confirm-ok').textContent='Supprimer mon compte';}document.getElementById('confirm-overlay').classList.add('open');}
-function closeConfirm(){document.getElementById('confirm-overlay').classList.remove('open');actionEnCours=null;}
-document.getElementById('confirm-ok').addEventListener('click',async function(){
+
+function showSection(name, btn) {
+  document.querySelectorAll('.settings-section').forEach(function(s) { s.classList.remove('active'); });
+  document.querySelectorAll('.sidebar-item').forEach(function(b) { b.classList.remove('active'); });
+  document.getElementById('section-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+function savePref(key, value) {
+  var prefs = {};
+  try { prefs = JSON.parse(localStorage.getItem('ficheai_prefs') || '{}'); } catch(e) {}
+  prefs[key] = value;
+  localStorage.setItem('ficheai_prefs', JSON.stringify(prefs));
+}
+
+function showMsg(id, text, isError) {
+  var el = document.getElementById(id);
+  el.textContent = text;
+  el.className = 'msg ' + (isError ? 'msg-error' : 'msg-success');
+  el.style.display = 'block';
+  setTimeout(function() { el.style.display = 'none'; }, 4000);
+}
+
+async function changeEmail() {
+  var newEmail = document.getElementById('new-email').value.trim();
+  if (!newEmail) { showMsg('msg-change-email', '⚠️ Entre ton nouvel email.', true); return; }
+  try {
+    var r = await fetch(SUPABASE_URL + '/auth/v1/user', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + (savedUser.access_token || SUPABASE_KEY) }, body: JSON.stringify({ email: newEmail }) });
+    var d = await r.json();
+    if (d.error) { showMsg('msg-change-email', '⚠️ ' + d.error.message, true); return; }
+    showMsg('msg-change-email', '✅ Email mis à jour ! Vérifie ta boîte mail.', false);
+  } catch(e) { showMsg('msg-change-email', '⚠️ Erreur. Réessaie.', true); }
+}
+
+async function changePassword() {
+  var newPw = document.getElementById('new-password').value;
+  var confirmPw = document.getElementById('confirm-password').value;
+  if (!newPw || !confirmPw) { showMsg('msg-password', '⚠️ Remplis les deux champs.', true); return; }
+  if (newPw.length < 8) { showMsg('msg-password', '⚠️ 8 caractères minimum.', true); return; }
+  if (newPw !== confirmPw) { showMsg('msg-password', '⚠️ Les mots de passe ne correspondent pas.', true); return; }
+  try {
+    var r = await fetch(SUPABASE_URL + '/auth/v1/user', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + (savedUser.access_token || SUPABASE_KEY) }, body: JSON.stringify({ password: newPw }) });
+    var d = await r.json();
+    if (d.error) { showMsg('msg-password', '⚠️ ' + d.error.message, true); return; }
+    showMsg('msg-password', '✅ Mot de passe mis à jour !', false);
+    document.getElementById('new-password').value = '';
+    document.getElementById('confirm-password').value = '';
+  } catch(e) { showMsg('msg-password', '⚠️ Erreur. Réessaie.', true); }
+}
+
+function deconnecterTout() {
+  localStorage.removeItem('ficheai_user');
+  showMsg('msg-sessions', '✅ Déconnecté de tous les appareils.', false);
+  setTimeout(function() { window.location.href = '/'; }, 1500);
+}
+
+var actionEnCours = null;
+function confirmer(type) {
+  actionEnCours = type;
+  if (type === 'fiches') {
+    document.getElementById('confirm-title').textContent = 'Supprimer toutes mes fiches ?';
+    document.getElementById('confirm-text').textContent = 'Cette action est irréversible. Toutes tes fiches seront définitivement supprimées.';
+    document.getElementById('confirm-ok').textContent = 'Supprimer mes fiches';
+  } else {
+    document.getElementById('confirm-title').textContent = 'Supprimer mon compte ?';
+    document.getElementById('confirm-text').textContent = 'ATTENTION : Toutes tes données seront définitivement supprimées. Pense à annuler ton abonnement Stripe avant.';
+    document.getElementById('confirm-ok').textContent = 'Supprimer mon compte';
+  }
+  document.getElementById('confirm-overlay').classList.add('open');
+}
+
+function closeConfirm() { document.getElementById('confirm-overlay').classList.remove('open'); actionEnCours = null; }
+
+document.getElementById('confirm-ok').addEventListener('click', async function() {
   closeConfirm();
-  if(actionEnCours==='fiches'){await fetch(SUPABASE_URL+'/rest/v1/fiches?user_email=eq.'+encodeURIComponent(savedUser.email),{method:'DELETE',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}});showMsg('msg-delete-fiches','✅ Toutes tes fiches ont été supprimées.',false);}
-  else if(actionEnCours==='compte'){await fetch(SUPABASE_URL+'/rest/v1/users?email=eq.'+encodeURIComponent(savedUser.email),{method:'DELETE',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}});await fetch(SUPABASE_URL+'/rest/v1/fiches?user_email=eq.'+encodeURIComponent(savedUser.email),{method:'DELETE',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}});localStorage.removeItem('ficheai_user');showMsg('msg-delete-account','✅ Compte supprimé. Redirection...',false);setTimeout(function(){window.location.href='/';},2000);}
+  if (actionEnCours === 'fiches') {
+    await fetch(SUPABASE_URL + '/rest/v1/fiches?user_email=eq.' + encodeURIComponent(savedUser.email), { method: 'DELETE', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } });
+    showMsg('msg-delete-fiches', '✅ Toutes tes fiches ont été supprimées.', false);
+  } else if (actionEnCours === 'compte') {
+    await fetch(SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(savedUser.email), { method: 'DELETE', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } });
+    await fetch(SUPABASE_URL + '/rest/v1/fiches?user_email=eq.' + encodeURIComponent(savedUser.email), { method: 'DELETE', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } });
+    localStorage.removeItem('ficheai_user');
+    showMsg('msg-delete-account', '✅ Compte supprimé. Redirection...', false);
+    setTimeout(function() { window.location.href = '/'; }, 2000);
+  }
 });
 </script>
 </body>
