@@ -86,7 +86,7 @@ function setAuthMode(mode, btn) {
     authBtn.textContent = 'Créer mon compte';
   } else {
     title.textContent = 'Bon retour !';
-    sub.textContent = 'Connecte-toi à ton compte StudyAI.';
+    sub.textContent = 'Connecte-toi à ton compte FicheAI.';
     authBtn.textContent = 'Se connecter';
   }
 }
@@ -259,7 +259,7 @@ function downloadResult() {
   const blob = new Blob([lastResult], { type: 'text/plain;charset=utf-8' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'StudyAI_' + currentFormatName.replace(/ /g, '_') + '.txt';
+  a.download = 'FicheAI_' + currentFormatName.replace(/ /g, '_') + '.txt';
   a.click();
 }
 
