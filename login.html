@@ -118,7 +118,7 @@ async function handleLogin(){
     // 2. Récupérer les infos du plan
     var planResponse=await fetch(
       SUPABASE_URL+'/rest/v1/users?email=eq.'+encodeURIComponent(email)+'&select=plan,generations_used,generations_limit',
-      {headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}}
+      {headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+data.access_token}}
     );
     var planData=await planResponse.json();
     var userInfo=(planData&&planData[0])?planData[0]:null;
