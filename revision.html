@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Révision — FicheAI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07070f;--bg2:#0d0d1a;--surface:#181830;--border:rgba(255,255,255,0.06);
+  --border2:rgba(255,255,255,0.12);--purple:#6c5ce7;--purple2:#a29bfe;--pink:#fd79a8;
+  --cyan:#00cec9;--gold:#fdcb6e;--green:#00b894;--text:#f0efff;--text2:#9898b8;--text3:#555570;
+  --font-h:'Syne',sans-serif;--font-b:'DM Sans',sans-serif;--radius:18px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh;
+  background-image:radial-gradient(ellipse at 20% 10%,rgba(108,92,231,0.08) 0%,transparent 50%),
+    radial-gradient(ellipse at 80% 90%,rgba(253,121,168,0.05) 0%,transparent 50%);
+}
+a{color:inherit;text-decoration:none}
+.nav{
+  display:flex;align-items:center;justify-content:space-between;padding:18px 28px;
+  border-bottom:1px solid var(--border);background:rgba(7,7,15,0.82);backdrop-filter:blur(14px);
+  position:sticky;top:0;z-index:10;
+}
+.logo{font-family:var(--font-h);font-size:1.3rem;font-weight:800;
+  background:linear-gradient(135deg,var(--purple2),var(--pink));-webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;background-clip:text}
+.nav a.back{color:var(--text2);font-weight:500;font-size:0.92rem}
+.nav a.back:hover{color:var(--text)}
+.wrap{max-width:820px;margin:0 auto;padding:40px 24px 80px}
+h1{font-family:var(--font-h);font-size:2.1rem;font-weight:800;margin-bottom:6px}
+.sub{color:var(--text2);margin-bottom:32px}
+.btn{
+  border:none;border-radius:100px;padding:13px 26px;font-size:0.95rem;font-weight:700;
+  cursor:pointer;font-family:var(--font-b);color:#fff;
+  background:linear-gradient(135deg,var(--purple),var(--pink));transition:transform .15s,opacity .15s;
+}
+.btn:hover{transform:translateY(-2px)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-ghost{background:transparent;border:1px solid var(--border2);color:var(--text)}
+.big-review{
+  width:100%;background:linear-gradient(135deg,var(--purple),var(--pink));border:none;border-radius:var(--radius);
+  padding:24px;color:#fff;font-family:var(--font-h);font-weight:800;font-size:1.25rem;cursor:pointer;
+  margin-bottom:28px;display:flex;align-items:center;justify-content:center;gap:12px;transition:transform .15s;
+  box-shadow:0 10px 40px rgba(108,92,231,0.3);
+}
+.big-review:hover{transform:translateY(-3px)}
+.big-review small{display:block;font-family:var(--font-b);font-weight:500;font-size:0.85rem;opacity:.85;margin-top:2px}
+.section-t{font-family:var(--font-h);font-weight:700;font-size:1.1rem;margin:8px 0 16px;color:var(--text2)}
+.deck{
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:18px 20px;margin-bottom:12px;
+}
+.deck-info{min-width:0}
+.deck-title{font-weight:600;font-size:1rem;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:440px}
+.deck-meta{font-size:0.85rem;color:var(--text2)}
+.deck-meta .due{color:var(--gold);font-weight:600}
+.deck-btn{border:none;border-radius:100px;padding:9px 18px;font-size:0.85rem;font-weight:700;cursor:pointer;
+  font-family:var(--font-b);white-space:nowrap;transition:transform .15s,opacity .15s}
+.deck-btn:hover{transform:translateY(-2px)}
+.deck-btn.create{background:rgba(108,92,231,0.18);color:var(--purple2);border:1px solid rgba(108,92,231,0.4)}
+.deck-btn.review{background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff}
+.deck-btn.done{background:transparent;color:var(--green);cursor:default}
+.deck-btn.done:hover{transform:none}
+.empty,.msg{text-align:center;color:var(--text2);padding:40px 20px}
+.spinner{width:34px;height:34px;border:3px solid rgba(255,255,255,0.15);border-top-color:var(--purple2);
+  border-radius:50%;animation:spin .7s linear infinite;margin:40px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Mode révision */
+#review{display:none}
+.progress{height:6px;background:var(--surface);border-radius:100px;overflow:hidden;margin-bottom:28px}
+.progress .bar{height:100%;background:linear-gradient(90deg,var(--purple),var(--pink));width:0;transition:width .3s}
+.count{text-align:center;color:var(--text2);font-size:0.9rem;margin-bottom:16px}
+.card{
+  background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:40px 32px;
+  min-height:280px;display:flex;flex-direction:column;justify-content:center;text-align:center;margin-bottom:24px;
+}
+.card .label{font-size:0.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:16px;font-weight:600}
+.card .q{font-size:1.35rem;font-weight:600;line-height:1.5}
+.card .divider{height:1px;background:var(--border);margin:26px 0}
+.card .a{font-size:1.08rem;color:var(--text2);line-height:1.6}
+.reveal-btn{width:100%;background:transparent;border:1px solid var(--border2);color:var(--text);
+  border-radius:100px;padding:15px;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:var(--font-b)}
+.reveal-btn:hover{background:rgba(255,255,255,0.04)}
+.rate{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px}
+.rate button{border:none;border-radius:14px;padding:14px 6px;font-size:0.85rem;font-weight:700;cursor:pointer;
+  font-family:var(--font-b);color:#fff;transition:transform .15s}
+.rate button:hover{transform:translateY(-2px)}
+.rate .again{background:rgba(253,121,168,0.9)}
+.rate .hard{background:rgba(253,203,110,0.85);color:#3a2e00}
+.rate .good{background:rgba(108,92,231,0.9)}
+.rate .easy{background:rgba(0,184,148,0.9)}
+.rate small{display:block;font-weight:500;font-size:0.7rem;opacity:.85;margin-top:2px}
+.done-screen{text-align:center;padding:60px 20px}
+.done-screen .emoji{font-size:3.5rem;margin-bottom:16px}
+.done-screen h2{font-family:var(--font-h);font-size:1.6rem;margin-bottom:8px}
+.done-screen p{color:var(--text2);margin-bottom:26px}
+@media(max-width:560px){
+  .deck-title{max-width:180px}
+  .rate{grid-template-columns:1fr 1fr}
+  h1{font-size:1.7rem}
+}
+</style>
+</head>
+<body>
+<div class="nav">
+  <a href="app.html" class="logo">FicheAI</a>
+  <a href="app.html" class="back">← Retour à l'app</a>
+</div>
+
+<div class="wrap">
+  <!-- TABLEAU DE BORD -->
+  <div id="dashboard">
+    <h1>🎯 Révision</h1>
+    <p class="sub">Transforme tes fiches en flashcards et révise au bon moment pour vraiment retenir.</p>
+    <div id="dash-content"><div class="spinner"></div></div>
+  </div>
+
+  <!-- MODE RÉVISION -->
+  <div id="review">
+    <div class="progress"><div class="bar" id="bar"></div></div>
+    <div class="count" id="count"></div>
+    <div class="card">
+      <div class="label">Question</div>
+      <div class="q" id="q"></div>
+      <div id="answer-block" style="display:none">
+        <div class="divider"></div>
+        <div class="a" id="a"></div>
+      </div>
+    </div>
+    <button class="reveal-btn" id="reveal" onclick="revealAnswer()">Afficher la réponse</button>
+    <div class="rate" id="rate" style="display:none">
+      <button class="again" onclick="rate(1)">À revoir<small>&lt; 1 min</small></button>
+      <button class="hard" onclick="rate(3)">Difficile<small>bientôt</small></button>
+      <button class="good" onclick="rate(4)">Bien<small>+ qq jours</small></button>
+      <button class="easy" onclick="rate(5)">Facile<small>+ longtemps</small></button>
+    </div>
+  </div>
+</div>
+
+<script>
+function getEmail(){
+  try{ var u = JSON.parse(localStorage.getItem('ficheai_user')); return u && u.email ? u.email : null; }
+  catch(e){ return null; }
+}
+var EMAIL = getEmail();
+
+function esc(s){ var d=document.createElement('div'); d.textContent=s==null?'':s; return d.innerHTML; }
+
+async function loadDashboard(){
+  var box = document.getElementById('dash-content');
+  if(!EMAIL){
+    box.innerHTML = '<div class="empty">Tu dois être connecté pour réviser.<br><br><a class="btn" href="login.html">Se connecter</a></div>';
+    return;
+  }
+  box.innerHTML = '<div class="spinner"></div>';
+  try{
+    var r = await fetch('/api/flashcards?email=' + encodeURIComponent(EMAIL));
+    var data = await r.json();
+    var html = '';
+
+    if(data.total_due > 0){
+      html += '<button class="big-review" onclick="startReview(null)">⚡ Réviser maintenant'
+        + '<span><small>' + data.total_due + ' carte' + (data.total_due>1?'s':'') + ' à réviser</small></span></button>';
+    }
+
+    html += '<div class="section-t">Tes paquets</div>';
+
+    if(!data.decks || data.decks.length === 0){
+      html += '<div class="empty">Tu n\'as pas encore de fiches.<br><br><a class="btn" href="app.html">Créer une fiche</a></div>';
+    } else {
+      data.decks.forEach(function(d){
+        var btn;
+        if(d.total_cards === 0){
+          btn = '<button class="deck-btn create" onclick="createCards(\'' + d.fiche_id + '\',this)">✨ Créer les flashcards</button>';
+        } else if(d.due_cards > 0){
+          btn = '<button class="deck-btn review" onclick="startReview(\'' + d.fiche_id + '\')">Réviser (' + d.due_cards + ')</button>';
+        } else {
+          btn = '<button class="deck-btn done">À jour ✓</button>';
+        }
+        var meta = d.total_cards === 0 ? 'Pas encore de flashcards'
+          : (d.total_cards + ' carte' + (d.total_cards>1?'s':'')
+             + (d.due_cards>0 ? ' · <span class="due">' + d.due_cards + ' à réviser</span>' : ''));
+        html += '<div class="deck"><div class="deck-info"><div class="deck-title">'
+          + esc(d.titre) + '</div><div class="deck-meta">' + meta + '</div></div>' + btn + '</div>';
+      });
+    }
+    box.innerHTML = html;
+  }catch(e){
+    box.innerHTML = '<div class="empty">Une erreur est survenue. Recharge la page.</div>';
+  }
+}
+
+async function createCards(ficheId, btn){
+  btn.disabled = true;
+  btn.textContent = '⏳ Création…';
+  try{
+    var r = await fetch('/api/flashcards', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'generate', email:EMAIL, fiche_id:ficheId })
+    });
+    var data = await r.json();
+    if(data.error){ btn.disabled=false; btn.textContent='✨ Créer les flashcards'; alert('Erreur : ' + data.error); return; }
+    await loadDashboard();
+  }catch(e){
+    btn.disabled=false; btn.textContent='✨ Créer les flashcards'; alert('Erreur réseau, réessaie.');
+  }
+}
+
+// ── Mode révision ──
+var queue = [], idx = 0, total = 0;
+
+async function startReview(ficheId){
+  var url = '/api/flashcards?email=' + encodeURIComponent(EMAIL) + '&due=1';
+  if(ficheId) url += '&fiche_id=' + encodeURIComponent(ficheId);
+  try{
+    var r = await fetch(url);
+    queue = await r.json();
+  }catch(e){ alert('Erreur de chargement.'); return; }
+  if(!queue || queue.length === 0){ alert('Aucune carte à réviser pour le moment !'); return; }
+  idx = 0; total = queue.length;
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('review').style.display = 'block';
+  window.scrollTo(0,0);
+  showCard();
+}
+
+function showCard(){
+  var c = queue[idx];
+  document.getElementById('q').innerHTML = esc(c.question);
+  document.getElementById('a').innerHTML = esc(c.answer);
+  document.getElementById('answer-block').style.display = 'none';
+  document.getElementById('reveal').style.display = 'block';
+  document.getElementById('rate').style.display = 'none';
+  document.getElementById('count').textContent = 'Carte ' + (idx+1) + ' / ' + total;
+  document.getElementById('bar').style.width = (idx/total*100) + '%';
+}
+
+function revealAnswer(){
+  document.getElementById('answer-block').style.display = 'block';
+  document.getElementById('reveal').style.display = 'none';
+  document.getElementById('rate').style.display = 'grid';
+}
+
+async function rate(quality){
+  var c = queue[idx];
+  // On enregistre en arrière-plan (sans bloquer)
+  fetch('/api/flashcards', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ action:'review', email:EMAIL, card_id:c.id, quality:quality })
+  }).catch(function(){});
+
+  // "À revoir" → on remet la carte à la fin de la file
+  if(quality < 3){ queue.push(c); }
+
+  idx++;
+  total = queue.length;
+  if(idx >= queue.length){ finishReview(); return; }
+  showCard();
+}
+
+function finishReview(){
+  document.getElementById('bar').style.width = '100%';
+  document.getElementById('review').innerHTML =
+    '<div class="done-screen"><div class="emoji">🎉</div><h2>Révision terminée !</h2>'
+    + '<p>Bien joué. Reviens demain pour consolider ta mémoire.</p>'
+    + '<button class="btn" onclick="backToDash()">Retour</button></div>';
+}
+
+function backToDash(){ location.reload(); }
+
+loadDashboard();
+</script>
+</body>
+</html>
