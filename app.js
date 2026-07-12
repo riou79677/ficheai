@@ -169,6 +169,11 @@ async function generate() {
     showError('Le cours est trop court — ajoute plus de contenu.');
     return;
   }
+  if (!currentUser) {
+    showError('Crée ton compte gratuit pour générer ta fiche — 5 gratuites, aucune carte, 15 secondes !');
+    openAuthModal();
+    return;
+  }
   if (tokensLeft <= 0) {
     showError('Tu as utilisé tes 5 générations gratuites. Passe à Pro pour continuer !');
     return;
