@@ -1,54 +1,47 @@
-export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+const SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
 
+export default async function handler(req, res) {
+  // Pas de CORS ouvert au monde entier : l'app appelle cet endpoint en same-origin,
+  // qui n'a pas besoin d'en-tête CORS. On bloque ainsi l'abus depuis d'autres sites.
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Méthode non autorisée' });
 
-  const { course, format, language, email } = req.body;
+  const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!SERVICE_KEY) {
+    console.error('generate.js : SUPABASE_SERVICE_ROLE_KEY manquante.');
+    return res.status(500).json({ error: 'Configuration serveur incomplète' });
+  }
+
+  const { course, format, language, email } = req.body || {};
 
   if (!course || !format) {
     return res.status(400).json({ error: 'Paramètres manquants' });
   }
 
-  if (email) {
-    try {
-      const userRes = await fetch(
-        'https://qyjqtjrqnlbgtxvnjvnk.supabase.co/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=plan,generations_used,generations_limit',
-        {
-          headers: {
-            'apikey': 'sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ',
-            'Authorization': 'Bearer sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ'
-          }
-        }
-      );
-      const users = await userRes.json();
-      const user = users[0];
+  // ── SÉCURITÉ : la génération consomme des crédits Claude → réservée aux comptes ──
+  if (!email) {
+    return res.status(401).json({ error: 'Connecte-toi pour générer une fiche (5 gratuites à l\'inscription).' });
+  }
 
-      if (user && user.generations_used >= user.generations_limit) {
-        return res.status(403).json({
-          error: 'Limite de générations atteinte. Passe à Pro pour continuer !'
-        });
-      }
+  // Lecture du quota via service_role (fiable, contourne RLS côté serveur uniquement).
+  let user;
+  try {
+    const userRes = await fetch(
+      SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=plan,generations_used,generations_limit',
+      { headers: { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY } }
+    );
+    const users = await userRes.json();
+    user = Array.isArray(users) ? users[0] : null;
+  } catch (e) {
+    console.error('Erreur lecture quota:', e);
+    return res.status(503).json({ error: 'Service momentanément indisponible' });
+  }
 
-      if (user) {
-        await fetch(
-          'https://qyjqtjrqnlbgtxvnjvnk.supabase.co/rest/v1/users?email=eq.' + encodeURIComponent(email),
-          {
-            method: 'PATCH',
-            headers: {
-              'apikey': 'sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ',
-              'Authorization': 'Bearer sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ',
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ generations_used: user.generations_used + 1 })
-          }
-        );
-      }
-    } catch(e) {
-      console.log('Erreur Supabase:', e);
-    }
+  if (!user) {
+    return res.status(403).json({ error: 'Compte introuvable. Déconnecte-toi puis reconnecte-toi.' });
+  }
+  if (user.generations_used >= user.generations_limit) {
+    return res.status(403).json({ error: 'Limite de générations atteinte. Passe à Pro pour continuer !' });
   }
 
   const prompts = {
@@ -179,6 +172,10 @@ Format OBLIGATOIRE :
 - [Point 2]`
   };
 
+  if (!prompts[format]) {
+    return res.status(400).json({ error: 'Format inconnu' });
+  }
+
   const langMap = { fr: 'français', en: 'English', es: 'Español', de: 'Deutsch' };
   const langInstruction = language === 'auto'
     ? 'Réponds dans la même langue que le cours fourni.'
@@ -198,13 +195,28 @@ Format OBLIGATOIRE :
         system: 'Tu es FicheAI, un assistant pédagogique expert. ' + langInstruction + ' Sois précis, structuré et pédagogique.',
         messages: [{
           role: 'user',
-          content: prompts[format] + '\n\n---\nCOURS :\n' + course.substring(0, 8000) + '\n---\n\nGénère maintenant le contenu demandé.'
+          content: prompts[format] + '\n\n---\nCOURS :\n' + String(course).substring(0, 8000) + '\n---\n\nGénère maintenant le contenu demandé.'
         }]
       })
     });
 
     const data = await response.json();
     if (data.error) throw new Error(data.error.message);
+
+    // Incrément du quota APRÈS génération réussie (l'utilisateur ne perd rien en cas d'échec).
+    fetch(
+      SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email),
+      {
+        method: 'PATCH',
+        headers: {
+          'apikey': SERVICE_KEY,
+          'Authorization': 'Bearer ' + SERVICE_KEY,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({ generations_used: user.generations_used + 1 })
+      }
+    ).catch(e => console.error('Échec incrément quota:', e));
 
     return res.status(200).json({ result: data.content[0].text });
 
