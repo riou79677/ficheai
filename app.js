@@ -2,7 +2,7 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 // Configuration Supabase
 const SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
-const SUPABASE_KEY = ' sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ';
+const SUPABASE_KEY = 'sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ';
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // État de l'app
@@ -116,14 +116,8 @@ async function handleAuth() {
       errBox.textContent = error.message;
       errBox.style.display = 'block';
     } else {
-      // Créer l'utilisateur dans la table users
-      await supabase.from('users').insert([{
-        id: data.user.id,
-        email: email,
-        plan: 'starter',
-        generations_used: 0,
-        generations_limit: 5
-      }]);
+      // Le compte dans la table "users" est créé automatiquement côté base
+      // (trigger on_auth_user_created), donc plus besoin de l'insérer ici.
       successBox.textContent = '✅ Compte créé ! Tu peux maintenant générer tes fiches.';
       successBox.style.display = 'block';
       setTimeout(() => closeAuthModal(), 2000);
