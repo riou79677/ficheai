@@ -1,38 +1,45 @@
-export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+const SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
 
+export default async function handler(req, res) {
+  // Same-origin uniquement : pas de CORS ouvert au monde entier.
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Méthode non autorisée' });
 
-  const { messages, courseContent, email, language } = req.body;
+  const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!SERVICE_KEY) {
+    console.error('chat.js : SUPABASE_SERVICE_ROLE_KEY manquante.');
+    return res.status(500).json({ error: 'Configuration serveur incomplète' });
+  }
+
+  const { messages, courseContent, email, language } = req.body || {};
 
   if (!messages || !Array.isArray(messages)) {
     return res.status(400).json({ error: 'Paramètres manquants' });
   }
 
-  // Vérification plan via Supabase
-  if (email) {
-    try {
-      const userRes = await fetch(
-        'https://qyjqtjrqnlbgtxvnjvnk.supabase.co/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=plan',
-        {
-          headers: {
-            'apikey': 'sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ',
-            'Authorization': 'Bearer sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ'
-          }
-        }
-      );
-      const users = await userRes.json();
-      const user = users[0];
+  // ── SÉCURITÉ : le Chat IA est un produit payant → compte requis + plan vérifié serveur ──
+  if (!email) {
+    return res.status(401).json({ error: 'Connecte-toi pour utiliser le Chat IA.' });
+  }
 
-      if (user && user.plan === 'starter') {
-        return res.status(403).json({ error: 'Le chat IA est disponible à partir du plan Pro.' });
-      }
-    } catch(e) {
-      console.log('Erreur Supabase chat:', e);
-    }
+  let user;
+  try {
+    const userRes = await fetch(
+      SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=plan',
+      { headers: { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY } }
+    );
+    const users = await userRes.json();
+    user = Array.isArray(users) ? users[0] : null;
+  } catch (e) {
+    console.error('Erreur lecture plan chat:', e);
+    return res.status(503).json({ error: 'Service momentanément indisponible' });
+  }
+
+  if (!user) {
+    return res.status(403).json({ error: 'Compte introuvable. Déconnecte-toi puis reconnecte-toi.' });
+  }
+  if (user.plan === 'starter') {
+    return res.status(403).json({ error: 'Le Chat IA est disponible à partir du plan Pro.' });
   }
 
   const langMap = { fr: 'français', en: 'English', es: 'Español', de: 'Deutsch' };
@@ -42,7 +49,7 @@ export default async function handler(req, res) {
 
   const systemPrompt = `Tu es FicheAI, un assistant pédagogique expert et bienveillant. Tu aides les étudiants à réviser leurs cours de façon efficace.
 ${langInstruction}
-${courseContent ? '\n\nVoici le cours de l\'étudiant :\n---\n' + courseContent.substring(0, 6000) + '\n---' : ''}
+${courseContent ? '\n\nVoici le cours de l\'étudiant :\n---\n' + String(courseContent).substring(0, 6000) + '\n---' : ''}
 
 Tu peux générer des fiches de révision, quiz, flashcards, mind maps, expliquer des notions, anticiper les questions d'examen.
 Sois toujours clair, structuré, encourageant et pédagogique. Utilise des émojis pour structurer tes réponses.`;
