@@ -134,11 +134,21 @@ return;
 }
 
 await fetch(SUPABASE_URL+'/rest/v1/users',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY},body:JSON.stringify({id:data.user.id,email:email,plan:'starter',generations_used:0,generations_limit:5})});
-successBox.textContent='✅ Compte créé ! Redirection en cours...';successBox.style.display='block';
+successBox.innerHTML='✅ Compte créé avec succès ! Tu es connecté. Redirection en cours...';successBox.style.display='block';
 localStorage.setItem('ficheai_user',JSON.stringify({email:email,plan:'starter',remaining:5}));
+
+var redirected=false;
+var redirectTimeout=setTimeout(function() {
+if(!redirected) {
+successBox.innerHTML='✅ Compte créé ! <br><br>La redirection automatique a échoué. <button onclick="window.location.href=\'/app.html\'" style="background:var(--purple);color:white;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-weight:600;">Clique ici pour accéder à FicheAI →</button>';
+}
+}, 3000);
+
 setTimeout(function() {
+redirected=true;
+clearTimeout(redirectTimeout);
 window.location.href = '/app.html';
-}, 1500);
+}, 2000);
 
 }catch(e){errBox.textContent='⚠️ Une erreur est survenue. Réessaie.';errBox.style.display='block';btn.disabled=false;btn.textContent='Créer mon compte gratuit →';}
 }
