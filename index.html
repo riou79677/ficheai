@@ -9,12 +9,12 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#07070f;--bg2:#0d0d1a;--bg3:#111120;--surface:#181830;
-  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.12);
-  --purple:#6c5ce7;--purple2:#a29bfe;--pink:#fd79a8;--cyan:#00cec9;--gold:#fdcb6e;
-  --text:#f0efff;--text2:#9898b8;--text3:#555570;
-  --font-h:'Syne',sans-serif;--font-b:'DM Sans',sans-serif;
-  --ease:cubic-bezier(0.4,0,0.2,1);
+--bg:#07070f;--bg2:#0d0d1a;--bg3:#111120;--surface:#181830;
+--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.12);
+--purple:#6c5ce7;--purple2:#a29bfe;--pink:#fd79a8;--cyan:#00cec9;--gold:#fdcb6e;
+--text:#f0efff;--text2:#9898b8;--text3:#555570;
+--font-h:'Syne',sans-serif;--font-b:'DM Sans',sans-serif;
+--ease:cubic-bezier(0.4,0,0.2,1);
 }
 html{scroll-behavior:smooth}
 body{font-family:var(--font-b);background:var(--bg);color:var(--text);overflow-x:hidden;-webkit-font-smoothing:antialiased}
@@ -23,23 +23,23 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);overflow-x
 ::-webkit-scrollbar-thumb{background:linear-gradient(var(--purple),var(--pink));border-radius:100px}
 
 .bg-ambient{position:fixed;inset:0;pointer-events:none;z-index:0;
-  background:radial-gradient(ellipse at 15% 15%,rgba(108,92,231,0.08) 0%,transparent 55%),
-             radial-gradient(ellipse at 85% 85%,rgba(253,121,168,0.05) 0%,transparent 55%),
-             radial-gradient(ellipse at 50% 0%,rgba(0,206,201,0.04) 0%,transparent 50%);}
+background:radial-gradient(ellipse at 15% 15%,rgba(108,92,231,0.08) 0%,transparent 55%),
+radial-gradient(ellipse at 85% 85%,rgba(253,121,168,0.05) 0%,transparent 55%),
+radial-gradient(ellipse at 50% 0%,rgba(0,206,201,0.04) 0%,transparent 50%);}
 
 nav{position:fixed;top:0;left:0;right:0;z-index:200;
-  background:rgba(7,7,15,0.8);backdrop-filter:blur(28px) saturate(1.5);
-  border-bottom:1px solid var(--border);height:64px;
-  display:flex;align-items:center;justify-content:space-between;padding:0 2rem;}
+background:rgba(7,7,15,0.8);backdrop-filter:blur(28px) saturate(1.5);
+border-bottom:1px solid var(--border);height:64px;
+display:flex;align-items:center;justify-content:space-between;padding:0 2rem;}
 .logo{font-family:var(--font-h);font-size:1.3rem;font-weight:800;
-  display:flex;align-items:center;gap:10px;text-decoration:none;
-  background:linear-gradient(135deg,var(--purple2),var(--pink));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+display:flex;align-items:center;gap:10px;text-decoration:none;
+background:linear-gradient(135deg,var(--purple2),var(--pink));
+-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .logo-icon{width:32px;height:32px;border-radius:9px;flex-shrink:0;
-  background:linear-gradient(135deg,var(--purple),var(--pink));
-  display:flex;align-items:center;justify-content:center;
-  box-shadow:0 2px 16px rgba(108,92,231,0.35);
-  transition:transform 0.2s var(--ease),box-shadow 0.2s var(--ease);}
+background:linear-gradient(135deg,var(--purple),var(--pink));
+display:flex;align-items:center;justify-content:center;
+box-shadow:0 2px 16px rgba(108,92,231,0.35);
+transition:transform 0.2s var(--ease),box-shadow 0.2s var(--ease);}
 .logo:hover .logo-icon{transform:rotate(-8deg) scale(1.1);box-shadow:0 4px 28px rgba(108,92,231,0.5);}
 .logo-icon svg{width:16px;height:16px;}
 .nav-links{display:flex;align-items:center;gap:2rem;}
@@ -47,123 +47,123 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;
 .nav-links a:hover{color:var(--text);}
 .nav-cta{display:flex;align-items:center;gap:0.8rem;}
 .btn-ghost{background:transparent;border:1px solid var(--border2);color:var(--text);
-  padding:0.42rem 1.1rem;border-radius:100px;font-size:0.85rem;font-weight:600;
-  cursor:pointer;font-family:var(--font-b);text-decoration:none;
-  transition:all 0.2s var(--ease);}
+padding:0.42rem 1.1rem;border-radius:100px;font-size:0.85rem;font-weight:600;
+cursor:pointer;font-family:var(--font-b);text-decoration:none;
+transition:all 0.2s var(--ease);}
 .btn-ghost:hover{border-color:var(--purple2);color:var(--purple2);transform:translateY(-1px);}
 .btn-primary{background:linear-gradient(135deg,var(--purple),var(--pink));color:white;
-  padding:0.45rem 1.2rem;border-radius:100px;font-size:0.85rem;font-weight:700;
-  cursor:pointer;font-family:var(--font-b);text-decoration:none;border:none;
-  box-shadow:0 4px 20px rgba(108,92,231,0.35);transition:all 0.2s var(--ease);}
+padding:0.45rem 1.2rem;border-radius:100px;font-size:0.85rem;font-weight:700;
+cursor:pointer;font-family:var(--font-b);text-decoration:none;border:none;
+box-shadow:0 4px 20px rgba(108,92,231,0.35);transition:all 0.2s var(--ease);}
 .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(108,92,231,0.5);}
 
 .hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  text-align:center;padding:8rem 1.5rem 5rem;position:relative;z-index:1;}
+text-align:center;padding:8rem 1.5rem 5rem;position:relative;z-index:1;}
 .hero-eyebrow{display:inline-flex;align-items:center;gap:8px;
-  background:rgba(108,92,231,0.12);border:1px solid rgba(108,92,231,0.25);
-  border-radius:100px;padding:0.35rem 1rem;font-size:0.78rem;font-weight:700;
-  color:var(--purple2);letter-spacing:0.05em;margin-bottom:1.8rem;
-  animation:fadeUp 0.6s var(--ease) both;}
+background:rgba(108,92,231,0.12);border:1px solid rgba(108,92,231,0.25);
+border-radius:100px;padding:0.35rem 1rem;font-size:0.78rem;font-weight:700;
+color:var(--purple2);letter-spacing:0.05em;margin-bottom:1.8rem;
+animation:fadeUp 0.6s var(--ease) both;}
 .blink{width:6px;height:6px;background:var(--purple2);border-radius:50%;animation:blink 1.5s infinite;}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
 .hero h1{font-family:var(--font-h);font-size:clamp(2.5rem,6vw,4.5rem);
-  font-weight:800;letter-spacing:-0.05em;line-height:1.05;margin-bottom:1.2rem;
-  background:linear-gradient(135deg,#ffffff 0%,var(--purple2) 35%,var(--pink) 65%,var(--cyan) 100%);
-  background-size:300% 300%;
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-  animation:fadeUp 0.7s var(--ease) 0.1s both,gradShift 5s ease infinite;}
+font-weight:800;letter-spacing:-0.05em;line-height:1.05;margin-bottom:1.2rem;
+background:linear-gradient(135deg,#ffffff 0%,var(--purple2) 35%,var(--pink) 65%,var(--cyan) 100%);
+background-size:300% 300%;
+-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+animation:fadeUp 0.7s var(--ease) 0.1s both,gradShift 5s ease infinite;}
 @keyframes gradShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
 .hero p{font-size:clamp(1rem,2vw,1.2rem);color:var(--text2);max-width:560px;margin:0 auto 2.5rem;
-  line-height:1.7;animation:fadeUp 0.7s var(--ease) 0.2s both;}
+line-height:1.7;animation:fadeUp 0.7s var(--ease) 0.2s both;}
 .hero-btns{display:flex;align-items:center;justify-content:center;gap:1rem;flex-wrap:wrap;
-  animation:fadeUp 0.7s var(--ease) 0.3s both;}
+animation:fadeUp 0.7s var(--ease) 0.3s both;}
 .btn-hero{background:linear-gradient(135deg,var(--purple),var(--pink));color:white;
-  padding:0.9rem 2.2rem;border-radius:100px;font-size:1rem;font-weight:700;
-  cursor:pointer;font-family:var(--font-h);text-decoration:none;border:none;
-  box-shadow:0 6px 30px rgba(108,92,231,0.4);
-  transition:all 0.22s var(--ease);display:inline-flex;align-items:center;gap:8px;}
+padding:0.9rem 2.2rem;border-radius:100px;font-size:1rem;font-weight:700;
+cursor:pointer;font-family:var(--font-h);text-decoration:none;border:none;
+box-shadow:0 6px 30px rgba(108,92,231,0.4);
+transition:all 0.22s var(--ease);display:inline-flex;align-items:center;gap:8px;}
 .btn-hero:hover{transform:translateY(-3px);box-shadow:0 12px 45px rgba(108,92,231,0.55);}
 .btn-hero-ghost{background:transparent;border:1.5px solid var(--border2);color:var(--text);
-  padding:0.9rem 2.2rem;border-radius:100px;font-size:1rem;font-weight:600;
-  cursor:pointer;font-family:var(--font-b);text-decoration:none;
-  transition:all 0.22s var(--ease);display:inline-flex;align-items:center;gap:8px;}
+padding:0.9rem 2.2rem;border-radius:100px;font-size:1rem;font-weight:600;
+cursor:pointer;font-family:var(--font-b);text-decoration:none;
+transition:all 0.22s var(--ease);display:inline-flex;align-items:center;gap:8px;}
 .btn-hero-ghost:hover{border-color:var(--purple2);color:var(--purple2);transform:translateY(-2px);}
 .hero-note{margin-top:1.2rem;font-size:0.8rem;color:var(--text3);animation:fadeUp 0.7s var(--ease) 0.4s both;}
 
 .demo-container{margin-top:4rem;width:100%;max-width:720px;animation:fadeUp 0.8s var(--ease) 0.5s both;}
 .demo-card{background:var(--bg2);border:1px solid var(--border2);border-radius:24px;overflow:hidden;
-  box-shadow:0 24px 80px rgba(0,0,0,0.5),0 0 0 1px rgba(108,92,231,0.1);}
+box-shadow:0 24px 80px rgba(0,0,0,0.5),0 0 0 1px rgba(108,92,231,0.1);}
 .demo-bar{background:var(--bg3);border-bottom:1px solid var(--border);padding:0.8rem 1.2rem;
-  display:flex;align-items:center;gap:8px;}
+display:flex;align-items:center;gap:8px;}
 .demo-dot{width:10px;height:10px;border-radius:50%;}
 .demo-dot:nth-child(1){background:#ff5f57;}
 .demo-dot:nth-child(2){background:#ffbd2e;}
 .demo-dot:nth-child(3){background:#27c93f;}
 .demo-url{margin-left:0.5rem;flex:1;background:rgba(255,255,255,0.05);
-  border-radius:6px;padding:0.25rem 0.8rem;font-size:0.72rem;color:var(--text3);}
+border-radius:6px;padding:0.25rem 0.8rem;font-size:0.72rem;color:var(--text3);}
 .demo-content{padding:1.5rem;}
 .demo-format-tabs{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap;}
 .demo-tab{background:var(--bg3);border:1px solid var(--border);border-radius:8px;
-  padding:0.35rem 0.8rem;font-size:0.75rem;font-weight:600;color:var(--text3);cursor:pointer;
-  transition:all 0.18s var(--ease);}
+padding:0.35rem 0.8rem;font-size:0.75rem;font-weight:600;color:var(--text3);cursor:pointer;
+transition:all 0.18s var(--ease);}
 .demo-tab.active{background:rgba(108,92,231,0.2);border-color:rgba(108,92,231,0.5);color:var(--purple2);}
 .demo-result{background:var(--bg3);border:1px solid var(--border);border-radius:12px;
-  padding:1.2rem;font-size:0.82rem;line-height:1.8;color:var(--text2);min-height:180px;
-  font-family:var(--font-b);white-space:pre-wrap;}
+padding:1.2rem;font-size:0.82rem;line-height:1.8;color:var(--text2);min-height:180px;
+font-family:var(--font-b);white-space:pre-wrap;}
 
 .stats{display:flex;align-items:center;justify-content:center;gap:3rem;
-  padding:3rem 1.5rem;flex-wrap:wrap;position:relative;z-index:1;
-  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
-  background:rgba(255,255,255,0.015);}
+padding:3rem 1.5rem;flex-wrap:wrap;position:relative;z-index:1;
+border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+background:rgba(255,255,255,0.015);}
 .stat-item{text-align:center;}
 .stat-val{font-family:var(--font-h);font-size:2rem;font-weight:800;
-  background:linear-gradient(135deg,var(--purple2),var(--pink));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+background:linear-gradient(135deg,var(--purple2),var(--pink));
+-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .stat-label{font-size:0.82rem;color:var(--text3);margin-top:2px;}
 
 .section{padding:6rem 1.5rem;max-width:900px;margin:0 auto;position:relative;z-index:1;}
 .section-eyebrow{font-size:0.72rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;
-  color:var(--purple2);margin-bottom:0.8rem;text-align:center;}
+color:var(--purple2);margin-bottom:0.8rem;text-align:center;}
 .section-title{font-family:var(--font-h);font-size:clamp(1.8rem,3.5vw,2.6rem);
-  font-weight:800;letter-spacing:-0.04em;line-height:1.1;text-align:center;margin-bottom:1rem;}
+font-weight:800;letter-spacing:-0.04em;line-height:1.1;text-align:center;margin-bottom:1rem;}
 .section-sub{font-size:0.95rem;color:var(--text2);text-align:center;margin-bottom:3.5rem;
-  max-width:500px;margin-left:auto;margin-right:auto;}
+max-width:500px;margin-left:auto;margin-right:auto;}
 
 .steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;}
 .step-item{background:var(--bg2);border:1px solid var(--border);border-radius:20px;
-  padding:1.8rem;position:relative;overflow:hidden;transition:all 0.25s var(--ease);}
+padding:1.8rem;position:relative;overflow:hidden;transition:all 0.25s var(--ease);}
 .step-item:hover{border-color:rgba(108,92,231,0.3);transform:translateY(-5px);
-  box-shadow:0 12px 40px rgba(0,0,0,0.25);}
+box-shadow:0 12px 40px rgba(0,0,0,0.25);}
 .step-item::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  background:linear-gradient(90deg,var(--purple),var(--pink));opacity:0;transition:opacity 0.25s;}
+background:linear-gradient(90deg,var(--purple),var(--pink));opacity:0;transition:opacity 0.25s;}
 .step-item:hover::before{opacity:1;}
 .step-num{width:40px;height:40px;border-radius:12px;
-  background:rgba(108,92,231,0.15);border:1px solid rgba(108,92,231,0.25);
-  display:flex;align-items:center;justify-content:center;
-  font-family:var(--font-h);font-size:1rem;font-weight:800;color:var(--purple2);margin-bottom:1rem;}
+background:rgba(108,92,231,0.15);border:1px solid rgba(108,92,231,0.25);
+display:flex;align-items:center;justify-content:center;
+font-family:var(--font-h);font-size:1rem;font-weight:800;color:var(--purple2);margin-bottom:1rem;}
 .step-item h3{font-family:var(--font-h);font-size:1rem;font-weight:700;margin-bottom:0.5rem;}
 .step-item p{font-size:0.83rem;color:var(--text3);line-height:1.6;}
 .step-icon{font-size:1.8rem;margin-bottom:0.8rem;}
 
 .formats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;}
 .format-item{background:var(--bg2);border:1px solid var(--border);border-radius:18px;
-  padding:1.5rem;text-align:center;transition:all 0.25s var(--ease);}
+padding:1.5rem;text-align:center;transition:all 0.25s var(--ease);}
 .format-item:hover{border-color:rgba(108,92,231,0.35);transform:translateY(-4px);
-  box-shadow:0 8px 30px rgba(0,0,0,0.2);}
+box-shadow:0 8px 30px rgba(0,0,0,0.2);}
 .format-emoji{font-size:2rem;margin-bottom:0.7rem;}
 .format-name{font-family:var(--font-h);font-size:0.9rem;font-weight:700;margin-bottom:0.4rem;}
 .format-desc{font-size:0.78rem;color:var(--text3);line-height:1.5;}
 
 .testimonials-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;}
 .testimonial{background:var(--bg2);border:1px solid var(--border);border-radius:20px;
-  padding:1.5rem;transition:all 0.25s var(--ease);}
+padding:1.5rem;transition:all 0.25s var(--ease);}
 .testimonial:hover{border-color:rgba(108,92,231,0.25);transform:translateY(-3px);}
 .testimonial-text{font-size:0.88rem;color:var(--text2);line-height:1.7;margin-bottom:1rem;font-style:italic;}
 .testimonial-author{display:flex;align-items:center;gap:10px;}
 .testimonial-avatar{width:36px;height:36px;border-radius:50%;
-  background:linear-gradient(135deg,var(--purple),var(--pink));
-  display:flex;align-items:center;justify-content:center;
-  font-size:1rem;font-weight:700;color:white;font-family:var(--font-h);}
+background:linear-gradient(135deg,var(--purple),var(--pink));
+display:flex;align-items:center;justify-content:center;
+font-size:1rem;font-weight:700;color:white;font-family:var(--font-h);}
 .testimonial-name{font-size:0.82rem;font-weight:600;color:var(--text);}
 .testimonial-role{font-size:0.74rem;color:var(--text3);}
 .stars{color:var(--gold);font-size:0.75rem;margin-bottom:0.8rem;letter-spacing:2px;}
@@ -172,9 +172,9 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;
 .faq-item{background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:border-color 0.2s;}
 .faq-item:hover{border-color:rgba(108,92,231,0.25);}
 .faq-q{width:100%;background:none;border:none;padding:1.2rem 1.5rem;
-  display:flex;align-items:center;justify-content:space-between;
-  font-size:0.92rem;font-weight:600;color:var(--text);cursor:pointer;
-  font-family:var(--font-b);text-align:left;transition:color 0.2s;}
+display:flex;align-items:center;justify-content:space-between;
+font-size:0.92rem;font-weight:600;color:var(--text);cursor:pointer;
+font-family:var(--font-b);text-align:left;transition:color 0.2s;}
 .faq-q:hover{color:var(--purple2);}
 .faq-q span{font-size:1.2rem;color:var(--text3);transition:transform 0.25s var(--ease);}
 .faq-item.open .faq-q span{transform:rotate(45deg);color:var(--purple2);}
@@ -184,45 +184,45 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;
 
 .cta-section{padding:6rem 1.5rem;text-align:center;position:relative;z-index:1;}
 .cta-card{background:linear-gradient(135deg,rgba(108,92,231,0.12),rgba(253,121,168,0.08));
-  border:1px solid rgba(108,92,231,0.25);border-radius:28px;
-  padding:4rem 2rem;max-width:650px;margin:0 auto;}
+border:1px solid rgba(108,92,231,0.25);border-radius:28px;
+padding:4rem 2rem;max-width:650px;margin:0 auto;}
 .cta-card h2{font-family:var(--font-h);font-size:clamp(1.8rem,3.5vw,2.5rem);
-  font-weight:800;letter-spacing:-0.03em;margin-bottom:0.8rem;}
+font-weight:800;letter-spacing:-0.03em;margin-bottom:0.8rem;}
 .cta-card p{font-size:1rem;color:var(--text2);margin-bottom:2rem;}
 .cta-btns{display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;}
 
 footer{border-top:1px solid var(--border);padding:2.5rem 2rem;position:relative;z-index:1;}
 .footer-inner{max-width:900px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:2rem;}
 .footer-brand-logo{font-family:var(--font-h);font-size:1.2rem;font-weight:800;
-  background:linear-gradient(135deg,var(--purple2),var(--pink));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-  display:flex;align-items:center;gap:8px;margin-bottom:0.8rem;}
+background:linear-gradient(135deg,var(--purple2),var(--pink));
+-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+display:flex;align-items:center;gap:8px;margin-bottom:0.8rem;}
 .footer-brand p{font-size:0.82rem;color:var(--text3);line-height:1.6;max-width:260px;}
 .footer-col h4{font-size:0.78rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;
-  color:var(--text3);margin-bottom:1rem;}
+color:var(--text3);margin-bottom:1rem;}
 .footer-col a{display:block;font-size:0.85rem;color:var(--text3);text-decoration:none;
-  margin-bottom:0.5rem;transition:color 0.18s;}
+margin-bottom:0.5rem;transition:color 0.18s;}
 .footer-col a:hover{color:var(--purple2);}
 .footer-bottom{max-width:900px;margin:2rem auto 0;padding-top:1.5rem;
-  border-top:1px solid var(--border);display:flex;align-items:center;
-  justify-content:space-between;flex-wrap:wrap;gap:0.5rem;
-  font-size:0.76rem;color:var(--text3);}
+border-top:1px solid var(--border);display:flex;align-items:center;
+justify-content:space-between;flex-wrap:wrap;gap:0.5rem;
+font-size:0.76rem;color:var(--text3);}
 
 @keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
 .reveal{opacity:0;transform:translateY(30px);transition:all 0.65s var(--ease);}
 .reveal.visible{opacity:1;transform:translateY(0);}
 
 @media(max-width:768px){
-  .nav-links{display:none;}
-  .steps-grid,.formats-grid,.testimonials-grid{grid-template-columns:1fr;}
-  .footer-inner{grid-template-columns:1fr 1fr;}
-  .stats{gap:1.5rem;}
+.nav-links{display:none;}
+.steps-grid,.formats-grid,.testimonials-grid{grid-template-columns:1fr;}
+.footer-inner{grid-template-columns:1fr 1fr;}
+.stats{gap:1.5rem;}
 }
 @media(max-width:480px){
-  nav{padding:0 1rem;}
-  .footer-inner{grid-template-columns:1fr;}
-  .hero-btns{flex-direction:column;width:100%;}
-  .btn-hero,.btn-hero-ghost{width:100%;justify-content:center;}
+nav{padding:0 1rem;}
+.footer-inner{grid-template-columns:1fr;}
+.hero-btns{flex-direction:column;width:100%;}
+.btn-hero,.btn-hero-ghost{width:100%;justify-content:center;}
 }
 </style>
 </head>
@@ -230,55 +230,55 @@ footer{border-top:1px solid var(--border);padding:2.5rem 2rem;position:relative;
 <div class="bg-ambient"></div>
 
 <nav>
-  <a href="/" class="logo">
-    <div class="logo-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
-      </svg>
-    </div>
-    FicheAI
-  </a>
-  <div class="nav-links">
-    <a href="#comment">Comment ça marche</a>
-    <a href="#formats">Formats</a>
-    <a href="#tarifs">Tarifs</a>
-    <a href="#faq">FAQ</a>
-  </div>
-  <div class="nav-cta">
-    <a href="/login.html" class="btn-ghost">Se connecter</a>
-    <a href="/signup.html" class="btn-primary">Essayer gratuitement</a>
-  </div>
+<a href="/" class="logo">
+<div class="logo-icon">
+<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+</svg>
+</div>
+FicheAI
+</a>
+<div class="nav-links">
+<a href="#comment">Comment ça marche</a>
+<a href="#formats">Formats</a>
+<a href="#tarifs">Tarifs</a>
+<a href="#faq">FAQ</a>
+</div>
+<div class="nav-cta">
+<a href="/login.html" class="btn-ghost">Se connecter</a>
+<a href="/signup.html" class="btn-primary">Essayer gratuitement</a>
+</div>
 </nav>
 
 <section class="hero">
-  <div class="hero-eyebrow">
-    <span class="blink"></span>
-    ✨ L'IA qui révolutionne la révision
-  </div>
-  <h1>Transforme tes cours<br>en fiches parfaites<br>en 15 secondes</h1>
-  <p>Colle ton cours, choisis ton format — FicheAI génère automatiquement des fiches de révision, quiz, flashcards et mind maps ultra-structurés grâce à l'IA.</p>
-  <div class="hero-btns">
-    <a href="/app.html" class="btn-hero">⚡ Essayer gratuitement</a>
-    <a href="#comment" class="btn-hero-ghost">Voir comment ça marche →</a>
-  </div>
-  <p class="hero-note">✓ Gratuit pour commencer &nbsp;·&nbsp; ✓ Aucune CB requise &nbsp;·&nbsp; ✓ Résultats en 15 secondes</p>
+<div class="hero-eyebrow">
+<span class="blink"></span>
+✨ L'IA qui révolutionne la révision
+</div>
+<h1>Transforme tes cours<br>en fiches parfaites<br>en 15 secondes</h1>
+<p>Colle ton cours, choisis ton format — FicheAI génère automatiquement des fiches de révision, quiz, flashcards et mind maps ultra-structurés grâce à l'IA.</p>
+<div class="hero-btns">
+<a href="/app.html" class="btn-hero">⚡ Essayer gratuitement</a>
+<a href="#comment" class="btn-hero-ghost">Voir comment ça marche →</a>
+</div>
+<p class="hero-note">✓ Gratuit pour commencer &nbsp;·&nbsp; ✓ Aucune CB requise &nbsp;·&nbsp; ✓ Résultats en 15 secondes</p>
 
-  <div class="demo-container">
-    <div class="demo-card">
-      <div class="demo-bar">
-        <div class="demo-dot"></div>
-        <div class="demo-dot"></div>
-        <div class="demo-dot"></div>
-        <div class="demo-url">ficheai.fr/app</div>
-      </div>
-      <div class="demo-content">
-        <div class="demo-format-tabs">
-          <div class="demo-tab active">📄 Fiche</div>
-          <div class="demo-tab">✅ Quiz</div>
-          <div class="demo-tab">🃏 Flashcards</div>
-          <div class="demo-tab">🧠 Mind Map</div>
-        </div>
-        <div class="demo-result"><strong style="color:#a29bfe">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</strong>
+<div class="demo-container">
+<div class="demo-card">
+<div class="demo-bar">
+<div class="demo-dot"></div>
+<div class="demo-dot"></div>
+<div class="demo-dot"></div>
+<div class="demo-url">ficheai.fr/app</div>
+</div>
+<div class="demo-content">
+<div class="demo-format-tabs">
+<div class="demo-tab active">📄 Fiche</div>
+<div class="demo-tab">✅ Quiz</div>
+<div class="demo-tab">🃏 Flashcards</div>
+<div class="demo-tab">🧠 Mind Map</div>
+</div>
+<div class="demo-result"><strong style="color:#a29bfe">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</strong>
 <strong style="color:#f0efff">📚 LA PHOTOSYNTHÈSE</strong>
 <strong style="color:#a29bfe">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</strong>
 
@@ -290,270 +290,270 @@ footer{border-top:1px solid var(--border);padding:2.5rem 2rem;position:relative;
 <strong style="color:#fd79a8">⚡ À RETENIR</strong>
 <span style="color:#9898b8">✦ La chlorophylle absorbe le rouge et le bleu
 ✦ 2 phases : claire + cycle de Calvin</span></div>
-      </div>
-    </div>
-  </div>
+</div>
+</div>
+</div>
 </section>
 
 <div class="stats">
-  <div class="stat-item reveal">
-    <div class="stat-val">15 sec</div>
-    <div class="stat-label">Génération moyenne</div>
-  </div>
-  <div class="stat-item reveal">
-    <div class="stat-val">6</div>
-    <div class="stat-label">Formats disponibles</div>
-  </div>
-  <div class="stat-item reveal">
-    <div class="stat-val">100%</div>
-    <div class="stat-label">Basé sur ton cours</div>
-  </div>
-  <div class="stat-item reveal">
-    <div class="stat-val">Gratuit</div>
-    <div class="stat-label">Pour commencer</div>
-  </div>
+<div class="stat-item reveal">
+<div class="stat-val">15 sec</div>
+<div class="stat-label">Génération moyenne</div>
+</div>
+<div class="stat-item reveal">
+<div class="stat-val">6</div>
+<div class="stat-label">Formats disponibles</div>
+</div>
+<div class="stat-item reveal">
+<div class="stat-val">100%</div>
+<div class="stat-label">Basé sur ton cours</div>
+</div>
+<div class="stat-item reveal">
+<div class="stat-val">Gratuit</div>
+<div class="stat-label">Pour commencer</div>
+</div>
 </div>
 
 <section class="section" id="comment">
-  <div class="section-eyebrow reveal">Comment ça marche</div>
-  <h2 class="section-title reveal">Simple comme 1, 2, 3</h2>
-  <p class="section-sub reveal">Pas besoin de formation. En 15 secondes tu as ta fiche.</p>
-  <div class="steps-grid">
-    <div class="step-item reveal">
-      <div class="step-icon">📄</div>
-      <div class="step-num">1</div>
-      <h3>Importe ton cours</h3>
-      <p>Colle ton texte ou importe un PDF. FicheAI lit et comprend tout type de contenu académique.</p>
-    </div>
-    <div class="step-item reveal">
-      <div class="step-icon">🎯</div>
-      <div class="step-num">2</div>
-      <h3>Choisis ton format</h3>
-      <p>Fiche, quiz, flashcards, mind map, questions ouvertes ou chronologie — tu choisis ce dont tu as besoin.</p>
-    </div>
-    <div class="step-item reveal">
-      <div class="step-icon">✨</div>
-      <div class="step-num">3</div>
-      <h3>L'IA génère</h3>
-      <p>En moins de 15 secondes tu reçois un contenu ultra-structuré et directement utilisable pour réviser.</p>
-    </div>
-  </div>
+<div class="section-eyebrow reveal">Comment ça marche</div>
+<h2 class="section-title reveal">Simple comme 1, 2, 3</h2>
+<p class="section-sub reveal">Pas besoin de formation. En 15 secondes tu as ta fiche.</p>
+<div class="steps-grid">
+<div class="step-item reveal">
+<div class="step-icon">📄</div>
+<div class="step-num">1</div>
+<h3>Importe ton cours</h3>
+<p>Colle ton texte ou importe un PDF. FicheAI lit et comprend tout type de contenu académique.</p>
+</div>
+<div class="step-item reveal">
+<div class="step-icon">🎯</div>
+<div class="step-num">2</div>
+<h3>Choisis ton format</h3>
+<p>Fiche, quiz, flashcards, mind map, questions ouvertes ou chronologie — tu choisis ce dont tu as besoin.</p>
+</div>
+<div class="step-item reveal">
+<div class="step-icon">✨</div>
+<div class="step-num">3</div>
+<h3>L'IA génère</h3>
+<p>En moins de 15 secondes tu reçois un contenu ultra-structuré et directement utilisable pour réviser.</p>
+</div>
+</div>
 </section>
 
 <section class="section" id="formats" style="padding-top:0">
-  <div class="section-eyebrow reveal">6 formats disponibles</div>
-  <h2 class="section-title reveal">Tout ce dont tu as besoin pour réviser</h2>
-  <p class="section-sub reveal">Chaque format est conçu pour une méthode de révision différente.</p>
-  <div class="formats-grid">
-    <div class="format-item reveal">
-      <div class="format-emoji">📄</div>
-      <div class="format-name">Fiche de révision</div>
-      <div class="format-desc">Structure complète avec points clés, définitions et questions d'examen probables.</div>
-    </div>
-    <div class="format-item reveal">
-      <div class="format-emoji">✅</div>
-      <div class="format-name">Quiz QCM</div>
-      <div class="format-desc">6 questions à choix multiples avec corrections détaillées pour tester tes connaissances.</div>
-    </div>
-    <div class="format-item reveal">
-      <div class="format-emoji">🃏</div>
-      <div class="format-name">Flashcards</div>
-      <div class="format-desc">10 cartes recto/verso avec astuces mnémotechniques pour mémoriser rapidement.</div>
-    </div>
-    <div class="format-item reveal">
-      <div class="format-emoji">🧠</div>
-      <div class="format-name">Mind Map</div>
-      <div class="format-desc">Carte mentale pour visualiser les connexions entre les concepts du cours.</div>
-    </div>
-    <div class="format-item reveal">
-      <div class="format-emoji">💬</div>
-      <div class="format-name">Questions ouvertes</div>
-      <div class="format-desc">6 questions de niveaux variés pour préparer les oraux et dissertations.</div>
-    </div>
-    <div class="format-item reveal">
-      <div class="format-emoji">📅</div>
-      <div class="format-name">Chronologie</div>
-      <div class="format-desc">Plan structuré pour les cours d'histoire, de droit ou tout sujet séquentiel.</div>
-    </div>
-  </div>
+<div class="section-eyebrow reveal">6 formats disponibles</div>
+<h2 class="section-title reveal">Tout ce dont tu as besoin pour réviser</h2>
+<p class="section-sub reveal">Chaque format est conçu pour une méthode de révision différente.</p>
+<div class="formats-grid">
+<div class="format-item reveal">
+<div class="format-emoji">📄</div>
+<div class="format-name">Fiche de révision</div>
+<div class="format-desc">Structure complète avec points clés, définitions et questions d'examen probables.</div>
+</div>
+<div class="format-item reveal">
+<div class="format-emoji">✅</div>
+<div class="format-name">Quiz QCM</div>
+<div class="format-desc">6 questions à choix multiples avec corrections détaillées pour tester tes connaissances.</div>
+</div>
+<div class="format-item reveal">
+<div class="format-emoji">🃏</div>
+<div class="format-name">Flashcards</div>
+<div class="format-desc">10 cartes recto/verso avec astuces mnémotechniques pour mémoriser rapidement.</div>
+</div>
+<div class="format-item reveal">
+<div class="format-emoji">🧠</div>
+<div class="format-name">Mind Map</div>
+<div class="format-desc">Carte mentale pour visualiser les connexions entre les concepts du cours.</div>
+</div>
+<div class="format-item reveal">
+<div class="format-emoji">💬</div>
+<div class="format-name">Questions ouvertes</div>
+<div class="format-desc">6 questions de niveaux variés pour préparer les oraux et dissertations.</div>
+</div>
+<div class="format-item reveal">
+<div class="format-emoji">📅</div>
+<div class="format-name">Chronologie</div>
+<div class="format-desc">Plan structuré pour les cours d'histoire, de droit ou tout sujet séquentiel.</div>
+</div>
+</div>
 </section>
 
 <section class="section" style="padding-top:0">
-  <div class="section-eyebrow reveal">Témoignages</div>
-  <h2 class="section-title reveal">Ils révisent avec FicheAI</h2>
-  <div class="testimonials-grid">
-    <div class="testimonial reveal">
-      <div class="stars">★★★★★</div>
-      <div class="testimonial-text">En 15 secondes j'ai une fiche mieux structurée que ce que je ferais en 2 heures. C'est bluffant.</div>
-      <div class="testimonial-author">
-        <div class="testimonial-avatar">L</div>
-        <div>
-          <div class="testimonial-name">Lucas M.</div>
-          <div class="testimonial-role">Terminale · Bac 2025</div>
-        </div>
-      </div>
-    </div>
-    <div class="testimonial reveal">
-      <div class="stars">★★★★★</div>
-      <div class="testimonial-text">J'ai importé mon cours de droit de 40 pages et j'ai eu une fiche parfaite. Gain de temps énorme.</div>
-      <div class="testimonial-author">
-        <div class="testimonial-avatar">S</div>
-        <div>
-          <div class="testimonial-name">Sarah K.</div>
-          <div class="testimonial-role">L1 Droit · Paris</div>
-        </div>
-      </div>
-    </div>
-    <div class="testimonial reveal">
-      <div class="stars">★★★★★</div>
-      <div class="testimonial-text">Les flashcards sont vraiment bien faites. Ça m'a aidé à réviser mon anatomie beaucoup plus vite.</div>
-      <div class="testimonial-author">
-        <div class="testimonial-avatar">A</div>
-        <div>
-          <div class="testimonial-name">Amira B.</div>
-          <div class="testimonial-role">PACES · Lyon</div>
-        </div>
-      </div>
-    </div>
-  </div>
+<div class="section-eyebrow reveal">Témoignages</div>
+<h2 class="section-title reveal">Ils révisent avec FicheAI</h2>
+<div class="testimonials-grid">
+<div class="testimonial reveal">
+<div class="stars">★★★★★</div>
+<div class="testimonial-text">En 15 secondes j'ai une fiche mieux structurée que ce que je ferais en 2 heures. C'est bluffant.</div>
+<div class="testimonial-author">
+<div class="testimonial-avatar">L</div>
+<div>
+<div class="testimonial-name">Lucas M.</div>
+<div class="testimonial-role">Terminale · Bac 2025</div>
+</div>
+</div>
+</div>
+<div class="testimonial reveal">
+<div class="stars">★★★★★</div>
+<div class="testimonial-text">J'ai importé mon cours de droit de 40 pages et j'ai eu une fiche parfaite. Gain de temps énorme.</div>
+<div class="testimonial-author">
+<div class="testimonial-avatar">S</div>
+<div>
+<div class="testimonial-name">Sarah K.</div>
+<div class="testimonial-role">L1 Droit · Paris</div>
+</div>
+</div>
+</div>
+<div class="testimonial reveal">
+<div class="stars">★★★★★</div>
+<div class="testimonial-text">Les flashcards sont vraiment bien faites. Ça m'a aidé à réviser mon anatomie beaucoup plus vite.</div>
+<div class="testimonial-author">
+<div class="testimonial-avatar">A</div>
+<div>
+<div class="testimonial-name">Amira B.</div>
+<div class="testimonial-role">PACES · Lyon</div>
+</div>
+</div>
+</div>
+</div>
 </section>
 
 <section class="section" id="tarifs" style="padding-top:0">
-  <div class="section-eyebrow reveal">Tarifs</div>
-  <h2 class="section-title reveal">Simple et transparent</h2>
-  <p class="section-sub reveal">Commence gratuitement. Upgrade quand tu en as besoin.</p>
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.2rem">
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:22px;padding:2rem" class="reveal">
-      <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text2);margin-bottom:0.8rem">Starter</div>
-      <div style="font-family:var(--font-h);font-size:2.5rem;font-weight:800;line-height:1;margin-bottom:0.3rem">0<span style="font-size:1.2rem;font-weight:500">€</span></div>
-      <div style="font-size:0.78rem;color:var(--text2);margin-bottom:1.5rem">Pour toujours · Aucune CB</div>
-      <ul style="list-style:none;display:flex;flex-direction:column;gap:0.5rem;font-size:0.83rem;color:var(--text2);margin-bottom:1.5rem">
-        <li>✓ 5 générations / mois</li>
-        <li>✓ Tous les formats</li>
-        <li>✓ Import PDF 15 pages</li>
-        <li>✓ Téléchargement .txt</li>
-      </ul>
-      <a href="/signup.html" style="display:block;text-align:center;padding:0.8rem;border-radius:100px;border:1.5px solid rgba(255,255,255,0.13);color:var(--text);text-decoration:none;font-weight:700;font-size:0.85rem;transition:all 0.2s" onmouseover="this.style.borderColor='#a29bfe';this.style.color='#a29bfe'" onmouseout="this.style.borderColor='rgba(255,255,255,0.13)';this.style.color='var(--text)'">Commencer gratuitement</a>
-    </div>
-    <div style="background:linear-gradient(180deg,rgba(108,92,231,0.1) 0%,var(--bg2) 100%);border:1px solid rgba(108,92,231,0.45);border-radius:22px;padding:2rem;position:relative" class="reveal">
-      <div style="position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--purple),var(--pink));color:white;font-size:0.72rem;font-weight:700;padding:0.28rem 1.1rem;border-radius:100px;white-space:nowrap">⭐ Le plus populaire</div>
-      <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--purple2);margin-bottom:0.8rem">Pro</div>
-      <div style="font-family:var(--font-h);font-size:2.5rem;font-weight:800;line-height:1;margin-bottom:0.3rem">4,99<span style="font-size:1.2rem;font-weight:500">€</span></div>
-      <div style="font-size:0.78rem;color:var(--text2);margin-bottom:1.5rem">par mois · ou 39,99€/an</div>
-      <ul style="list-style:none;display:flex;flex-direction:column;gap:0.5rem;font-size:0.83rem;color:var(--text2);margin-bottom:1.5rem">
-        <li>✓ 50 générations / mois</li>
-        <li>✓ Import PDF 40 pages</li>
-        <li>✓ 📚 Bibliothèque sauvegardée</li>
-        <li>✓ IA multilingue</li>
-        <li>✓ Support prioritaire</li>
-      </ul>
-      <a href="https://buy.stripe.com/00wfZibWR8Zl8o7eUK43S05" target="_blank" style="display:block;text-align:center;padding:0.8rem;border-radius:100px;background:linear-gradient(135deg,var(--purple),var(--pink));color:white;text-decoration:none;font-weight:700;font-size:0.85rem;box-shadow:0 4px 20px rgba(108,92,231,0.35)">Essayer 7 jours gratuits</a>
-    </div>
-    <div style="background:linear-gradient(180deg,rgba(253,203,110,0.07) 0%,var(--bg2) 100%);border:1px solid rgba(253,203,110,0.3);border-radius:22px;padding:2rem" class="reveal">
-      <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem">Ultimate</div>
-      <div style="font-family:var(--font-h);font-size:2.5rem;font-weight:800;line-height:1;margin-bottom:0.3rem">9,99<span style="font-size:1.2rem;font-weight:500">€</span></div>
-      <div style="font-size:0.78rem;color:var(--text2);margin-bottom:1.5rem">par mois · ou 79,99€/an</div>
-      <ul style="list-style:none;display:flex;flex-direction:column;gap:0.5rem;font-size:0.83rem;color:var(--text2);margin-bottom:1.5rem">
-        <li>✓ Générations illimitées</li>
-        <li>✓ Import PDF 100 pages</li>
-        <li>✓ 📚 Bibliothèque illimitée</li>
-        <li>✓ 🎯 Simulation d\'examen</li>
-        <li>✓ 📈 Suivi de progression</li>
-        <li>✓ Accès anticipé nouveautés</li>
-      </ul>
-      <a href="https://buy.stripe.com/aFadRaaSN2AX33NeUK43S07" target="_blank" style="display:block;text-align:center;padding:0.8rem;border-radius:100px;background:linear-gradient(135deg,#e17055,var(--gold));color:white;text-decoration:none;font-weight:700;font-size:0.85rem">Essayer 7 jours gratuits</a>
-    </div>
-  </div>
+<div class="section-eyebrow reveal">Tarifs</div>
+<h2 class="section-title reveal">Simple et transparent</h2>
+<p class="section-sub reveal">Commence gratuitement. Upgrade quand tu en as besoin.</p>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.2rem">
+<div style="background:var(--bg2);border:1px solid var(--border);border-radius:22px;padding:2rem" class="reveal">
+<div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text2);margin-bottom:0.8rem">Starter</div>
+<div style="font-family:var(--font-h);font-size:2.5rem;font-weight:800;line-height:1;margin-bottom:0.3rem">0<span style="font-size:1.2rem;font-weight:500">€</span></div>
+<div style="font-size:0.78rem;color:var(--text2);margin-bottom:1.5rem">Pour toujours · Aucune CB</div>
+<ul style="list-style:none;display:flex;flex-direction:column;gap:0.5rem;font-size:0.83rem;color:var(--text2);margin-bottom:1.5rem">
+<li>✓ 5 générations / mois</li>
+<li>✓ Tous les formats</li>
+<li>✓ Import PDF 15 pages</li>
+<li>✓ Téléchargement .txt</li>
+</ul>
+<a href="/signup.html" style="display:block;text-align:center;padding:0.8rem;border-radius:100px;border:1.5px solid rgba(255,255,255,0.13);color:var(--text);text-decoration:none;font-weight:700;font-size:0.85rem;transition:all 0.2s" onmouseover="this.style.borderColor='#a29bfe';this.style.color='#a29bfe'" onmouseout="this.style.borderColor='rgba(255,255,255,0.13)';this.style.color='var(--text)'">Commencer gratuitement</a>
+</div>
+<div style="background:linear-gradient(180deg,rgba(108,92,231,0.1) 0%,var(--bg2) 100%);border:1px solid rgba(108,92,231,0.45);border-radius:22px;padding:2rem;position:relative" class="reveal">
+<div style="position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--purple),var(--pink));color:white;font-size:0.72rem;font-weight:700;padding:0.28rem 1.1rem;border-radius:100px;white-space:nowrap">⭐ Le plus populaire</div>
+<div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--purple2);margin-bottom:0.8rem">Pro</div>
+<div style="font-family:var(--font-h);font-size:2.5rem;font-weight:800;line-height:1;margin-bottom:0.3rem">7,99<span style="font-size:1.2rem;font-weight:500">€</span></div>
+<div style="font-size:0.78rem;color:var(--text2);margin-bottom:1.5rem">par mois · ou 59,99€/an</div>
+<ul style="list-style:none;display:flex;flex-direction:column;gap:0.5rem;font-size:0.83rem;color:var(--text2);margin-bottom:1.5rem">
+<li>✓ 50 générations / mois</li>
+<li>✓ Import PDF 40 pages</li>
+<li>✓ 📚 Bibliothèque sauvegardée</li>
+<li>✓ IA multilingue</li>
+<li>✓ Support prioritaire</li>
+</ul>
+<a href="https://buy.stripe.com/00wfZibWR8Zl8o7eUK43S05" target="_blank" style="display:block;text-align:center;padding:0.8rem;border-radius:100px;background:linear-gradient(135deg,var(--purple),var(--pink));color:white;text-decoration:none;font-weight:700;font-size:0.85rem;box-shadow:0 4px 20px rgba(108,92,231,0.35)">Essayer 7 jours gratuits</a>
+</div>
+<div style="background:linear-gradient(180deg,rgba(253,203,110,0.07) 0%,var(--bg2) 100%);border:1px solid rgba(253,203,110,0.3);border-radius:22px;padding:2rem" class="reveal">
+<div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem">Ultimate</div>
+<div style="font-family:var(--font-h);font-size:2.5rem;font-weight:800;line-height:1;margin-bottom:0.3rem">14,99<span style="font-size:1.2rem;font-weight:500">€</span></div>
+<div style="font-size:0.78rem;color:var(--text2);margin-bottom:1.5rem">par mois · ou 99,99€/an</div>
+<ul style="list-style:none;display:flex;flex-direction:column;gap:0.5rem;font-size:0.83rem;color:var(--text2);margin-bottom:1.5rem">
+<li>✓ Générations illimitées</li>
+<li>✓ Import PDF 100 pages</li>
+<li>✓ 📚 Bibliothèque illimitée</li>
+<li>✓ 🎯 Simulation d'examen</li>
+<li>✓ 📈 Suivi de progression</li>
+<li>✓ Accès anticipé nouveautés</li>
+</ul>
+<a href="https://buy.stripe.com/aFadRaaSN2AX33NeUK43S07" target="_blank" style="display:block;text-align:center;padding:0.8rem;border-radius:100px;background:linear-gradient(135deg,#e17055,var(--gold));color:white;text-decoration:none;font-weight:700;font-size:0.85rem">Essayer 7 jours gratuits</a>
+</div>
+</div>
 </section>
 
 <section class="section" id="faq" style="padding-top:0">
-  <div class="section-eyebrow reveal">FAQ</div>
-  <h2 class="section-title reveal">Questions fréquentes</h2>
-  <div class="faq-list" style="max-width:640px;margin:2rem auto 0">
-    <div class="faq-item reveal">
-      <button class="faq-q" onclick="toggleFaq(this)">Est-ce que FicheAI fonctionne pour toutes les matières ? <span>+</span></button>
-      <div class="faq-a"><p>Oui ! FicheAI fonctionne pour toutes les matières : maths, physique, SVT, histoire, philosophie, droit, médecine, langues... L'IA s'adapte au contenu de ton cours.</p></div>
-    </div>
-    <div class="faq-item reveal">
-      <button class="faq-q" onclick="toggleFaq(this)">Comment importer mon cours ? <span>+</span></button>
-      <div class="faq-a"><p>Tu peux coller du texte directement ou importer un fichier PDF (jusqu'à 15 pages en Starter, 40 en Pro, 100 en Ultimate) ou un fichier TXT.</p></div>
-    </div>
-    <div class="faq-item reveal">
-      <button class="faq-q" onclick="toggleFaq(this)">Puis-je annuler mon abonnement à tout moment ? <span>+</span></button>
-      <div class="faq-a"><p>Oui, tu peux annuler à tout moment depuis tes paramètres. Aucun engagement. Tu gardes l'accès jusqu'à la fin de la période payée.</p></div>
-    </div>
-    <div class="faq-item reveal">
-      <button class="faq-q" onclick="toggleFaq(this)">Mes cours sont-ils confidentiels ? <span>+</span></button>
-      <div class="faq-a"><p>Absolument. Tes cours ne sont jamais stockés après la génération ni utilisés pour entraîner des modèles IA. Ta confidentialité est notre priorité.</p></div>
-    </div>
-    <div class="faq-item reveal">
-      <button class="faq-q" onclick="toggleFaq(this)">L'essai gratuit nécessite-t-il une carte bancaire ? <span>+</span></button>
-      <div class="faq-a"><p>Non ! Le plan Starter est totalement gratuit. Tu t'inscris avec ton email et c'est parti. La CB n'est demandée que pour les plans Pro et Ultimate.</p></div>
-    </div>
-  </div>
+<div class="section-eyebrow reveal">FAQ</div>
+<h2 class="section-title reveal">Questions fréquentes</h2>
+<div class="faq-list" style="max-width:640px;margin:2rem auto 0">
+<div class="faq-item reveal">
+<button class="faq-q" onclick="toggleFaq(this)">Est-ce que FicheAI fonctionne pour toutes les matières ? <span>+</span></button>
+<div class="faq-a"><p>Oui ! FicheAI fonctionne pour toutes les matières : maths, physique, SVT, histoire, philosophie, droit, médecine, langues... L'IA s'adapte au contenu de ton cours.</p></div>
+</div>
+<div class="faq-item reveal">
+<button class="faq-q" onclick="toggleFaq(this)">Comment importer mon cours ? <span>+</span></button>
+<div class="faq-a"><p>Tu peux coller du texte directement ou importer un fichier PDF (jusqu'à 15 pages en Starter, 40 en Pro, 100 en Ultimate) ou un fichier TXT.</p></div>
+</div>
+<div class="faq-item reveal">
+<button class="faq-q" onclick="toggleFaq(this)">Puis-je annuler mon abonnement à tout moment ? <span>+</span></button>
+<div class="faq-a"><p>Oui, tu peux annuler à tout moment depuis tes paramètres. Aucun engagement. Tu gardes l'accès jusqu'à la fin de la période payée.</p></div>
+</div>
+<div class="faq-item reveal">
+<button class="faq-q" onclick="toggleFaq(this)">Mes cours sont-ils confidentiels ? <span>+</span></button>
+<div class="faq-a"><p>Absolument. Tes cours ne sont jamais stockés après la génération ni utilisés pour entraîner des modèles IA. Ta confidentialité est notre priorité.</p></div>
+</div>
+<div class="faq-item reveal">
+<button class="faq-q" onclick="toggleFaq(this)">L'essai gratuit nécessite-t-il une carte bancaire ? <span>+</span></button>
+<div class="faq-a"><p>Non ! Le plan Starter est totalement gratuit. Tu t'inscris avec ton email et c'est parti. La CB n'est demandée que pour les plans Pro et Ultimate.</p></div>
+</div>
+</div>
 </section>
 
 <section class="cta-section">
-  <div class="cta-card reveal">
-    <h2>Prêt à réviser plus intelligemment ?</h2>
-    <p>Commence gratuitement en 30 secondes. Aucune carte bancaire requise.</p>
-    <div class="cta-btns">
-      <a href="/signup.html" class="btn-hero">⚡ Commencer gratuitement</a>
-      <a href="/app.html" class="btn-hero-ghost">Voir le générateur →</a>
-    </div>
-  </div>
+<div class="cta-card reveal">
+<h2>Prêt à réviser plus intelligemment ?</h2>
+<p>Commence gratuitement en 30 secondes. Aucune carte bancaire requise.</p>
+<div class="cta-btns">
+<a href="/signup.html" class="btn-hero">⚡ Commencer gratuitement</a>
+<a href="/app.html" class="btn-hero-ghost">Voir le générateur →</a>
+</div>
+</div>
 </section>
 
 <footer>
-  <div class="footer-inner">
-    <div class="footer-brand">
-      <div class="footer-brand-logo">FicheAI</div>
-      <p>L'intelligence artificielle au service de ta réussite. Transforme tes cours en outils de révision en quelques secondes.</p>
-    </div>
-    <div class="footer-col">
-      <h4>Produit</h4>
-      <a href="/app.html">Générateur</a>
-      <a href="/dashboard.html">Bibliothèque</a>
-      <a href="#tarifs">Tarifs</a>
-    </div>
-    <div class="footer-col">
-      <h4>Compte</h4>
-      <a href="/signup.html">S'inscrire</a>
-      <a href="/login.html">Se connecter</a>
-      <a href="/settings.html">Paramètres</a>
-    </div>
-    <div class="footer-col">
-      <h4>Aide</h4>
-      <a href="#faq">FAQ</a>
-      <a href="mailto:contact@ficheai.fr">Contact</a>
-    </div>
-  </div>
-  <div class="footer-bottom">
-    <span>© 2025 FicheAI · Fait pour les étudiants 🎓</span>
-    <span>Données sécurisées · Propulsé par l'IA</span>
-  </div>
+<div class="footer-inner">
+<div class="footer-brand">
+<div class="footer-brand-logo">FicheAI</div>
+<p>L'intelligence artificielle au service de ta réussite. Transforme tes cours en outils de révision en quelques secondes.</p>
+</div>
+<div class="footer-col">
+<h4>Produit</h4>
+<a href="/app.html">Générateur</a>
+<a href="/dashboard.html">Bibliothèque</a>
+<a href="#tarifs">Tarifs</a>
+</div>
+<div class="footer-col">
+<h4>Compte</h4>
+<a href="/signup.html">S'inscrire</a>
+<a href="/login.html">Se connecter</a>
+<a href="/settings.html">Paramètres</a>
+</div>
+<div class="footer-col">
+<h4>Aide</h4>
+<a href="#faq">FAQ</a>
+<a href="mailto:contact@ficheai.fr">Contact</a>
+</div>
+</div>
+<div class="footer-bottom">
+<span>© 2025 FicheAI · Fait pour les étudiants 🎓</span>
+<span>Données sécurisées · Propulsé par l'IA</span>
+</div>
 </footer>
 
 <script>
 var observer = new IntersectionObserver(function(entries) {
-  entries.forEach(function(entry) {
-    if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); }
-  });
+entries.forEach(function(entry) {
+if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); }
+});
 }, { threshold: 0.12 });
 document.querySelectorAll('.reveal').forEach(function(el) { observer.observe(el); });
 
 function toggleFaq(btn) {
-  var item = btn.parentElement;
-  var isOpen = item.classList.contains('open');
-  document.querySelectorAll('.faq-item').forEach(function(i) { i.classList.remove('open'); });
-  if (!isOpen) item.classList.add('open');
+var item = btn.parentElement;
+var isOpen = item.classList.contains('open');
+document.querySelectorAll('.faq-item').forEach(function(i) { i.classList.remove('open'); });
+if (!isOpen) item.classList.add('open');
 }
 
 document.querySelectorAll('.demo-tab').forEach(function(tab) {
-  tab.addEventListener('click', function() {
-    document.querySelectorAll('.demo-tab').forEach(function(t) { t.classList.remove('active'); });
-    this.classList.add('active');
-  });
+tab.addEventListener('click', function() {
+document.querySelectorAll('.demo-tab').forEach(function(t) { t.classList.remove('active'); });
+this.classList.add('active');
+});
 });
 </script>
 </body>
