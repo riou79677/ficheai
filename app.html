@@ -464,21 +464,44 @@ function selectFormat(el) {
 
 function genererDirectement() { document.getElementById('gen-btn').click(); }
 
-function handleFileLoad(file) {
+function setFileBadge(msg, kind) {
   var badge = document.getElementById('file-badge');
   badge.style.display = 'block';
-  if (file.type === 'text/plain') {
+  badge.textContent = msg;
+  if (kind === 'error') {
+    badge.style.background = 'rgba(244,114,182,0.08)';
+    badge.style.borderColor = 'rgba(244,114,182,0.3)';
+    badge.style.color = '#f472b6';
+  } else if (kind === 'warn') {
+    badge.style.background = 'rgba(251,191,36,0.08)';
+    badge.style.borderColor = 'rgba(251,191,36,0.3)';
+    badge.style.color = '#fbbf24';
+  } else {
+    badge.style.background = 'rgba(0,206,201,0.08)';
+    badge.style.borderColor = 'rgba(0,206,201,0.2)';
+    badge.style.color = '#00cec9';
+  }
+}
+
+function handleFileLoad(file) {
+  if (file.type === 'text/plain' || (file.name && file.name.toLowerCase().endsWith('.txt'))) {
     var reader = new FileReader();
     reader.onload = function(ev) {
-      courseContent = ev.target.result;
-      document.getElementById('course-input').value = courseContent;
-      document.getElementById('char-count').textContent = courseContent.length + ' caractères';
-      badge.textContent = '✅ ' + file.name;
+      var txt = ev.target.result || '';
+      if (txt.replace(/\s/g, '').length < 30) {
+        setFileBadge('⚠️ Ce fichier semble vide. Vérifie ton fichier ou copie-colle ton cours directement.', 'error');
+        return;
+      }
+      courseContent = txt;
+      document.getElementById('course-input').value = txt;
+      document.getElementById('char-count').textContent = txt.length + ' caractères';
+      setFileBadge('✅ ' + file.name, 'ok');
       updateChatContext(file.name);
     };
+    reader.onerror = function() { setFileBadge('⚠️ Impossible de lire ce fichier. Réessaie ou copie-colle ton cours.', 'error'); };
     reader.readAsText(file);
-  } else if (file.type === 'application/pdf') {
-    badge.textContent = '⏳ Lecture PDF...';
+  } else if (file.type === 'application/pdf' || (file.name && file.name.toLowerCase().endsWith('.pdf'))) {
+    setFileBadge('⏳ Lecture du PDF...', 'ok');
     var reader = new FileReader();
     reader.onload = async function(ev) {
       try {
@@ -494,20 +517,37 @@ function handleFileLoad(file) {
           var content = await page.getTextContent();
           text += content.items.map(function(item) { return item.str; }).join(' ') + '\n';
         }
+        var usefulChars = text.replace(/\s/g, '').length;
+        if (usefulChars < 100) {
+          setFileBadge('⚠️ Ce PDF semble être un document scanné ou une photo : aucun texte lisible dedans. Copie-colle ton cours en texte à la place (la lecture des scans arrive bientôt !).', 'error');
+          return;
+        }
         courseContent = text;
         document.getElementById('course-input').value = text;
         document.getElementById('char-count').textContent = text.length + ' caractères';
-        badge.textContent = '✅ ' + file.name + ' (' + maxPages + '/' + pdf.numPages + ' p.)';
+        if (pdf.numPages > pageLimit) {
+          setFileBadge('⚠️ ' + file.name + ' : ' + pdf.numPages + ' pages au total, seules les ' + pageLimit + ' premières ont été lues (limite de ton plan ' + plan.charAt(0).toUpperCase() + plan.slice(1) + ').', 'warn');
+        } else {
+          setFileBadge('✅ ' + file.name + ' — ' + maxPages + ' page' + (maxPages > 1 ? 's' : '') + ' lue' + (maxPages > 1 ? 's' : ''), 'ok');
+        }
         updateChatContext(file.name);
-      } catch(err) { badge.textContent = '⚠️ Erreur lecture PDF'; }
+      } catch(err) {
+        var name = (err && err.name) || '';
+        if (name === 'PasswordException') {
+          setFileBadge('🔒 Ce PDF est protégé par un mot de passe. Déverrouille-le ou copie-colle ton cours en texte.', 'error');
+        } else if (name === 'InvalidPDFException') {
+          setFileBadge('⚠️ Ce fichier PDF est corrompu ou illisible. Réessaie avec un autre fichier ou copie-colle ton cours.', 'error');
+        } else {
+          setFileBadge('⚠️ Impossible de lire ce PDF. Copie-colle ton cours en texte à la place.', 'error');
+        }
+      }
     };
+    reader.onerror = function() { setFileBadge('⚠️ Impossible de lire ce fichier. Réessaie.', 'error'); };
     reader.readAsArrayBuffer(file);
   } else if (file.type.startsWith('image/')) {
-    badge.textContent = '📷 Photo importée — utilise le Chat IA pour l\'analyser';
-    courseContent = '[Photo importée]';
-    updateChatContext('photo');
+    setFileBadge('📷 L\'analyse de photos arrive bientôt ! En attendant, copie-colle ton cours en texte.', 'warn');
   } else {
-    badge.textContent = '⚠️ Format non supporté';
+    setFileBadge('⚠️ Format non pris en charge (' + (file.type || 'inconnu') + '). Utilise un PDF ou un fichier TXT, ou copie-colle ton cours.', 'error');
   }
 }
 
