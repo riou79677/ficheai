@@ -15,7 +15,43 @@ export default async function handler(req, res) {
   const { course, format, language, email } = req.body || {};
 
   if (!course || !format) {
-    return res.status(400).json({ error: 'Paramètres manquants' });
+    return res.status(400).json({ error: 'Paramètres manquants' }
+
+if (!email) {
+return res.status(401).json({ error: 'Connecte-toi pour générer une fiche.' });
+}
+
+// Vérification et décompte du quota côté serveur (sécurisé, non contournable)
+let userPlan = 'starter';
+try {
+const quotaRes = await fetch(
+'https://qyjqtjrqnlbgtxvnjvnk.supabase.co/rest/v1/rpc/consume_generation',
+{
+method: 'POST',
+headers: {
+'apikey': 'sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ',
+'Authorization': 'Bearer sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ',
+'Content-Type': 'application/json'
+},
+body: JSON.stringify({ p_email: email })
+}
+);
+const quota = await quotaRes.json();
+
+if (!quota.allowed) {
+if (quota.reason === 'user_not_found') {
+return res.status(401).json({ error: 'Compte introuvable. Reconnecte-toi.' });
+}
+return res.status(403).json({ error: 'Limite de générations atteinte. Passe à Pro pour continuer !' });
+}
+userPlan = quota.plan || 'starter';
+} catch(e) {
+console.error('Erreur vérification quota:', e);
+return res.status(500).json({ error: 'Erreur serveur, réessaie.' });
+}
+
+// Limite de lecture du cours adaptée au plan (starter ~15 pages, pro ~40, ultimate ~100)
+const charLimit = userPlan === 'ultimate' ? 150000 : userPlan === 'pro' ? 80000 : 30000;);
   }
 
   // ── SÉCURITÉ : la génération consomme des crédits Claude → réservée aux comptes ──
@@ -195,7 +231,7 @@ Format OBLIGATOIRE :
         system: 'Tu es FicheAI, un assistant pédagogique expert. ' + langInstruction + ' Sois précis, structuré et pédagogique.',
         messages: [{
           role: 'user',
-          content: prompts[format] + '\n\n---\nCOURS :\n' + String(course).substring(0, 8000) + '\n---\n\nGénère maintenant le contenu demandé.'
+          content: prompts[format] + '\n\n---\nCOURS :\n' + String(course).substring(0, charLimit) + '\n---\n\nGénère maintenant le contenu demandé.'
         }]
       })
     });
