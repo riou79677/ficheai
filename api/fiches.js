@@ -38,6 +38,23 @@ export default async function handler(req, res) {
     if (!email || !b.contenu) {
       return res.status(400).json({ error: 'Paramètres manquants' });
     }
+    if (String(b.contenu).length > 50000) {
+      return res.status(400).json({ error: 'Contenu trop volumineux.' });
+    }
+    try {
+      // Vérifie que l'email correspond à un compte existant avant toute écriture
+      const checkRes = await fetch(
+        SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=id',
+        { headers }
+      );
+      const checkData = await checkRes.json();
+      if (!Array.isArray(checkData) || checkData.length === 0) {
+        return res.status(403).json({ error: 'Compte introuvable.' });
+      }
+    } catch (e) {
+      console.error('Erreur vérification compte:', e);
+      return res.status(503).json({ error: 'Service momentanément indisponible' });
+    }
     try {
       const r = await fetch(SUPABASE_URL + '/rest/v1/fiches', {
         method: 'POST',
