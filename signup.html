@@ -77,14 +77,14 @@ FicheAI
 <div id="msg-error" class="msg-error"></div>
 <div id="msg-success" class="msg-success"></div>
 <div class="form-group"><label>Prénom</label><input type="text" id="firstname" placeholder="Lucas"></div>
-<div class="form-group"><label>Email</label><input type="email" id="email" placeholder="ton@email.com"></div>
+<div class="form-group"><label>Email</label><input type="email" id="email" placeholder="ton@email.com" autocomplete="email"></div>
 <div class="form-group">
 <label>Mot de passe</label>
-<input type="password" id="password" placeholder="8 caractères minimum">
+<input type="password" id="password" placeholder="8 caractères minimum" autocomplete="new-password">
 <small>Utilise au moins 8 caractères, avec des lettres et des chiffres.</small>
 </div>
-<button class="btn-submit" id="submit-btn" onclick="handleSignup()">Créer mon compte gratuit →</button>
-<p class="auth-note">En créant un compte, tu acceptes nos <a href="#">CGU</a> et notre <a href="#">politique de confidentialité</a>.</p>
+<button class="btn-submit" id="submit-btn">Créer mon compte gratuit →</button>
+<p class="auth-note">En créant un compte, tu acceptes nos <a href="/cgu.html">CGU</a> et notre <a href="/confidentialite.html">politique de confidentialité</a>.</p>
 </div>
 <div class="auth-footer">Déjà un compte ? <a href="/login.html">Se connecter</a></div>
 </div>
@@ -94,64 +94,97 @@ FicheAI
 var SUPABASE_URL='https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
 var SUPABASE_KEY='sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ';
 
+try{
+  var already=JSON.parse(localStorage.getItem('ficheai_user'));
+  if(already && already.email) window.location.href='/app.html';
+}catch(e){}
+
+var isLoading=false;
+
 function translateSignupError(data, status){
-if(data && data.error_code === 'weak_password'){
-var reasons = (data.weak_password && data.weak_password.reasons) || [];
-var reasonMap = { length: 'trop court', characters: 'doit contenir des lettres ET des chiffres', pwned: 'a été trouvé dans une fuite de données connue, choisis-en un autre' };
-var readable = reasons.map(function(r){ return reasonMap[r] || r; }).join(', ');
-return 'Mot de passe trop faible' + (readable ? ' : ' + readable : '') + '. Essaie un mot de passe plus solide (lettres + chiffres, 8 caractères minimum).';
-}
-if(data && data.error_code === 'user_already_exists'){
-return 'Un compte existe déjà avec cet email. Connecte-toi plutôt.';
-}
-if(data && data.error_code === 'validation_failed'){
-return 'Adresse email invalide.';
-}
-if(data && (data.msg || data.error_description || data.error)){
-return data.msg || data.error_description || data.error;
-}
-return 'Erreur lors de la création du compte (code ' + status + '). Réessaie.';
+  if(data && data.error_code==='weak_password'){
+    var reasons=(data.weak_password && data.weak_password.reasons)||[];
+    var reasonMap={length:'trop court',characters:'doit contenir des lettres ET des chiffres',pwned:'a été trouvé dans une fuite de données connue, choisis-en un autre'};
+    var readable=reasons.map(function(r){return reasonMap[r]||r;}).join(', ');
+    return 'Mot de passe trop faible'+(readable?' : '+readable:'')+'. Essaie un mot de passe plus solide (lettres + chiffres, 8 caractères minimum).';
+  }
+  if(data && data.error_code==='user_already_exists'){
+    return 'Un compte existe déjà avec cet email. Connecte-toi plutôt.';
+  }
+  if(data && data.error_code==='validation_failed'){
+    return 'Adresse email invalide.';
+  }
+  if(data && data.error_code==='over_email_send_rate_limit'){
+    return 'Trop de tentatives. Attends une minute et réessaie.';
+  }
+  if(data && (data.msg||data.error_description||data.error)){
+    return data.msg||data.error_description||data.error;
+  }
+  return 'Erreur lors de la création du compte (code '+status+'). Réessaie.';
 }
 
 async function handleSignup(){
-var firstname=document.getElementById('firstname').value.trim();
-var email=document.getElementById('email').value.trim();
-var password=document.getElementById('password').value;
-var errBox=document.getElementById('msg-error');var successBox=document.getElementById('msg-success');var btn=document.getElementById('submit-btn');
-errBox.style.display='none';successBox.style.display='none';
-if(!firstname||!email||!password){errBox.textContent='⚠️ Remplis tous les champs !';errBox.style.display='block';return;}
-if(password.length<8){errBox.textContent='⚠️ Le mot de passe doit contenir au moins 8 caractères.';errBox.style.display='block';return;}
-btn.textContent='Création en cours...';btn.disabled=true;
-try{
-var response=await fetch(SUPABASE_URL+'/auth/v1/signup',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},body:JSON.stringify({email:email,password:password})});
-var data=await response.json();
+  if(isLoading)return;
+  var firstname=document.getElementById('firstname').value.trim();
+  var email=document.getElementById('email').value.trim();
+  var password=document.getElementById('password').value;
+  var errBox=document.getElementById('msg-error');var successBox=document.getElementById('msg-success');var btn=document.getElementById('submit-btn');
+  errBox.style.display='none';successBox.style.display='none';
 
-if(!response.ok || !data.user){
-errBox.textContent='⚠️ '+translateSignupError(data, response.status);
-errBox.style.display='block';
-btn.disabled=false;btn.textContent='Créer mon compte gratuit →';
-return;
+  if(!firstname||!email||!password){errBox.textContent='⚠️ Remplis tous les champs !';errBox.style.display='block';return;}
+  if(password.length<8){errBox.textContent='⚠️ Le mot de passe doit contenir au moins 8 caractères.';errBox.style.display='block';return;}
+  if(!/[a-zA-Z]/.test(password)||!/[0-9]/.test(password)){errBox.textContent='⚠️ Le mot de passe doit contenir des lettres ET des chiffres.';errBox.style.display='block';return;}
+
+  isLoading=true;btn.textContent='Création en cours...';btn.disabled=true;
+
+  try{
+    var response=await fetch(SUPABASE_URL+'/auth/v1/signup',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},
+      body:JSON.stringify({email:email,password:password,data:{firstname:firstname}})
+    });
+    var data=await response.json();
+
+    if(!response.ok || !data.user){
+      errBox.textContent='⚠️ '+translateSignupError(data, response.status);
+      errBox.style.display='block';
+      isLoading=false;btn.disabled=false;btn.textContent='Créer mon compte gratuit →';
+      return;
+    }
+
+    if(data.access_token){
+      await fetch(SUPABASE_URL+'/rest/v1/users',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+data.access_token,'Prefer':'resolution=ignore-duplicates'},
+        body:JSON.stringify({id:data.user.id,email:email,plan:'starter',generations_used:0,generations_limit:5})
+      }).catch(function(){});
+    }
+
+    if(data.access_token){
+      localStorage.setItem('ficheai_user',JSON.stringify({email:email,plan:'starter',remaining:5,access_token:data.access_token}));
+      successBox.innerHTML='✅ Compte créé avec succès ! Tu es connecté. Redirection...';
+      successBox.style.display='block';
+      var redirected=false;
+      setTimeout(function(){
+        if(!redirected){
+          successBox.innerHTML='✅ Compte créé ! <br><br>La redirection automatique a échoué. <button onclick="window.location.href=\'/app.html\'" style="background:#7c6dfa;color:white;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-weight:600;font-family:inherit;">Clique ici pour accéder à FicheAI →</button>';
+        }
+      },3500);
+      setTimeout(function(){redirected=true;window.location.href='/app.html';},1800);
+      return;
+    }
+
+    successBox.innerHTML='✅ Compte créé ! 📧 Vérifie ta boîte mail ('+email+') et clique sur le lien de confirmation, puis <a href="/login.html" style="color:#4ade80;text-decoration:underline;">connecte-toi ici</a>.';
+    successBox.style.display='block';
+    btn.style.display='none';
+
+  }catch(e){
+    errBox.textContent='⚠️ Erreur réseau. Vérifie ta connexion et réessaie.';
+    errBox.style.display='block';
+    isLoading=false;btn.disabled=false;btn.textContent='Créer mon compte gratuit →';
+  }
 }
-
-await fetch(SUPABASE_URL+'/rest/v1/users',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY},body:JSON.stringify({id:data.user.id,email:email,plan:'starter',generations_used:0,generations_limit:5})});
-successBox.innerHTML='✅ Compte créé avec succès ! Tu es connecté. Redirection en cours...';successBox.style.display='block';
-localStorage.setItem('ficheai_user',JSON.stringify({email:email,plan:'starter',remaining:5}));
-
-var redirected=false;
-var redirectTimeout=setTimeout(function() {
-if(!redirected) {
-successBox.innerHTML='✅ Compte créé ! <br><br>La redirection automatique a échoué. <button onclick="window.location.href=\'/app.html\'" style="background:var(--purple);color:white;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-weight:600;">Clique ici pour accéder à FicheAI →</button>';
-}
-}, 3000);
-
-setTimeout(function() {
-redirected=true;
-clearTimeout(redirectTimeout);
-window.location.href = '/app.html';
-}, 2000);
-
-}catch(e){errBox.textContent='⚠️ Une erreur est survenue. Réessaie.';errBox.style.display='block';btn.disabled=false;btn.textContent='Créer mon compte gratuit →';}
-}
+document.getElementById('submit-btn').addEventListener('click',handleSignup);
 document.addEventListener('keydown',function(e){if(e.key==='Enter')handleSignup();});
 </script>
 </body>
