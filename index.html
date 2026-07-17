@@ -212,8 +212,15 @@ font-size:0.76rem;color:var(--text3);}
 .reveal{opacity:0;transform:translateY(30px);transition:all 0.65s var(--ease);}
 .reveal.visible{opacity:1;transform:translateY(0);}
 
+.hamburger-btn{display:none;background:none;border:1px solid var(--border2);border-radius:8px;width:38px;height:38px;align-items:center;justify-content:center;cursor:pointer;color:var(--text);flex-direction:column;gap:4px;}
+.hamburger-btn span{display:block;width:18px;height:2px;background:var(--text);border-radius:2px;transition:all 0.2s;}
+.mobile-menu{display:none;position:fixed;top:64px;left:0;right:0;background:var(--bg2);border-bottom:1px solid var(--border2);padding:1rem 1.5rem;flex-direction:column;gap:0.2rem;z-index:199;}
+.mobile-menu.open{display:flex;}
+.mobile-menu a{color:var(--text2);text-decoration:none;font-size:0.95rem;font-weight:500;padding:0.8rem 0;border-bottom:1px solid var(--border);}
+.mobile-menu a:last-child{border-bottom:none;}
 @media(max-width:768px){
 .nav-links{display:none;}
+.hamburger-btn{display:flex;}
 .steps-grid,.formats-grid,.testimonials-grid{grid-template-columns:1fr;}
 .footer-inner{grid-template-columns:1fr 1fr;}
 .stats{gap:1.5rem;}
@@ -244,11 +251,20 @@ FicheAI
 <a href="#tarifs">Tarifs</a>
 <a href="#faq">FAQ</a>
 </div>
+<button class="hamburger-btn" id="hamburger-btn" aria-label="Menu" onclick="document.getElementById('mobile-menu').classList.toggle('open')">
+<span></span><span></span><span></span>
+</button>
 <div class="nav-cta">
 <a href="/login.html" class="btn-ghost">Se connecter</a>
 <a href="/signup.html" class="btn-primary">Essayer gratuitement</a>
 </div>
 </nav>
+<div class="mobile-menu" id="mobile-menu">
+<a href="#comment" onclick="document.getElementById('mobile-menu').classList.remove('open')">Comment ça marche</a>
+<a href="#formats" onclick="document.getElementById('mobile-menu').classList.remove('open')">Formats</a>
+<a href="#tarifs" onclick="document.getElementById('mobile-menu').classList.remove('open')">Tarifs</a>
+<a href="#faq" onclick="document.getElementById('mobile-menu').classList.remove('open')">FAQ</a>
+</div>
 
 <section class="hero">
 <div class="hero-eyebrow">
