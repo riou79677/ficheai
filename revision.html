@@ -72,6 +72,17 @@ h1{font-family:var(--font-h);font-size:2.1rem;font-weight:800;margin-bottom:6px}
   border-radius:50%;animation:spin .7s linear infinite;margin:40px auto}
 @keyframes spin{to{transform:rotate(360deg)}}
 
+.howto{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin-bottom:24px;display:flex;gap:14px;align-items:flex-start}
+.howto .ico{font-size:1.4rem;flex-shrink:0;line-height:1.2}
+.howto h3{font-family:var(--font-h);font-size:0.98rem;font-weight:700;margin-bottom:5px}
+.howto p{font-size:0.88rem;color:var(--text2);line-height:1.6;margin:0}
+.stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:26px}
+.stat-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 12px;text-align:center}
+.stat-box .val{font-family:var(--font-h);font-size:1.6rem;font-weight:800;line-height:1.1}
+.stat-box .val.hl{background:linear-gradient(135deg,var(--purple2),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-box .lbl{font-size:0.76rem;color:var(--text2);margin-top:5px}
+.rate-q{text-align:center;font-size:0.88rem;color:var(--text2);margin-bottom:12px}
+
 /* Mode révision */
 #review{display:none}
 .progress{height:6px;background:var(--surface);border-radius:100px;overflow:hidden;margin-bottom:28px}
@@ -89,8 +100,8 @@ h1{font-family:var(--font-h);font-size:2.1rem;font-weight:800;margin-bottom:6px}
   border-radius:100px;padding:15px;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:var(--font-b)}
 .reveal-btn:hover{background:rgba(255,255,255,0.04)}
 .rate{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px}
-.rate button{border:none;border-radius:14px;padding:14px 6px;font-size:0.85rem;font-weight:700;cursor:pointer;
-  font-family:var(--font-b);color:#fff;transition:transform .15s}
+.rate button{border:none;border-radius:14px;padding:15px 6px;font-size:0.92rem;font-weight:700;cursor:pointer;
+  font-family:var(--font-b);color:#fff;transition:transform .15s;line-height:1.25}
 .rate button:hover{transform:translateY(-2px)}
 .rate .again{background:rgba(253,121,168,0.9)}
 .rate .hard{background:rgba(253,203,110,0.85);color:#3a2e00}
@@ -118,7 +129,7 @@ h1{font-family:var(--font-h);font-size:2.1rem;font-weight:800;margin-bottom:6px}
   <!-- TABLEAU DE BORD -->
   <div id="dashboard">
     <h1>🎯 Révision</h1>
-    <p class="sub">Transforme tes fiches en flashcards et révise au bon moment pour vraiment retenir.</p>
+    <p class="sub">Révise tes fiches sous forme de questions-réponses, au bon moment.</p>
     <div id="dash-content"><div class="spinner"></div></div>
   </div>
 
@@ -135,11 +146,12 @@ h1{font-family:var(--font-h);font-size:2.1rem;font-weight:800;margin-bottom:6px}
       </div>
     </div>
     <button class="reveal-btn" id="reveal" onclick="revealAnswer()">Afficher la réponse</button>
+    <div class="rate-q" id="rate-q" style="display:none">As-tu réussi à répondre ?</div>
     <div class="rate" id="rate" style="display:none">
-      <button class="again" onclick="rate(1)">À revoir<small>&lt; 1 min</small></button>
-      <button class="hard" onclick="rate(3)">Difficile<small>bientôt</small></button>
-      <button class="good" onclick="rate(4)">Bien<small>+ qq jours</small></button>
-      <button class="easy" onclick="rate(5)">Facile<small>+ longtemps</small></button>
+      <button class="again" onclick="rate(1)">Non<small>à refaire</small></button>
+      <button class="hard" onclick="rate(3)">Presque<small>à revoir bientôt</small></button>
+      <button class="good" onclick="rate(4)">Oui<small>dans 3 jours</small></button>
+      <button class="easy" onclick="rate(5)">Facile<small>dans 1 semaine</small></button>
     </div>
   </div>
 </div>
@@ -153,6 +165,21 @@ var EMAIL = getEmail();
 
 function esc(s){ var d=document.createElement('div'); d.textContent=s==null?'':s; return d.innerHTML; }
 
+function cleanTitle(t){
+  if(!t) return 'Fiche sans titre';
+  var s = String(t)
+    .replace(/^[#*_\s>-]+/, '')
+    .replace(/[#*_]+$/, '')
+    .replace(/\*\*/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if(!s) return 'Fiche sans titre';
+  if(s.length > 1 && s === s.toUpperCase()){
+    s = s.charAt(0) + s.slice(1).toLowerCase();
+  }
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
 async function loadDashboard(){
   var box = document.getElementById('dash-content');
   if(!EMAIL){
@@ -164,6 +191,23 @@ async function loadDashboard(){
     var r = await fetch('/api/flashcards?email=' + encodeURIComponent(EMAIL));
     var data = await r.json();
     var html = '';
+    var decks = data.decks || [];
+    var totalCards = 0;
+    decks.forEach(function(d){ totalCards += (d.total_cards || 0); });
+    var totalDue = data.total_due || 0;
+
+    html += '<div class="howto"><div class="ico">💡</div><div>'
+      + '<h3>Comment ça marche</h3>'
+      + '<p>FicheAI transforme tes fiches en cartes question-réponse et te les représente juste avant que tu les oublies. Révise un peu chaque jour, retiens beaucoup plus longtemps.</p>'
+      + '</div></div>';
+
+    if(totalCards > 0){
+      html += '<div class="stats-row">'
+        + '<div class="stat-box"><div class="val hl">' + totalDue + '</div><div class="lbl">À réviser aujourd\'hui</div></div>'
+        + '<div class="stat-box"><div class="val">' + totalCards + '</div><div class="lbl">Cartes au total</div></div>'
+        + '<div class="stat-box"><div class="val">' + decks.length + '</div><div class="lbl">Paquet' + (decks.length>1?'s':'') + '</div></div>'
+        + '</div>';
+    }
 
     if(data.total_due > 0){
       html += '<button class="big-review" onclick="startReview(null)">⚡ Réviser maintenant'
@@ -172,10 +216,10 @@ async function loadDashboard(){
 
     html += '<div class="section-t">Tes paquets</div>';
 
-    if(!data.decks || data.decks.length === 0){
-      html += '<div class="empty">Tu n\'as pas encore de fiches.<br><br><a class="btn" href="app.html">Créer une fiche</a></div>';
+    if(decks.length === 0){
+      html += '<div class="empty">Tu n\'as pas encore de fiches à réviser.<br>Génère une fiche, puis reviens ici pour la transformer en cartes.<br><br><a class="btn" href="app.html">Créer ma première fiche</a></div>';
     } else {
-      data.decks.forEach(function(d){
+      decks.forEach(function(d){
         var btn;
         if(d.total_cards === 0){
           btn = '<button class="deck-btn create" onclick="createCards(\'' + d.fiche_id + '\',this)">✨ Créer les flashcards</button>';
@@ -184,11 +228,11 @@ async function loadDashboard(){
         } else {
           btn = '<button class="deck-btn done">À jour ✓</button>';
         }
-        var meta = d.total_cards === 0 ? 'Pas encore de flashcards'
+        var meta = d.total_cards === 0 ? 'Pas encore de cartes'
           : (d.total_cards + ' carte' + (d.total_cards>1?'s':'')
              + (d.due_cards>0 ? ' · <span class="due">' + d.due_cards + ' à réviser</span>' : ''));
         html += '<div class="deck"><div class="deck-info"><div class="deck-title">'
-          + esc(d.titre) + '</div><div class="deck-meta">' + meta + '</div></div>' + btn + '</div>';
+          + esc(cleanTitle(d.titre)) + '</div><div class="deck-meta">' + meta + '</div></div>' + btn + '</div>';
       });
     }
     box.innerHTML = html;
@@ -206,10 +250,10 @@ async function createCards(ficheId, btn){
       body: JSON.stringify({ action:'generate', email:EMAIL, fiche_id:ficheId })
     });
     var data = await r.json();
-    if(data.error){ btn.disabled=false; btn.textContent='✨ Créer les flashcards'; alert('Erreur : ' + data.error); return; }
+    if(data.error){ btn.disabled=false; btn.textContent='✨ Créer les cartes'; alert('Erreur : ' + data.error); return; }
     await loadDashboard();
   }catch(e){
-    btn.disabled=false; btn.textContent='✨ Créer les flashcards'; alert('Erreur réseau, réessaie.');
+    btn.disabled=false; btn.textContent='✨ Créer les cartes'; alert('Erreur réseau, réessaie.');
   }
 }
 
@@ -237,6 +281,7 @@ function showCard(){
   document.getElementById('a').innerHTML = esc(c.answer);
   document.getElementById('answer-block').style.display = 'none';
   document.getElementById('reveal').style.display = 'block';
+  document.getElementById('rate-q').style.display = 'none';
   document.getElementById('rate').style.display = 'none';
   document.getElementById('count').textContent = 'Carte ' + (idx+1) + ' / ' + total;
   document.getElementById('bar').style.width = (idx/total*100) + '%';
@@ -245,6 +290,7 @@ function showCard(){
 function revealAnswer(){
   document.getElementById('answer-block').style.display = 'block';
   document.getElementById('reveal').style.display = 'none';
+  document.getElementById('rate-q').style.display = 'block';
   document.getElementById('rate').style.display = 'grid';
 }
 
@@ -268,9 +314,9 @@ async function rate(quality){
 function finishReview(){
   document.getElementById('bar').style.width = '100%';
   document.getElementById('review').innerHTML =
-    '<div class="done-screen"><div class="emoji">🎉</div><h2>Révision terminée !</h2>'
-    + '<p>Bien joué. Reviens demain pour consolider ta mémoire.</p>'
-    + '<button class="btn" onclick="backToDash()">Retour</button></div>';
+    '<div class="done-screen"><div class="emoji">🎉</div><h2>Session terminée !</h2>'
+    + '<p>Tu as revu ' + total + ' carte' + (total>1?'s':'') + '. Les cartes bien retenues reviendront plus tard, celles qui ont coincé reviendront vite.</p>'
+    + '<button class="btn" onclick="backToDash()">Retour aux paquets</button></div>';
 }
 
 function backToDash(){ location.reload(); }
