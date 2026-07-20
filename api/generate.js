@@ -27,7 +27,7 @@ export default async function handler(req, res) {
   let user;
   try {
     const userRes = await fetch(
-      SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=plan,generations_used,generations_limit',
+      SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=plan,generations_used,generations_limit,niveau_scolaire',
       { headers: { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY } }
     );
     const users = await userRes.json();
@@ -183,6 +183,15 @@ Format OBLIGATOIRE :
     ? 'Réponds dans la même langue que le cours fourni.'
     : 'Réponds obligatoirement en ' + (langMap[language] || 'français') + '.';
 
+  // Adaptation au niveau scolaire de l'utilisateur
+  const niveauMap = {
+    college: "L'utilisateur est au COLLÈGE (11-15 ans). Utilise un vocabulaire simple et accessible, des phrases courtes, et beaucoup d'exemples concrets du quotidien. Explique chaque terme technique. Évite les formulations abstraites.",
+    lycee: "L'utilisateur est au LYCÉE (15-18 ans), il prépare le baccalauréat. Utilise le vocabulaire attendu au bac, structure comme un cours de lycée, et anticipe les questions type bac. Reste rigoureux sans être universitaire.",
+    prepa: "L'utilisateur est en CLASSE PRÉPARATOIRE. Attends-toi à un très haut niveau d'exigence : rigueur formelle, démonstrations complètes, vocabulaire technique précis, et mise en perspective des concepts. Ne simplifie pas.",
+    superieur: "L'utilisateur est dans l'ENSEIGNEMENT SUPÉRIEUR (université, école). Utilise un vocabulaire académique précis, structure les concepts de façon universitaire, et n'hésite pas à mentionner les débats ou nuances disciplinaires."
+  };
+  const niveauInstruction = niveauMap[user.niveau_scolaire] || niveauMap.lycee;
+
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -194,7 +203,7 @@ Format OBLIGATOIRE :
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
         max_tokens: 1500,
-        system: 'Tu es FicheAI, un assistant pédagogique expert. ' + langInstruction + ' Sois précis, structuré et pédagogique.',
+        system: 'Tu es FicheAI, un assistant pédagogique expert. ' + langInstruction + ' ' + niveauInstruction + ' Sois précis, structuré et pédagogique.',
         messages: [{
           role: 'user',
           content: prompts[format] + '\n\n---\nCOURS :\n' + String(course).substring(0, charLimit) + '\n---\n\nGénère maintenant le contenu demandé.'
