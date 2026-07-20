@@ -193,6 +193,18 @@ footer{padding:1.5rem;text-align:center;font-size:0.78rem;color:var(--text3);bor
         <div class="section-title">Préférences</div>
         <div class="section-desc">Personnalise ton expérience FicheAI.</div>
         <div class="settings-card">
+          <h3>Niveau scolaire</h3><p>FicheAI adapte le vocabulaire et la difficulté de tes fiches à ton niveau.</p>
+          <div class="form-group">
+            <select id="pref-niveau" onchange="saveNiveau(this.value)">
+              <option value="college">📘 Collège</option>
+              <option value="lycee">📗 Lycée</option>
+              <option value="prepa">📕 Classe préparatoire</option>
+              <option value="superieur">📙 Université / École</option>
+            </select>
+          </div>
+          <div id="niveau-msg" style="display:none;font-size:0.8rem;margin-top:0.5rem"></div>
+        </div>
+        <div class="settings-card">
           <h3>Format par défaut</h3><p>Le format sélectionné automatiquement sur le générateur.</p>
           <div class="form-group">
             <select id="pref-format" onchange="savePref('format',this.value)">
@@ -352,6 +364,49 @@ function showSection(name, btn) {
   document.getElementById('section-' + name).classList.add('active');
   btn.classList.add('active');
 }
+
+async function saveNiveau(niveau){
+  var msg = document.getElementById('niveau-msg');
+  msg.style.display = 'block';
+  msg.style.color = '#a0a0c0';
+  msg.textContent = 'Enregistrement...';
+  try {
+    var r = await fetch(SUPABASE_URL + '/rest/v1/rpc/set_niveau_scolaire', {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + (savedUser.access_token || SUPABASE_KEY), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_email: savedUser.email, p_niveau: niveau })
+    });
+    var res = await r.json();
+    if (res && res.success) {
+      msg.style.color = '#4ade80';
+      msg.textContent = '✅ Niveau enregistré. Tes prochaines fiches seront adaptées.';
+      savedUser.niveau_scolaire = niveau;
+      localStorage.setItem('ficheai_user', JSON.stringify(savedUser));
+    } else {
+      msg.style.color = '#f472b6';
+      msg.textContent = '⚠️ Impossible d\'enregistrer. Réessaie.';
+    }
+  } catch(e) {
+    msg.style.color = '#f472b6';
+    msg.textContent = '⚠️ Erreur réseau. Réessaie.';
+  }
+  setTimeout(function(){ msg.style.display = 'none'; }, 4000);
+}
+
+async function loadNiveau(){
+  try {
+    var r = await fetch(SUPABASE_URL + '/rest/v1/rpc/get_niveau_scolaire', {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + (savedUser.access_token || SUPABASE_KEY), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_email: savedUser.email })
+    });
+    var niveau = await r.json();
+    if (typeof niveau === 'string' && niveau) {
+      document.getElementById('pref-niveau').value = niveau;
+    }
+  } catch(e) {}
+}
+loadNiveau();
 
 function savePref(key, value) {
   var prefs = {};
