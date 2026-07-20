@@ -25,7 +25,7 @@ export default async function handler(req, res) {
   let user;
   try {
     const userRes = await fetch(
-      SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=plan,chat_messages_used,chat_messages_limit',
+      SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=plan,chat_messages_used,chat_messages_limit,niveau_scolaire',
       { headers: { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY } }
     );
     const users = await userRes.json();
@@ -50,8 +50,17 @@ export default async function handler(req, res) {
     ? 'Réponds dans la même langue que l\'étudiant.'
     : 'Réponds en ' + (langMap[language] || 'français') + '.';
 
+  const niveauMap = {
+    college: "L'utilisateur est au COLLÈGE (11-15 ans). Utilise un vocabulaire simple et accessible, des phrases courtes, et des exemples concrets du quotidien. Explique chaque terme technique.",
+    lycee: "L'utilisateur est au LYCÉE (15-18 ans), il prépare le baccalauréat. Utilise le vocabulaire attendu au bac et reste rigoureux sans être universitaire.",
+    prepa: "L'utilisateur est en CLASSE PRÉPARATOIRE. Niveau d'exigence élevé : rigueur formelle, vocabulaire technique précis, mise en perspective des concepts. Ne simplifie pas.",
+    superieur: "L'utilisateur est dans l'ENSEIGNEMENT SUPÉRIEUR. Utilise un vocabulaire académique précis et structure les concepts de façon universitaire."
+  };
+  const niveauInstruction = niveauMap[user.niveau_scolaire] || niveauMap.lycee;
+
   const systemPrompt = `Tu es FicheAI, un assistant pédagogique expert et bienveillant. Tu aides les étudiants à réviser leurs cours de façon efficace.
 ${langInstruction}
+${niveauInstruction}
 ${courseContent ? '\n\nVoici le cours de l\'étudiant :\n---\n' + String(courseContent).substring(0, 6000) + '\n---' : ''}
 
 Tu peux générer des fiches de révision, quiz, flashcards, mind maps, expliquer des notions, anticiper les questions d'examen.
