@@ -83,6 +83,16 @@ FicheAI
 <input type="password" id="password" placeholder="8 caractères minimum" autocomplete="new-password">
 <small>Utilise au moins 8 caractères, avec des lettres et des chiffres.</small>
 </div>
+<div class="form-group">
+<label>Ton niveau</label>
+<select id="niveau" style="width:100%;background:var(--bg3);border:1.5px solid var(--border2);border-radius:10px;padding:0.8rem 1rem;font-size:0.9rem;color:var(--text);font-family:var(--font-b);outline:none;cursor:pointer">
+<option value="college">📘 Collège</option>
+<option value="lycee" selected>📗 Lycée</option>
+<option value="prepa">📕 Classe préparatoire</option>
+<option value="superieur">📙 Université / École</option>
+</select>
+<small>FicheAI adapte le vocabulaire et la difficulté de tes fiches à ton niveau. Modifiable à tout moment.</small>
+</div>
 <button class="btn-submit" id="submit-btn">Créer mon compte gratuit →</button>
 <p class="auth-note">En créant un compte, tu acceptes nos <a href="/cgu.html">CGU</a> et notre <a href="/confidentialite.html">politique de confidentialité</a>.</p>
 </div>
@@ -128,6 +138,7 @@ async function handleSignup(){
   var firstname=document.getElementById('firstname').value.trim();
   var email=document.getElementById('email').value.trim();
   var password=document.getElementById('password').value;
+  var niveau=document.getElementById('niveau').value;
   var errBox=document.getElementById('msg-error');var successBox=document.getElementById('msg-success');var btn=document.getElementById('submit-btn');
   errBox.style.display='none';successBox.style.display='none';
 
@@ -160,8 +171,17 @@ async function handleSignup(){
       }).catch(function(){});
     }
 
+    // Enregistrement du niveau scolaire (non bloquant : si ça échoue, le défaut "lycee" s'applique)
+    if(niveau && niveau !== 'lycee'){
+      fetch(SUPABASE_URL+'/rest/v1/rpc/set_niveau_scolaire',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+(data.access_token||SUPABASE_KEY)},
+        body:JSON.stringify({p_email:email,p_niveau:niveau})
+      }).catch(function(){});
+    }
+
     if(data.access_token){
-      localStorage.setItem('ficheai_user',JSON.stringify({email:email,plan:'starter',remaining:5,access_token:data.access_token}));
+      localStorage.setItem('ficheai_user',JSON.stringify({email:email,plan:'starter',remaining:5,access_token:data.access_token,niveau_scolaire:niveau}));
       successBox.innerHTML='✅ Compte créé avec succès ! Tu es connecté. Redirection...';
       successBox.style.display='block';
       var redirected=false;
