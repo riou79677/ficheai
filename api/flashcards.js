@@ -153,6 +153,22 @@ export default async function handler(req, res) {
         const fiche = Array.isArray(frows) ? frows[0] : null;
         if (!fiche) return res.status(404).json({ error: 'Fiche introuvable' });
 
+        // Niveau scolaire de l'utilisateur, pour adapter le vocabulaire des flashcards
+        const niveauMap = {
+          college: "L'utilisateur est au COLLÈGE (11-15 ans). Utilise un vocabulaire simple et accessible, des phrases courtes, et des exemples concrets du quotidien.",
+          lycee: "L'utilisateur est au LYCÉE (15-18 ans), il prépare le baccalauréat. Utilise le vocabulaire attendu au bac.",
+          prepa: "L'utilisateur est en CLASSE PRÉPARATOIRE. Niveau d'exigence élevé, vocabulaire technique précis, ne simplifie pas.",
+          superieur: "L'utilisateur est dans l'ENSEIGNEMENT SUPÉRIEUR. Utilise un vocabulaire académique précis."
+        };
+        let niveauInstruction = niveauMap.lycee;
+        try {
+          const nr = await fetch(SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=niveau_scolaire', { headers: sb });
+          const nu = await nr.json();
+          if (Array.isArray(nu) && nu[0] && niveauMap[nu[0].niveau_scolaire]) {
+            niveauInstruction = niveauMap[nu[0].niveau_scolaire];
+          }
+        } catch (e) { console.error('Erreur lecture niveau:', e); }
+
         // On demande à Claude d'extraire des flashcards
         const aiRes = await fetch('https://api.anthropic.com/v1/messages', {
           method: 'POST',
@@ -160,7 +176,7 @@ export default async function handler(req, res) {
           body: JSON.stringify({
             model: 'claude-sonnet-4-5',
             max_tokens: 1500,
-            system: 'Tu es un expert en pédagogie et en mémorisation active. Tu crées des flashcards de révision de qualité.',
+            system: 'Tu es un expert en pédagogie et en mémorisation active. Tu crées des flashcards de révision de qualité. ' + niveauInstruction,
             messages: [{
               role: 'user',
               content: 'Voici une fiche de révision intitulée "' + (fiche.titre || 'Fiche') + '" :\n\n' + String(fiche.contenu).substring(0, 6000) + '\n\n---\nCrée 8 à 10 flashcards question/réponse à partir de cette fiche.\nRègles :\n- Question courte et précise (le recto).\n- Réponse concise, 1 à 2 phrases maximum (le verso).\n- Couvre les points les plus importants.\nRéponds UNIQUEMENT avec un tableau JSON valide, sans aucun texte autour ni balise Markdown. Format exact :\n[{"question":"...","answer":"..."}]'
