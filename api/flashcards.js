@@ -151,6 +151,9 @@ export default async function handler(req, res) {
           if (quota.reason === 'plan_required') {
             return res.status(403).json({ error: 'Le Mode Révision est disponible à partir du plan Pro.' });
           }
+          if (quota.reason === 'daily_limit_reached') {
+            return res.status(403).json({ error: 'Tu as atteint la limite de cartes pour aujourd\'hui. Reviens demain, ou passe à un plan supérieur !' });
+          }
           return res.status(403).json({ error: 'Limite de cartes générées atteinte pour ce mois. Passe à un plan supérieur pour continuer !' });
         }
       } catch (e) {
