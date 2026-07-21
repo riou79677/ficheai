@@ -23,33 +23,45 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'Connecte-toi pour générer une fiche (5 gratuites à l\'inscription).' });
   }
 
-  // Lecture du quota via service_role (fiable, contourne RLS côté serveur uniquement).
+  // Récupération du niveau scolaire (info seule, pas de quota) + vérification/décompte via la fonction unifiée
   let user;
   try {
     const userRes = await fetch(
-      SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=plan,generations_used,generations_limit,niveau_scolaire',
+      SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=plan,niveau_scolaire',
       { headers: { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY } }
     );
     const users = await userRes.json();
     user = Array.isArray(users) ? users[0] : null;
   } catch (e) {
-    console.error('Erreur lecture quota:', e);
+    console.error('Erreur lecture profil:', e);
     return res.status(503).json({ error: 'Service momentanément indisponible' });
   }
 
   if (!user) {
     return res.status(403).json({ error: 'Compte introuvable. Déconnecte-toi puis reconnecte-toi.' });
   }
-  if (user.generations_used >= user.generations_limit) {
-    return res.status(403).json({ error: 'Limite de générations atteinte. Passe à Pro pour continuer !' });
-  }
-
-  const charLimit = user.plan === 'ultimate' ? 150000 : user.plan === 'pro' ? 80000 : 30000;
 
   // Le format "Sujet d'examen" est réservé aux plans payants (fonctionnalité premium)
   if (format === 'examen' && user.plan === 'starter') {
     return res.status(403).json({ error: 'Le générateur de sujets d\'examen est disponible à partir du plan Pro. Passe à Pro pour t\'entraîner avec des sujets sur mesure !' });
   }
+
+  try {
+    const quotaRes = await fetch(
+      SUPABASE_URL + '/rest/v1/rpc/check_and_consume_quota',
+      { method: 'POST', headers: { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ p_email: email, p_type: 'generation' }) }
+    );
+    const quota = await quotaRes.json();
+    if (!quota.allowed) {
+      return res.status(403).json({ error: 'Limite de générations atteinte pour ce mois. Passe à un plan supérieur pour continuer !' });
+    }
+  } catch (e) {
+    console.error('Erreur vérification quota:', e);
+    return res.status(503).json({ error: 'Service momentanément indisponible' });
+  }
+
+  const charLimit = user.plan === 'ultimate' ? 60000 : user.plan === 'pro' ? 80000 : 30000;
 
   const prompts = {
     fiche: `Tu es un expert en pédagogie universitaire. À partir du cours ci-dessous, génère une FICHE DE RÉVISION complète et ultra-structurée, comme si tu aidais un étudiant à préparer un examen important.
