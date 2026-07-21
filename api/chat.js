@@ -25,24 +25,36 @@ export default async function handler(req, res) {
   let user;
   try {
     const userRes = await fetch(
-      SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=plan,chat_messages_used,chat_messages_limit,niveau_scolaire',
+      SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=plan,niveau_scolaire',
       { headers: { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY } }
     );
     const users = await userRes.json();
     user = Array.isArray(users) ? users[0] : null;
   } catch (e) {
-    console.error('Erreur lecture plan chat:', e);
+    console.error('Erreur lecture profil:', e);
     return res.status(503).json({ error: 'Service momentanément indisponible' });
   }
 
   if (!user) {
     return res.status(403).json({ error: 'Compte introuvable. Déconnecte-toi puis reconnecte-toi.' });
   }
-  if (user.plan === 'starter') {
-    return res.status(403).json({ error: 'Le Chat IA est disponible à partir du plan Pro.' });
-  }
-  if (user.plan === 'pro' && user.chat_messages_used >= user.chat_messages_limit) {
-    return res.status(403).json({ error: 'Limite de 20 messages atteinte ce mois. Passe à Ultimate pour un chat illimité !' });
+
+  try {
+    const quotaRes = await fetch(
+      SUPABASE_URL + '/rest/v1/rpc/check_and_consume_quota',
+      { method: 'POST', headers: { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ p_email: email, p_type: 'chat' }) }
+    );
+    const quota = await quotaRes.json();
+    if (!quota.allowed) {
+      if (quota.reason === 'plan_required') {
+        return res.status(403).json({ error: 'Le Chat IA est disponible à partir du plan Pro.' });
+      }
+      return res.status(403).json({ error: 'Limite de messages atteinte pour ce mois. Passe à un plan supérieur pour continuer !' });
+    }
+  } catch (e) {
+    console.error('Erreur vérification quota chat:', e);
+    return res.status(503).json({ error: 'Service momentanément indisponible' });
   }
 
   const langMap = { fr: 'français', en: 'English', es: 'Español', de: 'Deutsch' };
@@ -84,17 +96,6 @@ Sois toujours clair, structuré, encourageant et pédagogique. Utilise des émoj
 
     const data = await response.json();
     if (data.error) throw new Error(data.error.message);
-
-    if (user.plan === 'pro') {
-      fetch(
-        SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email),
-        {
-          method: 'PATCH',
-          headers: { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-          body: JSON.stringify({ chat_messages_used: user.chat_messages_used + 1 })
-        }
-      ).catch(e => console.error('Échec incrément quota chat:', e));
-    }
 
     return res.status(200).json({ result: data.content[0].text });
 
