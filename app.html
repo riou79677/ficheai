@@ -193,7 +193,7 @@ textarea::placeholder{color:var(--text3)}
         <div class="fmt" data-fmt="mindmap" data-icon="🧠" data-name="Mind Map" onclick="selectFormat(this)"><span class="fmt-icon">🧠</span><div class="fmt-info"><span class="fmt-name">Mind Map</span><span class="fmt-desc">Carte mentale visuelle</span></div></div>
         <div class="fmt" data-fmt="questions" data-icon="💬" data-name="Questions ouvertes" onclick="selectFormat(this)"><span class="fmt-icon">💬</span><div class="fmt-info"><span class="fmt-name">Questions ouvertes</span><span class="fmt-desc">Pour préparer les oraux</span></div></div>
         <div class="fmt" data-fmt="chrono" data-icon="📅" data-name="Chronologie" onclick="selectFormat(this)"><span class="fmt-icon">📅</span><div class="fmt-info"><span class="fmt-name">Chronologie</span><span class="fmt-desc">Plan & frise temporelle</span></div></div>
-        <div class="fmt" data-fmt="examen" data-icon="📝" data-name="Sujet d'examen" onclick="selectFormat(this)"><span class="fmt-icon">📝</span><div class="fmt-info"><span class="fmt-name">Sujet d'examen</span><span class="fmt-desc">Entraînement type bac, avec corrigé</span></div></div>
+        <div class="fmt" data-fmt="examen" data-icon="📝" data-name="Sujet d'examen" data-premium="1" onclick="selectFormat(this)"><span class="fmt-icon">📝</span><div class="fmt-info"><span class="fmt-name">Sujet d'examen <span style="background:linear-gradient(135deg,#6c5ce7,#fd79a8);color:#fff;font-size:0.62rem;font-weight:700;padding:1px 7px;border-radius:100px;margin-left:4px;vertical-align:middle">PRO</span></span><span class="fmt-desc">Entraînement noté et corrigé, sur mesure</span></div></div>
       </div>
     </div>
     <div class="sidebar-card">
@@ -456,6 +456,16 @@ function renderChatMode() {
 }
 
 function selectFormat(el) {
+  var plan = savedUser ? (savedUser.plan || 'starter') : 'starter';
+  if (el.dataset.premium === '1' && plan === 'starter') {
+    showToast ? showToast('🔒 Sujet d\'examen disponible à partir du plan Pro') : null;
+    var modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:999;display:flex;align-items:center;justify-content:center;padding:1.5rem';
+    modal.innerHTML = '<div style="background:#0f0f1a;border:1px solid rgba(108,92,231,0.35);border-radius:20px;padding:2rem;max-width:420px;text-align:center"><div style="font-size:2.2rem;margin-bottom:0.8rem">📝</div><h3 style="font-family:var(--font-h,inherit);font-size:1.15rem;margin-bottom:0.6rem">Sujet d\'examen — Plan Pro requis</h3><p style="font-size:0.85rem;color:#a0a0c0;line-height:1.6;margin-bottom:1.5rem">Génère un entraînement noté sur 20, avec exercices et corrigé détaillé, à partir de ton cours. Disponible dès le plan Pro.</p><a href="/#tarifs" style="background:linear-gradient(135deg,#6c5ce7,#fd79a8);color:#fff;padding:0.75rem 2rem;border-radius:100px;font-weight:700;text-decoration:none;display:inline-block;margin-right:8px">Voir les plans</a><button onclick="this.closest(\'div[style*=fixed]\').remove()" style="background:none;border:1px solid rgba(255,255,255,0.15);color:#a0a0c0;padding:0.75rem 1.3rem;border-radius:100px;cursor:pointer">Fermer</button></div>';
+    document.body.appendChild(modal);
+    modal.addEventListener('click', function(e){ if(e.target === modal) modal.remove(); });
+    return;
+  }
   document.querySelectorAll('.fmt').forEach(function(f) { f.classList.remove('active'); });
   el.classList.add('active');
   currentFormat = el.dataset.fmt;
