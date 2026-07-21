@@ -139,6 +139,25 @@ export default async function handler(req, res) {
       const ficheId = body.fiche_id;
       if (!ficheId) return res.status(400).json({ error: 'Fiche manquante' });
 
+      // Vérification et décompte du quota (le Mode Révision est réservé aux plans Pro/Ultimate,
+      // et limité même en Ultimate pour éviter un usage abusif coûteux)
+      try {
+        const quotaRes = await fetch(
+          SUPABASE_URL + '/rest/v1/rpc/check_and_consume_quota',
+          { method: 'POST', headers: Object.assign({}, sb, { 'Content-Type': 'application/json' }), body: JSON.stringify({ p_email: email, p_type: 'flashcard' }) }
+        );
+        const quota = await quotaRes.json();
+        if (!quota.allowed) {
+          if (quota.reason === 'plan_required') {
+            return res.status(403).json({ error: 'Le Mode Révision est disponible à partir du plan Pro.' });
+          }
+          return res.status(403).json({ error: 'Limite de cartes générées atteinte pour ce mois. Passe à un plan supérieur pour continuer !' });
+        }
+      } catch (e) {
+        console.error('Erreur vérification quota flashcards:', e);
+        return res.status(503).json({ error: 'Service momentanément indisponible' });
+      }
+
       try {
         // On refuse de recréer des cartes si la fiche en a déjà
         const existR = await fetch(SUPABASE_URL + '/rest/v1/flashcards?fiche_id=eq.' + encodeURIComponent(ficheId) + '&user_email=eq.' + encodeURIComponent(email) + '&select=id', { headers: sb });
