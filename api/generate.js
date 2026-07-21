@@ -54,6 +54,9 @@ export default async function handler(req, res) {
     );
     const quota = await quotaRes.json();
     if (!quota.allowed) {
+      if (quota.reason === 'daily_limit_reached') {
+        return res.status(403).json({ error: 'Tu as atteint la limite de générations pour aujourd\'hui. Reviens demain, ou passe à un plan supérieur !' });
+      }
       return res.status(403).json({ error: 'Limite de générations atteinte pour ce mois. Passe à un plan supérieur pour continuer !' });
     }
   } catch (e) {
