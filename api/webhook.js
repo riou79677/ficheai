@@ -73,10 +73,10 @@ export default async function handler(req, res) {
 
   // Price IDs Stripe
   const PLANS = {
-    'price_1TXfc5JBbEVt3aRD8UpsC4Ym': { plan: 'pro',      genLimit: 50,     chatLimit: 200 },      // Pro mensuel
-    'price_1TXfefJBbEVt3aRDhNEcUNQl': { plan: 'pro',      genLimit: 50,     chatLimit: 200 },      // Pro annuel
-    'price_1TXfiUJBbEVt3aRDXGVS7pAz': { plan: 'ultimate', genLimit: 999999, chatLimit: 999999 },  // Ultimate mensuel
-    'price_1TXfj3JBbEVt3aRDei6gdSy0': { plan: 'ultimate', genLimit: 999999, chatLimit: 999999 },  // Ultimate annuel
+    'price_1TXfc5JBbEVt3aRD8UpsC4Ym': { plan: 'pro',      genLimit: 50,  chatLimit: 20,  fcLimit: 100 },  // Pro mensuel
+    'price_1TXfefJBbEVt3aRDhNEcUNQl': { plan: 'pro',      genLimit: 50,  chatLimit: 20,  fcLimit: 100 },  // Pro annuel
+    'price_1TXfiUJBbEVt3aRDXGVS7pAz': { plan: 'ultimate', genLimit: 300, chatLimit: 300, fcLimit: 500 },  // Ultimate mensuel
+    'price_1TXfj3JBbEVt3aRDei6gdSy0': { plan: 'ultimate', genLimit: 300, chatLimit: 300, fcLimit: 500 },  // Ultimate annuel
   };
 
   // Met à jour le plan d'un utilisateur dans Supabase via la clé service_role
@@ -133,6 +133,9 @@ export default async function handler(req, res) {
           generations_used: 0,
           chat_messages_limit: p.chatLimit,
           chat_messages_used: 0,
+          flashcards_limit: p.fcLimit,
+          flashcards_used: 0,
+          quota_period_start: new Date().toISOString(),
           stripe_customer_id: customerId
         };
       } else {
@@ -143,6 +146,9 @@ export default async function handler(req, res) {
           generations_used: 0,
           chat_messages_limit: 0,
           chat_messages_used: 0,
+          flashcards_limit: 0,
+          flashcards_used: 0,
+          quota_period_start: new Date().toISOString(),
           stripe_customer_id: customerId
         };
       }
@@ -160,7 +166,10 @@ export default async function handler(req, res) {
           generations_limit: 5,
           generations_used: 0,
           chat_messages_limit: 0,
-          chat_messages_used: 0
+          chat_messages_used: 0,
+          flashcards_limit: 0,
+          flashcards_used: 0,
+          quota_period_start: new Date().toISOString()
         });
         console.log('Abonnement annulé:', email, '-> starter');
       }
