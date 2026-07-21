@@ -46,6 +46,11 @@ export default async function handler(req, res) {
 
   const charLimit = user.plan === 'ultimate' ? 150000 : user.plan === 'pro' ? 80000 : 30000;
 
+  // Le format "Sujet d'examen" est réservé aux plans payants (fonctionnalité premium)
+  if (format === 'examen' && user.plan === 'starter') {
+    return res.status(403).json({ error: 'Le générateur de sujets d\'examen est disponible à partir du plan Pro. Passe à Pro pour t\'entraîner avec des sujets sur mesure !' });
+  }
+
   const prompts = {
     fiche: `Tu es un expert en pédagogie universitaire. À partir du cours ci-dessous, génère une FICHE DE RÉVISION complète et ultra-structurée, comme si tu aidais un étudiant à préparer un examen important.
 
@@ -173,14 +178,18 @@ Format OBLIGATOIRE :
 - [Point 1]
 - [Point 2]`,
 
-    examen: `Tu es un professeur qui conçoit des sujets d'examen originaux, dans le style des épreuves officielles françaises (bac, brevet, concours), à partir du cours fourni.
+    examen: `Tu es un professeur qui conçoit des sujets d'examen originaux, dans le style des épreuves officielles françaises correspondant précisément au niveau de l'élève (précisé plus bas dans ces instructions) :
+- Collège → dans le style du BREVET (DNB)
+- Lycée → dans le style du BACCALAURÉAT
+- Classe préparatoire → dans le style d'un DEVOIR SURVEILLÉ / KHÔLLE de prépa, ou d'un CONCOURS (Mines, X, Centrale selon la matière)
+- Supérieur (université/école) → dans le style d'un EXAMEN PARTIEL ou d'un DEVOIR de fin de semestre
 
-RÈGLE ABSOLUE, NON NÉGOCIABLE : tu dois créer un sujet 100% ORIGINAL et INÉDIT. Tu peux t'inspirer du STYLE, du FORMAT, du NIVEAU DE DIFFICULTÉ et du TYPE DE QUESTIONS des épreuves officielles que tu connais, mais tu ne dois JAMAIS reproduire, recopier ou paraphraser de près un énoncé, un exercice ou une question qui existe réellement (annales de bac, sujets labolycee.org, APMEP, ou autre). Invente des contextes, des données chiffrées, des scénarios et des formulations entièrement nouveaux. Si tu ne peux pas garantir l'originalité totale d'un exercice, remplace-le par un exercice différent que tu es sûr d'avoir inventé.
+RÈGLE ABSOLUE, NON NÉGOCIABLE : tu dois créer un sujet 100% ORIGINAL et INÉDIT. Tu peux t'inspirer du STYLE, du FORMAT, du NIVEAU DE DIFFICULTÉ et du TYPE DE QUESTIONS des épreuves officielles que tu connais pour ce niveau, mais tu ne dois JAMAIS reproduire, recopier ou paraphraser de près un énoncé, un exercice ou une question qui existe réellement (annales de bac, brevet, sujets labolycee.org, APMEP, concours, ou autre). Invente des contextes, des données chiffrées, des scénarios et des formulations entièrement nouveaux. Si tu ne peux pas garantir l'originalité totale d'un exercice, remplace-le par un exercice différent que tu es sûr d'avoir inventé.
 
 Format OBLIGATOIRE, à adapter selon la matière du cours fourni :
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📝 SUJET D'ENTRAÎNEMENT — [MATIÈRE]
+📝 [NOM DE L'ÉPREUVE ADAPTÉ AU NIVEAU : ex "BREVET BLANC", "BAC BLANC", "DEVOIR SURVEILLÉ", "EXAMEN PARTIEL"] — [MATIÈRE]
 Durée conseillée : [X]h · Total : 20 points
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
