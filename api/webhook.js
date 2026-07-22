@@ -79,6 +79,33 @@ export default async function handler(req, res) {
     'price_1TXfj3JBbEVt3aRDei6gdSy0': { plan: 'ultimate', genLimit: 300, chatLimit: 300, fcLimit: 500 },  // Ultimate annuel
   };
 
+  // Paliers de recharge ponctuelle (paiement unique, pas d'abonnement) : ajoutent des
+  // générations supplémentaires pour finir le mois en cours, sans réinitialiser le compteur déjà utilisé.
+  const CREDIT_PACKS = {
+    'price_1TvvwjJBbEVt3aRDYw3CewZz': 50,   // Recharge 50 générations — 6,99€
+    'price_1TvvwqJBbEVt3aRDRZXro9z5': 150,  // Recharge 150 générations — 19,99€
+    'price_1TvvwxJBbEVt3aRDJN6pTiYz': 400,  // Recharge 400 générations — 49,99€
+  };
+
+  // Récupère les articles achetés lors d'une session de paiement ponctuel.
+  async function getSessionLineItems(sessionId) {
+    const r = await fetch('https://api.stripe.com/v1/checkout/sessions/' + sessionId + '/line_items', {
+      headers: { 'Authorization': 'Bearer ' + process.env.STRIPE_SECRET_KEY }
+    });
+    const d = await r.json();
+    return d.data || [];
+  }
+
+  // Ajoute des générations au quota déjà en place, sans toucher aux générations déjà utilisées.
+  async function addGenerationCredits(email, amount) {
+    const r = await fetch(SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=generations_limit', {
+      headers: { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY }
+    });
+    const users = await r.json();
+    const current = Array.isArray(users) && users[0] ? users[0].generations_limit : 0;
+    await updateUserPlan(email, { generations_limit: current + amount });
+  }
+
   // Met à jour le plan d'un utilisateur dans Supabase via la clé service_role
   // (contourne RLS de façon légitime, côté serveur uniquement).
   async function updateUserPlan(email, fields) {
@@ -155,6 +182,26 @@ export default async function handler(req, res) {
 
       await updateUserPlan(email, fields);
       console.log('Plan mis à jour:', email, '->', fields.plan);
+    }
+
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object;
+      // On ne traite ici que les paiements ponctuels (recharges) ; les abonnements sont
+      // déjà gérés par les événements customer.subscription.* ci-dessus.
+      if (session.mode === 'payment') {
+        const email = session.customer_details?.email || (session.customer ? await getCustomerEmail(session.customer) : null);
+        if (email) {
+          const items = await getSessionLineItems(session.id);
+          for (const item of items) {
+            const priceId = item.price?.id;
+            const amount = CREDIT_PACKS[priceId];
+            if (amount) {
+              await addGenerationCredits(email, amount);
+              console.log('Recharge créditée :', email, '+' + amount, 'générations');
+            }
+          }
+        }
+      }
     }
 
     if (event.type === 'customer.subscription.deleted') {
