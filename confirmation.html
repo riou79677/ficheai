@@ -33,6 +33,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 @keyframes drawCheck{to{stroke-dashoffset:0}}
 
 .badge{display:inline-flex;align-items:center;gap:6px;background:rgba(253,203,110,0.12);border:1px solid rgba(253,203,110,0.3);border-radius:100px;padding:0.4rem 1rem;font-size:0.8rem;font-weight:700;color:var(--gold);margin-bottom:1.5rem;animation:fadeUp 0.5s 0.3s ease both;}
+.badge.pro{background:rgba(108,92,231,0.12);border-color:rgba(108,92,231,0.3);color:var(--purple2);}
+.badge.recharge{background:rgba(0,206,201,0.12);border-color:rgba(0,206,201,0.3);color:var(--cyan);}
 
 h1{font-family:var(--font-h);font-size:1.8rem;font-weight:800;margin-bottom:0.8rem;background:linear-gradient(135deg,#fff,var(--purple2),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:fadeUp 0.5s 0.4s ease both;}
 
@@ -104,14 +106,25 @@ h1{font-family:var(--font-h);font-size:1.8rem;font-weight:800;margin-bottom:0.8r
 <script>
 // Détection du plan depuis l'URL (Stripe peut passer des paramètres)
 var urlParams = new URLSearchParams(window.location.search);
+var type = urlParams.get('type');
 var plan = urlParams.get('plan') || 'pro';
 
-// Adapter les features selon le plan
-if (plan === 'ultimate') {
-  document.querySelector('.badge').textContent = '👑 Plan Ultimate activé';
+var badgeEl = document.querySelector('.badge');
+if (type === 'recharge') {
+  var amount = urlParams.get('amount') || '';
+  badgeEl.classList.add('recharge');
+  badgeEl.textContent = '⚡ Recharge activée';
+  document.querySelector('h1').textContent = '+' + amount + ' générations ajoutées !';
+  document.querySelector('.subtitle').textContent = 'Ton crédit est déjà disponible sur ton compte. Retourne sur FicheAI pour continuer tes révisions sans attendre.';
+  document.getElementById('features-grid').style.display = 'none';
+  document.querySelector('.note').innerHTML = 'Un email de confirmation a été envoyé à ton adresse. Redirection automatique dans quelques secondes...';
+  setTimeout(function(){ window.location.href = '/app.html'; }, 4000);
+} else if (plan === 'ultimate') {
+  badgeEl.textContent = '👑 Plan Ultimate activé';
   document.querySelector('h1').textContent = 'Bienvenue, tu es Ultimate !';
 } else {
-  document.querySelector('.badge').textContent = '⚡ Plan Pro activé';
+  badgeEl.classList.add('pro');
+  badgeEl.textContent = '⚡ Plan Pro activé';
 }
 
 // Confetti
