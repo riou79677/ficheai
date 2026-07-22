@@ -473,6 +473,24 @@ function selectFormat(el) {
   currentFormatIcon = el.dataset.icon;
 }
 
+function showRechargeModal(message) {
+  var modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:999;display:flex;align-items:center;justify-content:center;padding:1.5rem';
+  modal.innerHTML = '<div style="background:#0f0f1a;border:1px solid rgba(108,92,231,0.35);border-radius:20px;padding:2rem;max-width:440px;text-align:center">'
+    + '<div style="font-size:2.2rem;margin-bottom:0.8rem">🎉</div>'
+    + '<h3 style="font-size:1.15rem;margin-bottom:0.6rem">Tu es sacrément assidu ce mois-ci !</h3>'
+    + '<p style="font-size:0.85rem;color:#a0a0c0;line-height:1.6;margin-bottom:1.5rem">' + message + ' En attendant la remise à zéro du mois prochain, tu peux débloquer plus de générations dès maintenant :</p>'
+    + '<div style="display:flex;flex-direction:column;gap:0.6rem;margin-bottom:1rem">'
+    + '<a href="https://buy.stripe.com/28E14o9OJdfBgUD4g643S09" target="_blank" style="background:#181830;border:1px solid rgba(255,255,255,0.13);color:#fff;padding:0.7rem 1rem;border-radius:12px;text-decoration:none;font-weight:600;display:flex;justify-content:space-between"><span>+50 générations</span><span>6,99€</span></a>'
+    + '<a href="https://buy.stripe.com/7sY8wQbWRgrN6fZ6oe43S0a" target="_blank" style="background:linear-gradient(135deg,#6c5ce7,#fd79a8);color:#fff;padding:0.7rem 1rem;border-radius:12px;text-decoration:none;font-weight:700;display:flex;justify-content:space-between"><span>+150 générations</span><span>19,99€</span></a>'
+    + '<a href="https://buy.stripe.com/14A14o2mhdfB7k3bIy43S0b" target="_blank" style="background:#181830;border:1px solid rgba(255,255,255,0.13);color:#fff;padding:0.7rem 1rem;border-radius:12px;text-decoration:none;font-weight:600;display:flex;justify-content:space-between"><span>+400 générations</span><span>49,99€</span></a>'
+    + '</div>'
+    + '<button onclick="this.closest(\'div[style*=fixed]\').remove()" style="background:none;border:1px solid rgba(255,255,255,0.15);color:#a0a0c0;padding:0.6rem 1.3rem;border-radius:100px;cursor:pointer;font-size:0.85rem">Plus tard</button>'
+    + '</div>';
+  document.body.appendChild(modal);
+  modal.addEventListener('click', function(e){ if(e.target === modal) modal.remove(); });
+}
+
 function genererDirectement() { document.getElementById('gen-btn').click(); }
 
 function setFileBadge(msg, kind) {
@@ -590,9 +608,19 @@ document.getElementById('gen-btn').addEventListener('click', async function() {
   content.style.display = 'none';
   resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   try {
-    var response = await fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ course: input.substring(0, 8000), format: currentFormat, language: document.getElementById('lang-sel').value, email: currentUserEmail }) });
+    var response = await fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ course: input, format: currentFormat, language: document.getElementById('lang-sel').value, email: currentUserEmail }) });
     var data = await response.json();
-    if (data.error) throw new Error(data.error);
+    if (data.error) {
+      if (response.status === 403 && savedUser && savedUser.plan === 'ultimate') {
+        spinner.style.display = 'none';
+        resultCard.style.display = 'none';
+        showRechargeModal(data.error);
+        btn.disabled = false;
+        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Générer avec l\'IA';
+        return;
+      }
+      throw new Error(data.error);
+    }
     lastResult = data.result;
     content.textContent = data.result;
     document.getElementById('result-title').textContent = currentFormatIcon + ' ' + currentFormatName;
@@ -741,7 +769,14 @@ async function sendChatMessage() {
     var response = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: chatHistory.slice(-12), courseContent: courseContent.substring(0, 6000), email: currentUserEmail, language: document.getElementById('lang-sel').value }) });
     var data = await response.json();
     removeTyping();
-    if (data.error) { addMessage('ai', '⚠️ ' + data.error); return; }
+    if (data.error) {
+      if (response.status === 403 && savedUser && savedUser.plan === 'ultimate') {
+        showRechargeModal(data.error);
+      } else {
+        addMessage('ai', '⚠️ ' + data.error);
+      }
+      return;
+    }
     chatHistory.push({ role: 'assistant', content: data.result });
     addMessage('ai', data.result);
   } catch(e) { removeTyping(); addMessage('ai', '⚠️ Erreur réseau. Réessaie.'); }
