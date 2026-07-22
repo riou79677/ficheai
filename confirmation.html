@@ -77,8 +77,8 @@ h1{font-family:var(--font-h);font-size:1.8rem;font-weight:800;margin-bottom:0.8r
   <div class="features" id="features-grid">
     <div class="feature">
       <div class="feature-icon">⚡</div>
-      <div class="feature-title">Générations illimitées</div>
-      <div class="feature-desc">Génère autant de fiches que tu veux</div>
+      <div class="feature-title" id="feat-gen-title">Générations</div>
+      <div class="feature-desc" id="feat-gen-desc">Selon ton plan</div>
     </div>
     <div class="feature">
       <div class="feature-icon">💬</div>
@@ -122,9 +122,13 @@ if (type === 'recharge') {
 } else if (plan === 'ultimate') {
   badgeEl.textContent = '👑 Plan Ultimate activé';
   document.querySelector('h1').textContent = 'Bienvenue, tu es Ultimate !';
+  document.getElementById('feat-gen-title').textContent = '300 générations / mois';
+  document.getElementById('feat-gen-desc').textContent = 'Un usage large pour réviser sans y penser';
 } else {
   badgeEl.classList.add('pro');
   badgeEl.textContent = '⚡ Plan Pro activé';
+  document.getElementById('feat-gen-title').textContent = '50 générations / mois';
+  document.getElementById('feat-gen-desc').textContent = 'De quoi couvrir toutes tes matières';
 }
 
 // Confetti
