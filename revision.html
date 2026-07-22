@@ -162,6 +162,7 @@ function getEmail(){
   catch(e){ return null; }
 }
 var EMAIL = getEmail();
+function getPlan(){ try{ var u = JSON.parse(localStorage.getItem('ficheai_user')); return u && u.plan ? u.plan : 'starter'; }catch(e){ return 'starter'; } }
 
 function esc(s){ var d=document.createElement('div'); d.textContent=s==null?'':s; return d.innerHTML; }
 
@@ -241,6 +242,24 @@ async function loadDashboard(){
   }
 }
 
+function showRechargeModal(message){
+  var modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:999;display:flex;align-items:center;justify-content:center;padding:1.5rem';
+  modal.innerHTML = '<div style="background:#0f0f1a;border:1px solid rgba(108,92,231,0.35);border-radius:20px;padding:2rem;max-width:440px;text-align:center">'
+    + '<div style="font-size:2.2rem;margin-bottom:0.8rem">🎉</div>'
+    + '<h3 style="font-size:1.15rem;margin-bottom:0.6rem">Tu es sacrément assidu ce mois-ci !</h3>'
+    + '<p style="font-size:0.85rem;color:#a0a0c0;line-height:1.6;margin-bottom:1.5rem">' + message + ' En attendant la remise à zéro du mois prochain, tu peux débloquer plus de générations dès maintenant :</p>'
+    + '<div style="display:flex;flex-direction:column;gap:0.6rem;margin-bottom:1rem">'
+    + '<a href="https://buy.stripe.com/28E14o9OJdfBgUD4g643S09" target="_blank" style="background:#181830;border:1px solid rgba(255,255,255,0.13);color:#fff;padding:0.7rem 1rem;border-radius:12px;text-decoration:none;font-weight:600;display:flex;justify-content:space-between"><span>+50 générations</span><span>6,99€</span></a>'
+    + '<a href="https://buy.stripe.com/7sY8wQbWRgrN6fZ6oe43S0a" target="_blank" style="background:linear-gradient(135deg,#6c5ce7,#fd79a8);color:#fff;padding:0.7rem 1rem;border-radius:12px;text-decoration:none;font-weight:700;display:flex;justify-content:space-between"><span>+150 générations</span><span>19,99€</span></a>'
+    + '<a href="https://buy.stripe.com/14A14o2mhdfB7k3bIy43S0b" target="_blank" style="background:#181830;border:1px solid rgba(255,255,255,0.13);color:#fff;padding:0.7rem 1rem;border-radius:12px;text-decoration:none;font-weight:600;display:flex;justify-content:space-between"><span>+400 générations</span><span>49,99€</span></a>'
+    + '</div>'
+    + '<button onclick="this.closest(\'div[style*=fixed]\').remove()" style="background:none;border:1px solid rgba(255,255,255,0.15);color:#a0a0c0;padding:0.6rem 1.3rem;border-radius:100px;cursor:pointer;font-size:0.85rem">Plus tard</button>'
+    + '</div>';
+  document.body.appendChild(modal);
+  modal.addEventListener('click', function(e){ if(e.target === modal) modal.remove(); });
+}
+
 async function createCards(ficheId, btn){
   btn.disabled = true;
   btn.textContent = '⏳ Création…';
@@ -250,7 +269,12 @@ async function createCards(ficheId, btn){
       body: JSON.stringify({ action:'generate', email:EMAIL, fiche_id:ficheId })
     });
     var data = await r.json();
-    if(data.error){ btn.disabled=false; btn.textContent='✨ Créer les cartes'; alert('Erreur : ' + data.error); return; }
+    if(data.error){
+      btn.disabled=false; btn.textContent='✨ Créer les cartes';
+      if(r.status === 403 && getPlan() === 'ultimate'){ showRechargeModal(data.error); }
+      else { alert('Erreur : ' + data.error); }
+      return;
+    }
     await loadDashboard();
   }catch(e){
     btn.disabled=false; btn.textContent='✨ Créer les cartes'; alert('Erreur réseau, réessaie.');
