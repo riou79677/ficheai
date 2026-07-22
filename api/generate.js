@@ -64,7 +64,7 @@ export default async function handler(req, res) {
     return res.status(503).json({ error: 'Service momentanément indisponible' });
   }
 
-  const charLimit = user.plan === 'ultimate' ? 60000 : user.plan === 'pro' ? 80000 : 30000;
+  const charLimit = user.plan === 'ultimate' ? 100000 : user.plan === 'pro' ? 80000 : 30000;
 
   const prompts = {
     fiche: `Tu es un expert en pédagogie universitaire. À partir du cours ci-dessous, génère une FICHE DE RÉVISION complète et ultra-structurée, comme si tu aidais un étudiant à préparer un examen important.
