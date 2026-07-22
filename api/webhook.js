@@ -96,14 +96,21 @@ export default async function handler(req, res) {
     return d.data || [];
   }
 
-  // Ajoute des générations au quota déjà en place, sans toucher aux générations déjà utilisées.
-  async function addGenerationCredits(email, amount) {
-    const r = await fetch(SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=generations_limit', {
-      headers: { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY }
+  // Ajoute des générations au quota, de façon atomique et protégée contre les doublons :
+  // si Stripe renvoie le même événement plusieurs fois (comportement normal et documenté
+  // de Stripe), le crédit n'est appliqué qu'une seule fois grâce à l'identifiant unique
+  // de l'événement (eventId).
+  async function addGenerationCredits(eventId, eventType, email, amount) {
+    const r = await fetch(SUPABASE_URL + '/rest/v1/rpc/credit_generations_once', {
+      method: 'POST',
+      headers: { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_event_id: eventId, p_event_type: eventType, p_email: email, p_amount: amount })
     });
-    const users = await r.json();
-    const current = Array.isArray(users) && users[0] ? users[0].generations_limit : 0;
-    await updateUserPlan(email, { generations_limit: current + amount });
+    const result = await r.json();
+    if (!result || result.success !== true) {
+      throw new Error('Échec du crédit de générations : ' + JSON.stringify(result));
+    }
+    return result;
   }
 
   // Met à jour le plan d'un utilisateur dans Supabase via la clé service_role
@@ -190,14 +197,29 @@ export default async function handler(req, res) {
       // déjà gérés par les événements customer.subscription.* ci-dessus.
       if (session.mode === 'payment') {
         const email = session.customer_details?.email || (session.customer ? await getCustomerEmail(session.customer) : null);
-        if (email) {
+        if (!email) {
+          console.error('Recharge sans email identifiable, session:', session.id);
+        } else {
           const items = await getSessionLineItems(session.id);
           for (const item of items) {
             const priceId = item.price?.id;
             const amount = CREDIT_PACKS[priceId];
             if (amount) {
-              await addGenerationCredits(email, amount);
-              console.log('Recharge créditée :', email, '+' + amount, 'générations');
+              // event.id est unique par événement Stripe : sert de clé anti-doublon.
+              // Si le crédit échoue vraiment (pas juste "déjà traité"), on sort avec une
+              // erreur 500 : Stripe considère alors le webhook en échec et réessaiera
+              // automatiquement plus tard, au lieu de perdre silencieusement le paiement.
+              try {
+                const result = await addGenerationCredits(event.id, event.type, email, amount);
+                if (result.already_processed) {
+                  console.log('Événement déjà traité, ignoré :', event.id);
+                } else {
+                  console.log('Recharge créditée :', email, '+' + amount, 'générations');
+                }
+              } catch (creditErr) {
+                console.error('Échec du crédit de générations, Stripe va réessayer:', creditErr);
+                return res.status(500).json({ error: 'Échec temporaire du crédit, réessai automatique par Stripe.' });
+              }
             }
           }
         }
