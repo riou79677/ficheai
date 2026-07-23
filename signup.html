@@ -94,7 +94,7 @@ FicheAI
 </select>
 <small>FicheAI adapte le vocabulaire et la difficulté de tes fiches à ton niveau. Modifiable à tout moment.</small>
 </div>
-<button class="btn-submit" id="submit-btn">Créer mon compte gratuit →</button>
+<button class="btn-submit" id="submit-btn">Créer mon compte →</button>
 <p class="auth-note">En créant un compte, tu acceptes nos <a href="/cgu.html">CGU</a> et notre <a href="/confidentialite.html">politique de confidentialité</a>.</p>
 </div>
 <div class="auth-footer">Déjà un compte ? <a href="/login.html">Se connecter</a></div>
@@ -218,15 +218,19 @@ function showPlanModal(){
       + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;align-items:start">'
 
       // Starter
+      + '<div>'
+      + '<div style="height:30px;margin-bottom:8px"></div>'
       + '<div style="background:#111120;border:1px solid rgba(255,255,255,0.08);border-radius:18px;padding:1.4rem">'
       + '<div style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#9898b8;margin-bottom:0.6rem">Starter</div>'
       + '<div style="font-family:var(--font-h);font-size:1.8rem;font-weight:800;margin-bottom:0.9rem">0€</div>'
       + '<ul style="list-style:none;padding:0;font-size:0.78rem;color:#9898b8;display:flex;flex-direction:column;gap:0.4rem;margin-bottom:1.2rem">'
       + '<li>✓ 5 générations / mois</li><li>✓ Tous les formats</li><li>✓ Import PDF 15 pages</li></ul>'
       + '<button onclick="window.location.href=\'/app.html\'" style="width:100%;padding:0.7rem;border-radius:10px;border:1.5px solid rgba(255,255,255,0.13);background:none;color:#f0efff;font-weight:700;cursor:pointer;font-family:inherit">Continuer gratuitement</button>'
-      + '</div>'
+      + '</div></div>'
 
       // Pro
+      + '<div>'
+      + '<div style="height:30px;margin-bottom:8px"></div>'
       + '<div style="background:linear-gradient(180deg,rgba(108,92,231,0.1) 0%,#111120 100%);border:1px solid rgba(108,92,231,0.4);border-radius:18px;padding:1.4rem">'
       + '<div style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#a29bfe;margin-bottom:0.6rem">Pro</div>'
       + '<div style="font-family:var(--font-h);font-size:1.8rem;font-weight:800;margin-bottom:0.2rem">' + (annual ? '59,99€' : '7,99€') + '</div>'
@@ -234,7 +238,7 @@ function showPlanModal(){
       + '<ul style="list-style:none;padding:0;font-size:0.78rem;color:#9898b8;display:flex;flex-direction:column;gap:0.4rem;margin-bottom:1.2rem">'
       + '<li>✓ 50 générations / mois</li><li>✓ Chat IA (20 msg/mois)</li><li>✓ Import PDF 40 pages</li></ul>'
       + '<button onclick="window.location.href=STRIPE.pro[annual?\'annual\':\'monthly\']" style="width:100%;padding:0.7rem;border-radius:10px;border:none;background:linear-gradient(135deg,#6c5ce7,#fd79a8);color:#fff;font-weight:700;cursor:pointer;font-family:inherit">Choisir Pro</button>'
-      + '</div>'
+      + '</div></div>'
 
       // Ultimate + toggle au-dessus
       + '<div style="position:relative">'
@@ -254,7 +258,6 @@ function showPlanModal(){
       + '</div></div>'
 
       + '</div>'
-      + '<button onclick="window.location.href=\'/app.html\'" style="display:block;margin:1.2rem auto 0;background:none;border:none;color:#9898b8;font-size:0.8rem;cursor:pointer;text-decoration:underline">Plus tard, je continue gratuitement</button>'
       + '</div>';
 
     overlay.querySelector('#plan-toggle').addEventListener('click', function(){ annual = !annual; render(); });
