@@ -473,6 +473,27 @@ function selectFormat(el) {
   currentFormatIcon = el.dataset.icon;
 }
 
+// Lit la réponse du serveur de façon sûre : si le serveur renvoie une page d'erreur
+// en texte brut (timeout, crash, etc.) au lieu du JSON attendu, on affiche un message
+// compréhensible plutôt qu'une erreur technique incompréhensible pour l'utilisateur.
+async function readResponseSafely(response, contexte) {
+  var raw = await response.text();
+  try {
+    return JSON.parse(raw);
+  } catch (e) {
+    if (response.status === 504 || raw.indexOf('TIMEOUT') !== -1) {
+      return { error: 'Ton cours est trop long pour être traité en une seule fois. Essaie de le découper en parties plus courtes (une leçon ou un chapitre à la fois), ça marchera mieux !' };
+    }
+    if (response.status === 413 || raw.indexOf('PAYLOAD_TOO_LARGE') !== -1) {
+      return { error: 'Ton cours dépasse la taille maximale acceptée. Découpe-le en plusieurs parties et réessaie.' };
+    }
+    if (response.status >= 500) {
+      return { error: 'Le service a rencontré un problème temporaire. Réessaie dans quelques instants, et si ça persiste avec un cours long, essaie de le découper en parties plus courtes.' };
+    }
+    return { error: 'Une erreur inattendue est survenue. Réessaie, et si le problème persiste, essaie avec un cours plus court.' };
+  }
+}
+
 function showRechargeModal(message) {
   var modal = document.createElement('div');
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:999;display:flex;align-items:center;justify-content:center;padding:1.5rem';
@@ -609,7 +630,7 @@ document.getElementById('gen-btn').addEventListener('click', async function() {
   resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   try {
     var response = await fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ course: input, format: currentFormat, language: document.getElementById('lang-sel').value, email: currentUserEmail }) });
-    var data = await response.json();
+    var data = await readResponseSafely(response, 'génération');
     if (data.error) {
       if (response.status === 403 && savedUser && savedUser.plan === 'ultimate') {
         spinner.style.display = 'none';
@@ -767,7 +788,7 @@ async function sendChatMessage() {
   document.getElementById('chat-send-btn').disabled = true;
   try {
     var response = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: chatHistory.slice(-12), courseContent: courseContent.substring(0, 6000), email: currentUserEmail, language: document.getElementById('lang-sel').value }) });
-    var data = await response.json();
+    var data = await readResponseSafely(response, 'chat');
     removeTyping();
     if (data.error) {
       if (response.status === 403 && savedUser && savedUser.plan === 'ultimate') {
