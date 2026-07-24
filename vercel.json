@@ -1,7 +1,13 @@
 {
   "functions": {
     "api/generate.js": {
-      "maxDuration": 30
+      "maxDuration": 60
+    },
+    "api/chat.js": {
+      "maxDuration": 60
+    },
+    "api/flashcards.js": {
+      "maxDuration": 60
     }
   }
 }
