@@ -156,6 +156,7 @@ textarea::placeholder{color:var(--text3)}
 </style>
 </head>
 <body>
+<div id="maintenance-banner" style="display:none;position:sticky;top:0;left:0;right:0;background:linear-gradient(135deg,#f59e0b,#f97316);color:#1a1200;padding:0.7rem 1rem;text-align:center;font-size:0.85rem;font-weight:700;z-index:2000"></div>
 <nav>
   <a href="/" class="logo">
     <div class="logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
@@ -889,6 +890,43 @@ function exportMsgToPDF(btn) {
   var content = btn.closest('.msg').querySelector('.msg-content').innerText;
   exportToPDF(content, currentFormatIcon + ' ' + currentFormatName, currentFormatName);
 }
+</script>
+<script>
+(function(){
+  var SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
+  var SUPABASE_KEY = 'sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ';
+  var banner = document.getElementById('maintenance-banner');
+
+  function formatCompteARebours(secondes){
+    if (secondes <= 0) return 'imminente';
+    var m = Math.floor(secondes / 60), s = secondes % 60;
+    return m > 0 ? (m + ' min ' + s + ' s') : (s + ' s');
+  }
+
+  async function checkMaintenance(){
+    try{
+      var r = await fetch(SUPABASE_URL + '/rest/v1/rpc/get_maintenance_status', {
+        method: 'POST', headers: {'apikey': SUPABASE_KEY, 'Content-Type': 'application/json'}, body: '{}'
+      });
+      var d = await r.json();
+      if(d && d.maintenance_mode){
+        if(d.hard_blocked){
+          banner.textContent = '🚧 ' + (d.message || 'FicheAI est en maintenance.');
+          banner.style.display = 'block';
+        } else if(d.starts_at) {
+          var secondesRestantes = Math.max(0, Math.round((new Date(d.starts_at) - new Date()) / 1000));
+          banner.textContent = '🚧 Maintenance prévue dans ' + formatCompteARebours(secondesRestantes) + '. Termine ce que tu es en train de faire !';
+          banner.style.display = 'block';
+        }
+      } else {
+        banner.style.display = 'none';
+      }
+    }catch(e){}
+  }
+
+  checkMaintenance();
+  setInterval(checkMaintenance, 10000);
+})();
 </script>
 </body>
 </html>
