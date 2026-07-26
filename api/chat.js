@@ -23,7 +23,7 @@ export default async function handler(req, res) {
       method: 'POST', headers: { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY, 'Content-Type': 'application/json' }, body: '{}'
     });
     const maint = await maintRes.json();
-    if (maint && maint.maintenance_mode) {
+    if (maint && maint.hard_blocked) {
       return res.status(503).json({ error: maint.message || 'FicheAI est en maintenance. On revient très vite !' });
     }
   } catch (e) { /* si la vérification échoue, on laisse passer */ }
@@ -41,8 +41,15 @@ export default async function handler(req, res) {
     );
     const users = await userRes.json();
     user = Array.isArray(users) ? users[0] : null;
-    if (user && user.banned) {
-      return res.status(403).json({ error: 'Ce compte a été suspendu. Contacte le support si tu penses qu\'il s\'agit d\'une erreur.' });
+    if (user) {
+      const banCheck = await fetch(SUPABASE_URL + '/rest/v1/rpc/is_user_banned', {
+        method: 'POST', headers: { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ p_email: email })
+      });
+      const isBanned = await banCheck.json();
+      if (isBanned === true) {
+        return res.status(403).json({ error: 'Ce compte a été suspendu. Contacte le support si tu penses qu\'il s\'agit d\'une erreur.' });
+      }
     }
   } catch (e) {
     console.error('Erreur lecture profil:', e);
