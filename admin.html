@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FicheAI — Panneau Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#09090f;--bg2:#0f0f1a;--bg3:#13131f;--surface:#1a1a2e;--border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);--purple:#7c6dfa;--purple2:#a78bfa;--pink:#f472b6;--cyan:#22d3ee;--gold:#fbbf24;--red:#f87171;--green:#4ade80;--text:#f1f0ff;--text2:#a0a0c0;--text3:#5a5a7a;--font-h:'Syne',sans-serif;--font-b:'DM Sans',sans-serif;}
+body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh}
+.lock-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem}
+.lock-box{background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:2.5rem;max-width:380px;width:100%;text-align:center}
+.lock-box h1{font-family:var(--font-h);font-size:1.4rem;margin-bottom:0.5rem}
+.lock-box p{font-size:0.85rem;color:var(--text3);margin-bottom:1.5rem}
+.lock-box input{width:100%;background:var(--bg3);border:1.5px solid var(--border2);border-radius:10px;padding:0.8rem 1rem;font-size:0.95rem;color:var(--text);font-family:monospace;outline:none;margin-bottom:1rem;text-align:center}
+.lock-box input:focus{border-color:var(--purple)}
+.lock-box button{width:100%;padding:0.85rem;border:none;border-radius:10px;background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff;font-weight:700;font-size:0.9rem;cursor:pointer;font-family:inherit}
+.err{color:var(--red);font-size:0.8rem;margin-top:0.8rem;display:none}
+.dashboard{display:none;max-width:1000px;margin:0 auto;padding:2rem 1.5rem}
+.dashboard.visible{display:block}
+.top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;flex-wrap:wrap;gap:1rem}
+.top-bar h1{font-family:var(--font-h);font-size:1.6rem}
+.top-bar .badge{background:rgba(124,109,250,0.15);color:var(--purple2);padding:0.4rem 1rem;border-radius:100px;font-size:0.78rem;font-weight:700}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1rem;margin-bottom:2rem}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:1.2rem;text-align:center}
+.stat-card .val{font-family:var(--font-h);font-size:1.8rem;font-weight:800;color:var(--purple2)}
+.stat-card .lbl{font-size:0.75rem;color:var(--text3);margin-top:4px}
+.section{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:1.5rem;margin-bottom:1.5rem}
+.section h2{font-family:var(--font-h);font-size:1.05rem;margin-bottom:1rem}
+.maintenance-row{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.toggle{position:relative;width:52px;height:28px;background:var(--bg3);border:1px solid var(--border2);border-radius:100px;cursor:pointer;flex-shrink:0}
+.toggle.on{background:var(--red)}
+.toggle .knob{position:absolute;top:2px;left:2px;width:22px;height:22px;background:#fff;border-radius:50%;transition:transform 0.2s}
+.toggle.on .knob{transform:translateX(24px)}
+table{width:100%;border-collapse:collapse;font-size:0.85rem}
+th{text-align:left;padding:0.6rem;color:var(--text3);font-size:0.72rem;text-transform:uppercase;border-bottom:1px solid var(--border)}
+td{padding:0.6rem;border-bottom:1px solid var(--border)}
+.plan-tag{padding:2px 9px;border-radius:100px;font-size:0.72rem;font-weight:700}
+.plan-starter{background:rgba(160,160,192,0.12);color:var(--text2)}
+.plan-pro{background:rgba(124,109,250,0.15);color:var(--purple2)}
+.plan-ultimate{background:rgba(251,191,36,0.15);color:var(--gold)}
+.btn-sm{padding:0.35rem 0.8rem;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-size:0.75rem;cursor:pointer;font-family:inherit;margin-right:0.3rem}
+.btn-sm.danger{border-color:rgba(248,113,113,0.4);color:var(--red)}
+.btn-sm.warn{border-color:rgba(251,191,36,0.4);color:var(--gold)}
+.msg{font-size:0.8rem;padding:0.6rem 1rem;border-radius:8px;margin-top:0.8rem;display:none}
+.msg.ok{background:rgba(74,222,128,0.1);color:var(--green);display:block}
+.msg.error{background:rgba(248,113,113,0.1);color:var(--red);display:block}
+.banned-row{opacity:0.5}
+</style>
+</head>
+<body>
+
+<div class="lock-screen" id="lock-screen">
+<div class="lock-box">
+<h1>🔒 Panneau Admin</h1>
+<p>Accès réservé. Entre le mot de passe secret.</p>
+<input type="password" id="secret-input" placeholder="Mot de passe secret" autocomplete="off">
+<button onclick="unlock()">Déverrouiller</button>
+<div class="err" id="lock-err">Mot de passe incorrect.</div>
+</div>
+</div>
+
+<div class="dashboard" id="dashboard">
+<div class="top-bar">
+<h1>⚙️ Panneau Admin — FicheAI</h1>
+<span class="badge" id="header-badge">Chargement...</span>
+</div>
+
+<div class="stats-grid" id="stats-grid"></div>
+
+<div class="section">
+<h2>🚧 Mode maintenance</h2>
+<div class="maintenance-row">
+<div>
+<div id="maint-status" style="font-weight:700;margin-bottom:4px">Vérification...</div>
+<div style="font-size:0.78rem;color:var(--text3)">Bloque l'accès au site pour tout le monde sauf toi.</div>
+</div>
+<div class="toggle" id="maint-toggle" onclick="toggleMaintenance()"><div class="knob"></div></div>
+</div>
+<div class="msg" id="maint-msg"></div>
+</div>
+
+<div class="section">
+<h2>👥 Utilisateurs</h2>
+<table>
+<thead><tr><th>Email</th><th>Plan</th><th>Générations</th><th>Inscrit le</th><th>Actions</th></tr></thead>
+<tbody id="users-table"></tbody>
+</table>
+<div class="msg" id="users-msg"></div>
+</div>
+
+</div>
+
+<script>
+var SECRET = null;
+var ADMIN_API = '/api/admin';
+
+function unlock(){
+  var val = document.getElementById('secret-input').value.trim();
+  if(!val){ return; }
+  SECRET = val;
+  loadStats();
+}
+
+document.getElementById('secret-input').addEventListener('keydown', function(e){ if(e.key === 'Enter') unlock(); });
+
+async function callAdmin(action, payload){
+  var r = await fetch(ADMIN_API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ secret: SECRET, action: action, payload: payload || {} })
+  });
+  var data = await r.json();
+  if(r.status === 403){ throw new Error('WRONG_SECRET'); }
+  return data;
+}
+
+async function loadStats(){
+  try {
+    var data = await callAdmin('get_stats');
+    document.getElementById('lock-screen').style.display = 'none';
+    document.getElementById('dashboard').classList.add('visible');
+    document.getElementById('header-badge').textContent = data.total_users + ' utilisateur' + (data.total_users > 1 ? 's' : '');
+
+    document.getElementById('stats-grid').innerHTML =
+      '<div class="stat-card"><div class="val">' + data.total_users + '</div><div class="lbl">Utilisateurs</div></div>' +
+      '<div class="stat-card"><div class="val">' + data.par_plan.starter + '</div><div class="lbl">Starter</div></div>' +
+      '<div class="stat-card"><div class="val">' + data.par_plan.pro + '</div><div class="lbl">Pro</div></div>' +
+      '<div class="stat-card"><div class="val">' + data.par_plan.ultimate + '</div><div class="lbl">Ultimate</div></div>' +
+      '<div class="stat-card"><div class="val">' + data.total_fiches + '</div><div class="lbl">Fiches générées</div></div>' +
+      '<div class="stat-card"><div class="val">' + data.bannis + '</div><div class="lbl">Comptes bannis</div></div>';
+
+    renderUsers(data.users);
+    loadMaintenanceStatus();
+  } catch(e){
+    if(e.message === 'WRONG_SECRET'){
+      document.getElementById('lock-err').style.display = 'block';
+    } else {
+      document.getElementById('lock-err').textContent = 'Erreur : ' + e.message;
+      document.getElementById('lock-err').style.display = 'block';
+    }
+  }
+}
+
+function renderUsers(users){
+  var html = '';
+  users.sort(function(a,b){ return new Date(b.created_at) - new Date(a.created_at); });
+  users.forEach(function(u){
+    html += '<tr class="' + (u.banned ? 'banned-row' : '') + '">';
+    html += '<td>' + u.email + (u.banned ? ' 🚫' : '') + '</td>';
+    html += '<td><span class="plan-tag plan-' + u.plan + '">' + u.plan + '</span></td>';
+    html += '<td>' + u.generations_used + '</td>';
+    html += '<td>' + new Date(u.created_at).toLocaleDateString('fr-FR') + '</td>';
+    html += '<td>';
+    if(u.banned){
+      html += '<button class="btn-sm" onclick="banUser(\'' + u.email + '\', false)">Débannir</button>';
+    } else {
+      html += '<button class="btn-sm danger" onclick="banUser(\'' + u.email + '\', true)">Bannir</button>';
+    }
+    html += '<button class="btn-sm warn" onclick="deleteUser(\'' + u.email + '\')">Supprimer</button>';
+    html += '</td></tr>';
+  });
+  document.getElementById('users-table').innerHTML = html;
+}
+
+async function banUser(email, ban){
+  if(ban && !confirm('Bannir ' + email + ' ? Cette personne ne pourra plus utiliser FicheAI.')) return;
+  var reason = ban ? prompt('Raison du bannissement (optionnel) :') : null;
+  try{
+    await callAdmin('set_ban', { email: email, banned: ban, reason: reason });
+    showMsg('users-msg', ban ? '✅ Compte banni.' : '✅ Compte débanni.', 'ok');
+    loadStats();
+  }catch(e){ showMsg('users-msg', '⚠️ Erreur : ' + e.message, 'error'); }
+}
+
+async function deleteUser(email){
+  if(!confirm('SUPPRIMER DÉFINITIVEMENT le compte ' + email + ' ? Action irréversible.')) return;
+  if(!confirm('Es-tu vraiment sûr ? Toutes ses fiches seront perdues.')) return;
+  try{
+    await callAdmin('delete_account', { email: email });
+    showMsg('users-msg', '✅ Compte supprimé.', 'ok');
+    loadStats();
+  }catch(e){ showMsg('users-msg', '⚠️ Erreur : ' + e.message, 'error'); }
+}
+
+var maintenanceOn = false;
+async function loadMaintenanceStatus(){
+  try{
+    var r = await fetch('https://qyjqtjrqnlbgtxvnjvnk.supabase.co/rest/v1/rpc/get_maintenance_status', {
+      method: 'POST', headers: {'apikey':'sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ','Content-Type':'application/json'}, body: '{}'
+    });
+    var d = await r.json();
+    maintenanceOn = d.maintenance_mode;
+    document.getElementById('maint-toggle').classList.toggle('on', maintenanceOn);
+    document.getElementById('maint-status').textContent = maintenanceOn ? '🔴 Site en maintenance' : '🟢 Site en ligne normalement';
+  }catch(e){}
+}
+
+async function toggleMaintenance(){
+  var nouveauEtat = !maintenanceOn;
+  if(nouveauEtat && !confirm('Activer le mode maintenance ? Le site sera inaccessible pour tous les utilisateurs.')) return;
+  try{
+    await callAdmin('set_maintenance', { enabled: nouveauEtat });
+    maintenanceOn = nouveauEtat;
+    document.getElementById('maint-toggle').classList.toggle('on', maintenanceOn);
+    document.getElementById('maint-status').textContent = maintenanceOn ? '🔴 Site en maintenance' : '🟢 Site en ligne normalement';
+    showMsg('maint-msg', '✅ Mode maintenance ' + (maintenanceOn ? 'activé' : 'désactivé') + '.', 'ok');
+  }catch(e){ showMsg('maint-msg', '⚠️ Erreur : ' + e.message, 'error'); }
+}
+
+function showMsg(id, text, type){
+  var el = document.getElementById(id);
+  el.textContent = text; el.className = 'msg ' + type;
+  setTimeout(function(){ el.style.display = 'none'; }, 4000);
+}
+</script>
+</body>
+</html>
