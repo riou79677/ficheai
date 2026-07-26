@@ -18,20 +18,34 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Paramètres manquants' });
   }
 
+  // ── Mode maintenance : bloque tout le monde pendant que le site est en pause ──
+  try {
+    const maintRes = await fetch(SUPABASE_URL + '/rest/v1/rpc/get_maintenance_status', {
+      method: 'POST', headers: { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY, 'Content-Type': 'application/json' }, body: '{}'
+    });
+    const maint = await maintRes.json();
+    if (maint && maint.maintenance_mode) {
+      return res.status(503).json({ error: maint.message || 'FicheAI est en maintenance. On revient très vite !' });
+    }
+  } catch (e) { /* si la vérification échoue, on laisse passer plutôt que de bloquer tout le monde */ }
+
   // ── SÉCURITÉ : la génération consomme des crédits Claude → réservée aux comptes ──
   if (!email) {
     return res.status(401).json({ error: 'Connecte-toi pour générer une fiche (5 gratuites à l\'inscription).' });
   }
 
-  // Récupération du niveau scolaire (info seule, pas de quota) + vérification/décompte via la fonction unifiée
+  // Récupération du niveau scolaire + statut de bannissement, puis vérification/décompte via la fonction unifiée
   let user;
   try {
     const userRes = await fetch(
-      SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=plan,niveau_scolaire',
+      SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=plan,niveau_scolaire,banned',
       { headers: { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY } }
     );
     const users = await userRes.json();
     user = Array.isArray(users) ? users[0] : null;
+    if (user && user.banned) {
+      return res.status(403).json({ error: 'Ce compte a été suspendu. Contacte le support si tu penses qu\'il s\'agit d\'une erreur.' });
+    }
   } catch (e) {
     console.error('Erreur lecture profil:', e);
     return res.status(503).json({ error: 'Service momentanément indisponible' });
