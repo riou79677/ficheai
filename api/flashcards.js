@@ -45,7 +45,7 @@ export default async function handler(req, res) {
       method: 'POST', headers: { ...sb, 'Content-Type': 'application/json' }, body: '{}'
     });
     const maint = await maintRes.json();
-    if (maint && maint.maintenance_mode) {
+    if (maint && maint.hard_blocked) {
       return res.status(503).json({ error: maint.message || 'FicheAI est en maintenance. On revient très vite !' });
     }
   } catch (e) { /* si la vérification échoue, on laisse passer */ }
@@ -53,10 +53,16 @@ export default async function handler(req, res) {
   // Vérifie qu'un compte existe pour cet email, et qu'il n'est pas banni
   async function requireUser(email) {
     if (!email) return null;
-    const r = await fetch(SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=email,banned', { headers: sb });
+    const r = await fetch(SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=email', { headers: sb });
     const u = await r.json();
     const found = (Array.isArray(u) && u[0]) ? u[0] : null;
-    if (found && found.banned) return 'BANNED';
+    if (!found) return null;
+    const banCheck = await fetch(SUPABASE_URL + '/rest/v1/rpc/is_user_banned', {
+      method: 'POST', headers: { ...sb, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_email: email })
+    });
+    const isBanned = await banCheck.json();
+    if (isBanned === true) return 'BANNED';
     return found;
   }
 
