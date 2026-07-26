@@ -39,18 +39,33 @@ export default async function handler(req, res) {
     'Authorization': 'Bearer ' + SERVICE_KEY
   };
 
-  // Vérifie qu'un compte existe pour cet email
+  // Mode maintenance : bloque tout le monde pendant que le site est en pause
+  try {
+    const maintRes = await fetch(SUPABASE_URL + '/rest/v1/rpc/get_maintenance_status', {
+      method: 'POST', headers: { ...sb, 'Content-Type': 'application/json' }, body: '{}'
+    });
+    const maint = await maintRes.json();
+    if (maint && maint.maintenance_mode) {
+      return res.status(503).json({ error: maint.message || 'FicheAI est en maintenance. On revient très vite !' });
+    }
+  } catch (e) { /* si la vérification échoue, on laisse passer */ }
+
+  // Vérifie qu'un compte existe pour cet email, et qu'il n'est pas banni
   async function requireUser(email) {
     if (!email) return null;
-    const r = await fetch(SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=email', { headers: sb });
+    const r = await fetch(SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=email,banned', { headers: sb });
     const u = await r.json();
-    return (Array.isArray(u) && u[0]) ? u[0] : null;
+    const found = (Array.isArray(u) && u[0]) ? u[0] : null;
+    if (found && found.banned) return 'BANNED';
+    return found;
   }
 
   // ─────────────── LECTURE (GET) ───────────────
   if (req.method === 'GET') {
     const email = req.query.email;
     if (!email) return res.status(401).json({ error: 'Non connecté' });
+    const checkUser = await requireUser(email);
+    if (checkUser === 'BANNED') return res.status(403).json({ error: 'Ce compte a été suspendu.' });
 
     // Mode "file de révision" : les cartes à réviser maintenant
     if (req.query.due === '1') {
@@ -108,6 +123,7 @@ export default async function handler(req, res) {
     const body = req.body || {};
     const email = body.email;
     const user = await requireUser(email);
+    if (user === 'BANNED') return res.status(403).json({ error: 'Ce compte a été suspendu.' });
     if (!user) return res.status(403).json({ error: 'Compte introuvable. Reconnecte-toi.' });
 
     // ── Noter une carte après révision ──
