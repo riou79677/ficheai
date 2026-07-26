@@ -83,6 +83,7 @@ td{padding:0.6rem;border-bottom:1px solid var(--border)}
 
 <div class="section">
 <h2>👥 Utilisateurs</h2>
+<input type="text" id="search-input" placeholder="🔍 Rechercher par pseudo ou email..." style="width:100%;background:var(--bg3);border:1.5px solid var(--border2);border-radius:10px;padding:0.7rem 1rem;font-size:0.85rem;color:var(--text);font-family:inherit;outline:none;margin-bottom:1rem" oninput="filterUsers(this.value)">
 <table>
 <thead><tr><th>Email</th><th>Plan</th><th>Générations</th><th>Inscrit le</th><th>Actions</th></tr></thead>
 <tbody id="users-table"></tbody>
@@ -131,7 +132,7 @@ async function loadStats(){
       '<div class="stat-card"><div class="val">' + data.total_fiches + '</div><div class="lbl">Fiches générées</div></div>' +
       '<div class="stat-card"><div class="val">' + data.bannis + '</div><div class="lbl">Comptes bannis</div></div>';
 
-    renderUsers(data.users);
+    allUsersData = data.users; renderUsers(data.users);
     loadMaintenanceStatus();
   } catch(e){
     if(e.message === 'WRONG_SECRET'){
@@ -141,6 +142,15 @@ async function loadStats(){
       document.getElementById('lock-err').style.display = 'block';
     }
   }
+}
+
+function filterUsers(query){
+  query = query.trim().toLowerCase();
+  if(!query){ renderUsers(allUsersData); return; }
+  var filtres = allUsersData.filter(function(u){
+    return (u.username && u.username.toLowerCase().indexOf(query) !== -1) || u.email.toLowerCase().indexOf(query) !== -1;
+  });
+  renderUsers(filtres);
 }
 
 function renderUsers(users){
@@ -154,7 +164,8 @@ function renderUsers(users){
       if(u.banned_until){ banInfo += ' (jusqu\'au ' + new Date(u.banned_until).toLocaleDateString('fr-FR') + ')'; }
       else { banInfo += ' (indéfini)'; }
     }
-    html += '<td>' + u.email + banInfo + '</td>';
+    var displayName = u.username ? ('<b>@' + u.username + '</b> <span style="color:var(--text3);font-size:0.75rem">(' + u.email + ')</span>') : ('<span style="color:var(--text3)">Sans pseudo — ' + u.email + '</span>');
+    html += '<td>' + displayName + banInfo + '</td>';
     html += '<td><span class="plan-tag plan-' + u.plan + '">' + u.plan + '</span></td>';
     html += '<td>' + u.generations_used + '</td>';
     html += '<td>' + new Date(u.created_at).toLocaleDateString('fr-FR') + '</td>';
@@ -201,6 +212,7 @@ async function deleteUser(email){
   }catch(e){ showMsg('users-msg', '⚠️ Erreur : ' + e.message, 'error'); }
 }
 
+var allUsersData = [];
 var maintenanceOn = false;
 async function loadMaintenanceStatus(){
   try{
