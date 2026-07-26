@@ -148,7 +148,13 @@ function renderUsers(users){
   users.sort(function(a,b){ return new Date(b.created_at) - new Date(a.created_at); });
   users.forEach(function(u){
     html += '<tr class="' + (u.banned ? 'banned-row' : '') + '">';
-    html += '<td>' + u.email + (u.banned ? ' 🚫' : '') + '</td>';
+    var banInfo = '';
+    if(u.banned){
+      banInfo = ' 🚫';
+      if(u.banned_until){ banInfo += ' (jusqu\'au ' + new Date(u.banned_until).toLocaleDateString('fr-FR') + ')'; }
+      else { banInfo += ' (indéfini)'; }
+    }
+    html += '<td>' + u.email + banInfo + '</td>';
     html += '<td><span class="plan-tag plan-' + u.plan + '">' + u.plan + '</span></td>';
     html += '<td>' + u.generations_used + '</td>';
     html += '<td>' + new Date(u.created_at).toLocaleDateString('fr-FR') + '</td>';
@@ -165,10 +171,21 @@ function renderUsers(users){
 }
 
 async function banUser(email, ban){
-  if(ban && !confirm('Bannir ' + email + ' ? Cette personne ne pourra plus utiliser FicheAI.')) return;
-  var reason = ban ? prompt('Raison du bannissement (optionnel) :') : null;
+  var durationHours = null, reason = null;
+  if(ban){
+    var choix = prompt('Durée du bannissement pour ' + email + ' :\n\n1 = 24 heures\n2 = 7 jours\n3 = 30 jours\n4 = Indéfiniment\n\nTape le numéro de ton choix :');
+    if(choix === null) return;
+    if(choix === '1') durationHours = 24;
+    else if(choix === '2') durationHours = 24 * 7;
+    else if(choix === '3') durationHours = 24 * 30;
+    else if(choix === '4') durationHours = null;
+    else { alert('Choix non reconnu, action annulée.'); return; }
+    reason = prompt('Raison du bannissement (optionnel) :');
+    var dureeTexte = durationHours ? (durationHours <= 24 ? '24h' : Math.round(durationHours/24) + ' jours') : 'indéfiniment';
+    if(!confirm('Bannir ' + email + ' pour : ' + dureeTexte + ' ?')) return;
+  }
   try{
-    await callAdmin('set_ban', { email: email, banned: ban, reason: reason });
+    await callAdmin('set_ban', { email: email, banned: ban, reason: reason, durationHours: durationHours });
     showMsg('users-msg', ban ? '✅ Compte banni.' : '✅ Compte débanni.', 'ok');
     loadStats();
   }catch(e){ showMsg('users-msg', '⚠️ Erreur : ' + e.message, 'error'); }
