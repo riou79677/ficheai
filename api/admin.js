@@ -28,7 +28,7 @@ export default async function handler(req, res) {
   try {
     // ── Statistiques générales ──
     if (action === 'get_stats') {
-      const usersR = await fetch(SUPABASE_URL + '/rest/v1/users?select=email,plan,generations_used,created_at,banned,banned_until', { headers: sb });
+      const usersR = await fetch(SUPABASE_URL + '/rest/v1/users?select=email,username,plan,generations_used,created_at,banned,banned_until', { headers: sb });
       const users = await usersR.json();
       const fichesR = await fetch(SUPABASE_URL + '/rest/v1/fiches?select=id&limit=1', { headers: { ...sb, 'Prefer': 'count=exact' } });
       const fichesCount = fichesR.headers.get('content-range')?.split('/')[1] || '0';
