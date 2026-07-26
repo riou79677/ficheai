@@ -28,7 +28,7 @@ export default async function handler(req, res) {
   try {
     // ── Statistiques générales ──
     if (action === 'get_stats') {
-      const usersR = await fetch(SUPABASE_URL + '/rest/v1/users?select=email,plan,generations_used,created_at,banned', { headers: sb });
+      const usersR = await fetch(SUPABASE_URL + '/rest/v1/users?select=email,plan,generations_used,created_at,banned,banned_until', { headers: sb });
       const users = await usersR.json();
       const fichesR = await fetch(SUPABASE_URL + '/rest/v1/fiches?select=id&limit=1', { headers: { ...sb, 'Prefer': 'count=exact' } });
       const fichesCount = fichesR.headers.get('content-range')?.split('/')[1] || '0';
@@ -45,29 +45,37 @@ export default async function handler(req, res) {
       });
     }
 
-    // ── Bannir / débannir un compte ──
+    // ── Bannir / débannir un compte, avec durée optionnelle ──
     if (action === 'set_ban') {
-      const { email, banned, reason } = payload || {};
+      const { email, banned, reason, durationHours } = payload || {};
       if (!email) return res.status(400).json({ error: 'Email manquant' });
+      const body = { banned: !!banned, banned_reason: banned ? (reason || 'Non précisé') : null };
+      if (banned) {
+        body.banned_until = durationHours ? new Date(Date.now() + durationHours * 3600 * 1000).toISOString() : null;
+      } else {
+        body.banned_until = null;
+      }
       const r = await fetch(SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email), {
-        method: 'PATCH', headers: { ...sb, 'Prefer': 'return=representation' },
-        body: JSON.stringify({ banned: !!banned, banned_reason: banned ? (reason || 'Non précisé') : null })
-      });
-      const result = await r.json();
-      return res.status(200).json({ success: true, result });
-    }
-
-    // ── Activer / désactiver le mode maintenance ──
-    if (action === 'set_maintenance') {
-      const { enabled, message } = payload || {};
-      const body = { maintenance_mode: !!enabled, updated_at: new Date().toISOString() };
-      if (message) body.maintenance_message = message;
-      const r = await fetch(SUPABASE_URL + '/rest/v1/site_settings?id=eq.1', {
         method: 'PATCH', headers: { ...sb, 'Prefer': 'return=representation' },
         body: JSON.stringify(body)
       });
       const result = await r.json();
       return res.status(200).json({ success: true, result });
+    }
+
+    // ── Activer / désactiver le mode maintenance, avec délai de grâce de 2 minutes ──
+    if (action === 'set_maintenance') {
+      const { enabled, message } = payload || {};
+      const GRACE_PERIOD_SECONDS = 120;
+      const body = { maintenance_mode: !!enabled, updated_at: new Date().toISOString() };
+      if (message) body.maintenance_message = message;
+      body.maintenance_starts_at = enabled ? new Date(Date.now() + GRACE_PERIOD_SECONDS * 1000).toISOString() : null;
+      const r = await fetch(SUPABASE_URL + '/rest/v1/site_settings?id=eq.1', {
+        method: 'PATCH', headers: { ...sb, 'Prefer': 'return=representation' },
+        body: JSON.stringify(body)
+      });
+      const result = await r.json();
+      return res.status(200).json({ success: true, result, grace_period_seconds: GRACE_PERIOD_SECONDS });
     }
 
     // ── Modifier manuellement le plan/quota d'un utilisateur ──
