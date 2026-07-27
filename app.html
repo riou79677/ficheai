@@ -315,7 +315,6 @@ textarea::placeholder{color:var(--text3)}
 <script>
 var SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
 var SUPABASE_KEY = 'sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ';
-var DEV_EMAIL = 'ilanmoh228@gmail.com';
 var PRO_M = 'https://buy.stripe.com/00wfZibWR8Zl8o7eUK43S05';
 var ULT_M = 'https://buy.stripe.com/aFadRaaSN2AX33NeUK43S07';
 var currentFormat = 'fiche', currentFormatName = 'Fiche de révision', currentFormatIcon = '📄';
@@ -410,7 +409,7 @@ if (savedUser && savedUser.email) {
     document.getElementById('tok-nav').textContent = tokensLeft === 999999 ? '∞' : tokensLeft;
   }
   if (savedUser.plan) document.getElementById('plan-name').textContent = savedUser.plan.charAt(0).toUpperCase() + savedUser.plan.slice(1);
-  if (savedUser.email === DEV_EMAIL) document.getElementById('dev-toggle').style.display = 'block';
+  fetch(SUPABASE_URL+'/rest/v1/rpc/get_is_dev',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({p_email:savedUser.email})}).then(function(r){return r.json();}).then(function(isDev){if(isDev)document.getElementById('dev-toggle').style.display='block';}).catch(function(){});
   document.getElementById('stats-card').style.display = 'block';
   document.getElementById('stat-gen').textContent = tokensLeft === 999999 ? '∞' : tokensLeft;
   loadFichesCount();
