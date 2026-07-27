@@ -473,9 +473,6 @@ function selectFormat(el) {
   currentFormatIcon = el.dataset.icon;
 }
 
-// Lit la réponse du serveur de façon sûre : si le serveur renvoie une page d'erreur
-// en texte brut (timeout, crash, etc.) au lieu du JSON attendu, on affiche un message
-// compréhensible plutôt qu'une erreur technique incompréhensible pour l'utilisateur.
 async function readResponseSafely(response, contexte) {
   var raw = await response.text();
   try {
