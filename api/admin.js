@@ -1,5 +1,5 @@
-// API réservée à l'administrateur du site. Toute action nécessite le secret ADMIN_SECRET
-// (configuré uniquement dans les variables d'environnement Vercel, jamais visible côté client).
+// API réservée à l'administrateur du site. Toute action nécessite un token Supabase valide
+// appartenant à un compte ayant is_dev = true en base (vérifié à chaque appel).
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -9,26 +9,51 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Méthode non autorisée' });
 
   const SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ';
   const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const ADMIN_SECRET = process.env.ADMIN_SECRET;
 
-  if (!SERVICE_KEY || !ADMIN_SECRET) {
+  if (!SERVICE_KEY) {
     return res.status(500).json({ error: 'Configuration serveur incomplète' });
   }
 
   const { secret, action, payload } = req.body || {};
 
-  // Vérification du mot de passe secret, avant toute action
-  if (!secret || secret !== ADMIN_SECRET) {
+  // secret contient maintenant le token d'accès Supabase (access_token), pas un mot de passe fixe.
+  if (!secret) {
     return res.status(403).json({ error: 'Accès refusé.' });
+  }
+
+  // Étape 1 : vérifier que le token Supabase est valide et récupérer l'email associé.
+  let callerEmail = null;
+  try {
+    const userR = await fetch(SUPABASE_URL + '/auth/v1/user', {
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + secret }
+    });
+    if (!userR.ok) return res.status(403).json({ error: 'Session invalide, reconnecte-toi.' });
+    const userData = await userR.json();
+    callerEmail = userData.email;
+    if (!callerEmail) return res.status(403).json({ error: 'Session invalide.' });
+  } catch (e) {
+    return res.status(403).json({ error: 'Impossible de vérifier la session.' });
   }
 
   const sb = { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY, 'Content-Type': 'application/json' };
 
+  // Étape 2 : vérifier que ce compte a bien le statut développeur/admin en base.
+  try {
+    const devCheckR = await fetch(SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(callerEmail) + '&select=is_dev', { headers: sb });
+    const devCheckData = await devCheckR.json();
+    if (!devCheckData || !devCheckData[0] || !devCheckData[0].is_dev) {
+      return res.status(403).json({ error: 'Ce compte n\'a pas accès au panneau admin.' });
+    }
+  } catch (e) {
+    return res.status(403).json({ error: 'Impossible de vérifier les droits admin.' });
+  }
+
   try {
     // ── Statistiques générales ──
     if (action === 'get_stats') {
-      const usersR = await fetch(SUPABASE_URL + '/rest/v1/users?select=email,username,plan,generations_used,created_at,banned,banned_until', { headers: sb });
+      const usersR = await fetch(SUPABASE_URL + '/rest/v1/users?select=email,username,plan,generations_used,generations_limit,created_at,banned,banned_until', { headers: sb });
       const users = await usersR.json();
       const fichesR = await fetch(SUPABASE_URL + '/rest/v1/fiches?select=id&limit=1', { headers: { ...sb, 'Prefer': 'count=exact' } });
       const fichesCount = fichesR.headers.get('content-range')?.split('/')[1] || '0';
@@ -43,6 +68,17 @@ export default async function handler(req, res) {
         total_fiches: fichesCount,
         users: users
       });
+    }
+
+    // ── Fiches générées récemment, avec l'email de l'utilisateur ──
+    if (action === 'get_recent_fiches') {
+      const limit = (payload && payload.limit) || 30;
+      const fichesR = await fetch(
+        SUPABASE_URL + '/rest/v1/fiches?select=created_at,user_email,format,format_icon,titre&order=created_at.desc&limit=' + limit,
+        { headers: sb }
+      );
+      const fiches = await fichesR.json();
+      return res.status(200).json({ fiches: fiches });
     }
 
     // ── Bannir / débannir un compte, avec durée optionnelle ──
