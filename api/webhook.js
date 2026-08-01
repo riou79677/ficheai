@@ -48,6 +48,7 @@ export default async function handler(req, res) {
 
   const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
   const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 
   // Fail-closed : si le serveur est mal configuré, on refuse au lieu d'accepter à l'aveugle.
   if (!WEBHOOK_SECRET || !SERVICE_KEY) {
@@ -90,7 +91,7 @@ export default async function handler(req, res) {
   // Récupère les articles achetés lors d'une session de paiement ponctuel.
   async function getSessionLineItems(sessionId) {
     const r = await fetch('https://api.stripe.com/v1/checkout/sessions/' + sessionId + '/line_items', {
-      headers: { 'Authorization': 'Bearer ' + process.env.STRIPE_SECRET_KEY }
+      headers: { 'Authorization': 'Bearer ' + STRIPE_SECRET_KEY }
     });
     const d = await r.json();
     return d.data || [];
@@ -135,13 +136,41 @@ export default async function handler(req, res) {
     return resp.ok;
   }
 
+  // Vérifie si ce compte a déjà bénéficié d'un essai gratuit par le passé.
+  async function hasAlreadyUsedTrial(email) {
+    const r = await fetch(
+      SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=has_used_trial',
+      { headers: { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY } }
+    );
+    const data = await r.json();
+    return !!(data && data[0] && data[0].has_used_trial);
+  }
+
   // Récupère l'email du client Stripe à partir de son ID.
   async function getCustomerEmail(customerId) {
     const r = await fetch('https://api.stripe.com/v1/customers/' + customerId, {
-      headers: { 'Authorization': 'Bearer ' + process.env.STRIPE_SECRET_KEY }
+      headers: { 'Authorization': 'Bearer ' + STRIPE_SECRET_KEY }
     });
     const c = await r.json();
     return c.email || null;
+  }
+
+  // Met fin immédiatement à un essai gratuit détecté comme abusif (deuxième essai sur le
+  // même compte) en le convertissant directement en abonnement payant actif dans Stripe,
+  // afin que la facturation réelle démarre sans attendre la fin des 7 jours affichés.
+  async function endTrialImmediately(subscriptionId) {
+    try {
+      await fetch('https://api.stripe.com/v1/subscriptions/' + subscriptionId, {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + STRIPE_SECRET_KEY,
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: 'trial_end=now'
+      });
+    } catch (e) {
+      console.error('Échec de la fin d\'essai anticipée:', e);
+    }
   }
 
   try {
@@ -152,10 +181,26 @@ export default async function handler(req, res) {
       const subscription = event.data.object;
       const priceId = subscription.items?.data?.[0]?.price?.id;
       const customerId = subscription.customer;
-      const status = subscription.status;
+      let status = subscription.status;
 
       const email = await getCustomerEmail(customerId);
       if (!email) return res.status(200).json({ received: true });
+
+      // ── Protection anti-double essai gratuit ──
+      // Si Stripe indique un essai en cours (trialing) mais que ce compte a déjà
+      // consommé un essai par le passé, on met fin à l'essai immédiatement : la
+      // facturation démarre tout de suite, comme si aucun essai n'avait été accordé.
+      if (status === 'trialing') {
+        const alreadyUsed = await hasAlreadyUsedTrial(email);
+        if (alreadyUsed) {
+          console.warn('Deuxième essai gratuit détecté et bloqué pour :', email);
+          await endTrialImmediately(subscription.id);
+          status = 'active'; // traité comme un abonnement payant dès maintenant
+        } else {
+          // Premier essai légitime : on marque le compte pour empêcher un futur second essai.
+          await updateUserPlan(email, { has_used_trial: true });
+        }
+      }
 
       let fields;
       const isActive = (status === 'active' || status === 'trialing');
