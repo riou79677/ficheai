@@ -79,49 +79,49 @@ footer{padding:1.5rem;text-align:center;font-size:0.78rem;color:var(--text3);bor
 </head>
 <body>
 <nav>
-  <a href="/" class="logo">
-    <div class="logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
-    FicheAI
-  </a>
-  <div class="nav-right">
-    <a href="/app.html" class="nav-link">Générateur</a>
-    <a href="/dashboard.html" class="nav-link active">📚 Bibliothèque</a>
-    <a href="/settings.html" class="nav-link">⚙️ Paramètres</a>
-    <div style="position:relative;display:inline-block">
-      <span id="user-badge" class="user-badge" style="display:none" onclick="toggleUserMenu()"></span>
-      <div id="user-menu" class="user-menu">
-        <a href="/dashboard.html">📚 Ma bibliothèque</a>
-        <a href="/settings.html">⚙️ Paramètres</a>
-        <hr>
-        <a href="#" class="danger" onclick="logout()">🚪 Se déconnecter</a>
-      </div>
-    </div>
-  </div>
+<a href="/" class="logo">
+<div class="logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
+FicheAI
+</a>
+<div class="nav-right">
+<a href="/app.html" class="nav-link">Générateur</a>
+<a href="/dashboard.html" class="nav-link active">📚 Bibliothèque</a>
+<a href="/settings.html" class="nav-link">⚙️ Paramètres</a>
+<div style="position:relative;display:inline-block">
+<span id="user-badge" class="user-badge" style="display:none" onclick="toggleUserMenu()"></span>
+<div id="user-menu" class="user-menu">
+<a href="/dashboard.html">📚 Ma bibliothèque</a>
+<a href="/settings.html">⚙️ Paramètres</a>
+<hr>
+<a href="#" class="danger" onclick="deconnexion()">🚪 Se déconnecter</a>
+</div>
+</div>
+</div>
 </nav>
 <main id="main-content"><div class="loading"><div class="spinner"></div><p>Chargement...</p></div></main>
 <div class="modal-bg" id="fiche-modal">
-  <div class="modal-fiche">
-    <div class="modal-header">
-      <div class="modal-title" id="modal-title">Fiche</div>
-      <div class="modal-actions">
-        <button class="fiche-btn" id="modal-copy-btn" onclick="copyModal()">📋 Copier</button>
-        <button class="fiche-btn" onclick="downloadModal()">⬇️ TXT</button>
-        <button class="fiche-btn" onclick="downloadModalPDF()">📄 PDF</button>
-        <button class="modal-close" onclick="document.getElementById('fiche-modal').classList.remove('open')">✕</button>
-      </div>
-    </div>
-    <div class="modal-content" id="modal-content"></div>
-  </div>
+<div class="modal-fiche">
+<div class="modal-header">
+<div class="modal-title" id="modal-title">Fiche</div>
+<div class="modal-actions">
+<button class="fiche-btn" id="modal-copy-btn" onclick="copyModal()">📋 Copier</button>
+<button class="fiche-btn" onclick="downloadModal()">⬇️ TXT</button>
+<button class="fiche-btn" onclick="downloadModalPDF()">📄 PDF</button>
+<button class="modal-close" onclick="document.getElementById('fiche-modal').classList.remove('open')">✕</button>
+</div>
+</div>
+<div class="modal-content" id="modal-content"></div>
+</div>
 </div>
 <div class="confirm-overlay" id="confirm-overlay">
-  <div class="confirm-box">
-    <h3 id="confirm-title">Confirmer</h3>
-    <p id="confirm-text">Cette action est irréversible.</p>
-    <div class="confirm-btns">
-      <button class="btn-cancel" onclick="closeConfirm()">Annuler</button>
-      <button class="btn-delete" id="confirm-ok">Supprimer</button>
-    </div>
-  </div>
+<div class="confirm-box">
+<h3 id="confirm-title">Confirmer</h3>
+<p id="confirm-text">Cette action est irréversible.</p>
+<div class="confirm-btns">
+<button class="btn-cancel" onclick="closeConfirm()">Annuler</button>
+<button class="btn-delete" id="confirm-ok">Supprimer</button>
+</div>
+</div>
 </div>
 <footer>FicheAI · Fait pour les étudiants 🎓 · © 2025</footer>
 <script>
@@ -134,99 +134,94 @@ function deconnexion(){localStorage.removeItem('ficheai_user');window.location.h
 var savedUser=null;
 try{savedUser=JSON.parse(localStorage.getItem('ficheai_user'));}catch(e){}
 if(!savedUser||!savedUser.email){
-  document.getElementById('main-content').innerHTML='<div class="not-logged"><h2>🔐 Connecte-toi pour accéder à ta bibliothèque</h2><p>Tes fiches sont sauvegardées et accessibles depuis n\'importe quel appareil.</p><a href="/login.html" class="btn-primary">Se connecter</a></div>';
+document.getElementById('main-content').innerHTML='<div class="not-logged"><h2>🔐 Connecte-toi pour accéder à ta bibliothèque</h2><p>Tes fiches sont sauvegardées et accessibles depuis n\'importe quel appareil.</p><a href="/login.html" class="btn-primary">Se connecter</a></div>';
 }else{
-  currentUser=savedUser;
-  document.getElementById('user-badge').style.display='inline-block';
-  ensureUsername();
-  loadFiches();
+currentUser=savedUser;
+document.getElementById('user-badge').style.display='inline-block';
+ensureUsername();
+loadFiches();
 }
-
 function updateBadgeDisplay(){
-  document.getElementById('user-badge').textContent = '👤 ' + (savedUser.username || savedUser.email.split('@')[0]);
+document.getElementById('user-badge').textContent = '👤 ' + (savedUser.username || savedUser.email.split('@')[0]);
 }
-
 async function ensureUsername(){
-  updateBadgeDisplay();
-  if(savedUser.username) return;
-  try{
-    var r = await fetch(SUPABASE_URL+'/rest/v1/rpc/get_username',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({p_email:savedUser.email})});
-    var uname = await r.json();
-    if(uname){
-      savedUser.username = uname;
-      localStorage.setItem('ficheai_user', JSON.stringify(savedUser));
-      updateBadgeDisplay();
-      return;
-    }
-  }catch(e){}
-  showUsernameModal();
+updateBadgeDisplay();
+if(savedUser.username) return;
+try{
+var r = await fetch(SUPABASE_URL+'/rest/v1/rpc/get_username',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({p_email:savedUser.email})});
+var uname = await r.json();
+if(uname){
+savedUser.username = uname;
+localStorage.setItem('ficheai_user', JSON.stringify(savedUser));
+updateBadgeDisplay();
+return;
 }
-
+}catch(e){}
+showUsernameModal();
+}
 function showUsernameModal(){
-  var overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1.5rem';
-  overlay.innerHTML = '<div style="background:#13131f;border:1px solid rgba(124,109,250,0.4);border-radius:20px;padding:2rem;max-width:400px;width:100%;text-align:center">'
-    + '<div style="font-size:2rem;margin-bottom:0.8rem">👋</div>'
-    + '<h3 style="font-family:inherit;font-size:1.15rem;margin-bottom:0.6rem;color:#f1f0ff">Choisis ton pseudo</h3>'
-    + '<p style="font-size:0.83rem;color:#a0a0c0;line-height:1.6;margin-bottom:1.3rem">Pour continuer, il nous faut un pseudo pour t\'identifier facilement. Ce n\'est jamais affiché publiquement.</p>'
-    + '<input type="text" id="new-username-input" placeholder="lucas_reviseur" maxlength="30" style="width:100%;background:#0f0f1a;border:1.5px solid rgba(255,255,255,0.14);border-radius:10px;padding:0.75rem 1rem;font-size:0.9rem;color:#f1f0ff;font-family:inherit;outline:none;margin-bottom:0.6rem;text-align:center">'
-    + '<div id="username-modal-err" style="color:#f472b6;font-size:0.78rem;margin-bottom:0.8rem;display:none"></div>'
-    + '<button id="confirm-username-btn" style="width:100%;padding:0.75rem;border:none;border-radius:10px;background:linear-gradient(135deg,#7c6dfa,#f472b6);color:#fff;font-weight:700;cursor:pointer;font-family:inherit">Valider</button>'
-    + '</div>';
-  document.body.appendChild(overlay);
-
-  async function submitUsername(){
-    var val = document.getElementById('new-username-input').value.trim();
-    var err = document.getElementById('username-modal-err');
-    err.style.display = 'none';
-    if(val.length < 3){ err.textContent = 'Le pseudo doit contenir au moins 3 caractères.'; err.style.display = 'block'; return; }
-    if(!/^[a-zA-Z0-9_]+$/.test(val)){ err.textContent = 'Lettres, chiffres et underscores (_) uniquement.'; err.style.display = 'block'; return; }
-    try{
-      var r = await fetch(SUPABASE_URL+'/rest/v1/rpc/set_username',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({p_email:savedUser.email,p_username:val})});
-      var res = await r.json();
-      if(res && res.success){
-        savedUser.username = val;
-        localStorage.setItem('ficheai_user', JSON.stringify(savedUser));
-        updateBadgeDisplay();
-        overlay.remove();
-      } else {
-        var messages = {deja_pris:'Ce pseudo est déjà pris, essaie-en un autre.', trop_court:'Le pseudo doit contenir au moins 3 caractères.', caracteres_invalides:'Lettres, chiffres et underscores (_) uniquement.'};
-        err.textContent = messages[res && res.reason] || 'Une erreur est survenue, réessaie.';
-        err.style.display = 'block';
-      }
-    }catch(e){ err.textContent = 'Erreur réseau, réessaie.'; err.style.display = 'block'; }
-  }
-
-  document.getElementById('confirm-username-btn').addEventListener('click', submitUsername);
-  document.getElementById('new-username-input').addEventListener('keydown', function(e){ if(e.key==='Enter') submitUsername(); });
+var overlay = document.createElement('div');
+overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1.5rem';
+overlay.innerHTML = '<div style="background:#13131f;border:1px solid rgba(124,109,250,0.4);border-radius:20px;padding:2rem;max-width:400px;width:100%;text-align:center">'
++ '<div style="font-size:2rem;margin-bottom:0.8rem">👋</div>'
++ '<h3 style="font-family:inherit;font-size:1.15rem;margin-bottom:0.6rem;color:#f1f0ff">Choisis ton pseudo</h3>'
++ '<p style="font-size:0.83rem;color:#a0a0c0;line-height:1.6;margin-bottom:1.3rem">Pour continuer, il nous faut un pseudo pour t\'identifier facilement. Ce n\'est jamais affiché publiquement.</p>'
++ '<input type="text" id="new-username-input" placeholder="lucas_reviseur" maxlength="30" style="width:100%;background:#0f0f1a;border:1.5px solid rgba(255,255,255,0.14);border-radius:10px;padding:0.75rem 1rem;font-size:0.9rem;color:#f1f0ff;font-family:inherit;outline:none;margin-bottom:0.6rem;text-align:center">'
++ '<div id="username-modal-err" style="color:#f472b6;font-size:0.78rem;margin-bottom:0.8rem;display:none"></div>'
++ '<button id="confirm-username-btn" style="width:100%;padding:0.75rem;border:none;border-radius:10px;background:linear-gradient(135deg,#7c6dfa,#f472b6);color:#fff;font-weight:700;cursor:pointer;font-family:inherit">Valider</button>'
++ '</div>';
+document.body.appendChild(overlay);
+async function submitUsername(){
+var val = document.getElementById('new-username-input').value.trim();
+var err = document.getElementById('username-modal-err');
+err.style.display = 'none';
+if(val.length < 3){ err.textContent = 'Le pseudo doit contenir au moins 3 caractères.'; err.style.display = 'block'; return; }
+if(!/^[a-zA-Z0-9_]+$/.test(val)){ err.textContent = 'Lettres, chiffres et underscores (_) uniquement.'; err.style.display = 'block'; return; }
+try{
+var r = await fetch(SUPABASE_URL+'/rest/v1/rpc/set_username',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({p_email:savedUser.email,p_username:val})});
+var res = await r.json();
+if(res && res.success){
+savedUser.username = val;
+localStorage.setItem('ficheai_user', JSON.stringify(savedUser));
+updateBadgeDisplay();
+overlay.remove();
+} else {
+var messages = {deja_pris:'Ce pseudo est déjà pris, essaie-en un autre.', trop_court:'Le pseudo doit contenir au moins 3 caractères.', caracteres_invalides:'Lettres, chiffres et underscores (_) uniquement.'};
+err.textContent = messages[res && res.reason] || 'Une erreur est survenue, réessaie.';
+err.style.display = 'block';
+}
+}catch(e){ err.textContent = 'Erreur réseau, réessaie.'; err.style.display = 'block'; }
+}
+document.getElementById('confirm-username-btn').addEventListener('click', submitUsername);
+document.getElementById('new-username-input').addEventListener('keydown', function(e){ if(e.key==='Enter') submitUsername(); });
 }
 async function loadFiches(){
-  try{
-    var r=await fetch(SUPABASE_URL+'/rest/v1/rpc/get_my_fiches',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({p_email:currentUser.email})});
-    allFiches=await r.json();renderPage();
-  }catch(e){document.getElementById('main-content').innerHTML='<div class="empty-state"><p>Erreur de chargement. Réessaie.</p></div>';}
+try{
+var r=await fetch(SUPABASE_URL+'/rest/v1/rpc/get_my_fiches',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({p_email:currentUser.email})});
+allFiches=await r.json();renderPage();
+}catch(e){document.getElementById('main-content').innerHTML='<div class="empty-state"><p>Erreur de chargement. Réessaie.</p></div>';}
 }
 function renderPage(){
-  var plan=currentUser.plan||'starter';
-  var planDisplay=plan.charAt(0).toUpperCase()+plan.slice(1);
-  var remaining=currentUser.remaining===999999?'∞':(currentUser.remaining!==undefined?currentUser.remaining:5);
-  var formats=['all','fiche','quiz','flash','mindmap','questions','chrono'];
-  var labels={'all':'Tout','fiche':'📄 Fiches','quiz':'✅ Quiz','flash':'🃏 Flashcards','mindmap':'🧠 Mind Maps','questions':'💬 Questions','chrono':'📅 Chronologies'};
-  var filtered=currentFilter==='all'?allFiches:allFiches.filter(function(f){return f.format===currentFilter;});
-  var html='<div class="page-header"><h1>📚 Ma bibliothèque</h1><p>Plan <b>'+planDisplay+'</b> · '+remaining+' générations restantes ce mois</p></div>';
-  html+='<div class="stats-row"><div class="stat-card"><div class="stat-val">'+allFiches.length+'</div><div class="stat-label">Fiches sauvegardées</div></div><div class="stat-card"><div class="stat-val">'+[...new Set(allFiches.map(function(f){return f.format;}))].length+'</div><div class="stat-label">Formats utilisés</div></div><div class="stat-card"><div class="stat-val">'+planDisplay+'</div><div class="stat-label">Ton plan actuel</div></div></div>';
-  html+='<div class="filters">'+formats.map(function(f){return '<button class="filter-btn '+(currentFilter===f?'active':'')+'" onclick="setFilter(\''+f+'\')">'+labels[f]+'</button>';}).join('')+'</div>';
-  if(filtered.length===0){html+='<div class="empty-state"><div class="empty-icon">📭</div><h3>'+(currentFilter==='all'?'Aucune fiche sauvegardée':'Aucune fiche dans ce format')+'</h3><p>Génère ta première fiche et elle apparaîtra ici !</p><a href="/app.html" class="btn-primary">Générer une fiche</a></div>';}
-  else{
-    html+='<div class="fiches-grid">';
-    filtered.forEach(function(fiche){
-      var date=new Date(fiche.created_at);var dateStr=date.toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'});
-      html+='<div class="fiche-card" onclick="openFiche(\''+fiche.id+'\')"><div class="fiche-icon">'+(fiche.format_icon||'📄')+'</div><div class="fiche-format">'+fiche.format+'</div><div class="fiche-titre">'+(fiche.titre||'Fiche du '+dateStr)+'</div><div class="fiche-preview">'+fiche.contenu.substring(0,120)+'...</div><div class="fiche-date">'+dateStr+'</div>';
-      html+='<div class="fiche-actions" onclick="event.stopPropagation()"><button class="fiche-btn" onclick="copierFiche(\''+fiche.id+'\')">📋 Copier</button><button class="fiche-btn" onclick="telechargerFiche(\''+fiche.id+'\')">⬇️ Télécharger</button><button class="fiche-btn delete" onclick="confirmerSuppression(\''+fiche.id+'\')">🗑️ Supprimer</button></div></div>';
-    });
-    html+='</div>';
-  }
-  document.getElementById('main-content').innerHTML=html;
+var plan=currentUser.plan||'starter';
+var planDisplay=plan.charAt(0).toUpperCase()+plan.slice(1);
+var remaining=currentUser.remaining===999999?'∞':(currentUser.remaining!==undefined?currentUser.remaining:5);
+var formats=['all','fiche','quiz','flash','mindmap','questions','chrono'];
+var labels={'all':'Tout','fiche':'📄 Fiches','quiz':'✅ Quiz','flash':'🃏 Flashcards','mindmap':'🧠 Mind Maps','questions':'💬 Questions','chrono':'📅 Chronologies'};
+var filtered=currentFilter==='all'?allFiches:allFiches.filter(function(f){return f.format===currentFilter;});
+var html='<div class="page-header"><h1>📚 Ma bibliothèque</h1><p>Plan <b>'+planDisplay+'</b> · '+remaining+' générations restantes ce mois</p></div>';
+html+='<div class="stats-row"><div class="stat-card"><div class="stat-val">'+allFiches.length+'</div><div class="stat-label">Fiches sauvegardées</div></div><div class="stat-card"><div class="stat-val">'+[...new Set(allFiches.map(function(f){return f.format;}))].length+'</div><div class="stat-label">Formats utilisés</div></div><div class="stat-card"><div class="stat-val">'+planDisplay+'</div><div class="stat-label">Ton plan actuel</div></div></div>';
+html+='<div class="filters">'+formats.map(function(f){return '<button class="filter-btn '+(currentFilter===f?'active':'')+'" onclick="setFilter(\''+f+'\')">'+labels[f]+'</button>';}).join('')+'</div>';
+if(filtered.length===0){html+='<div class="empty-state"><div class="empty-icon">📭</div><h3>'+(currentFilter==='all'?'Aucune fiche sauvegardée':'Aucune fiche dans ce format')+'</h3><p>Génère ta première fiche et elle apparaîtra ici !</p><a href="/app.html" class="btn-primary">Générer une fiche</a></div>';}
+else{
+html+='<div class="fiches-grid">';
+filtered.forEach(function(fiche){
+var date=new Date(fiche.created_at);var dateStr=date.toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'});
+html+='<div class="fiche-card" onclick="openFiche(\''+fiche.id+'\')"><div class="fiche-icon">'+(fiche.format_icon||'📄')+'</div><div class="fiche-format">'+fiche.format+'</div><div class="fiche-titre">'+(fiche.titre||'Fiche du '+dateStr)+'</div><div class="fiche-preview">'+fiche.contenu.substring(0,120)+'...</div><div class="fiche-date">'+dateStr+'</div>';
+html+='<div class="fiche-actions" onclick="event.stopPropagation()"><button class="fiche-btn" onclick="copierFiche(\''+fiche.id+'\')">📋 Copier</button><button class="fiche-btn" onclick="telechargerFiche(\''+fiche.id+'\')">⬇️ Télécharger</button><button class="fiche-btn delete" onclick="confirmerSuppression(\''+fiche.id+'\')">🗑️ Supprimer</button></div></div>';
+});
+html+='</div>';
+}
+document.getElementById('main-content').innerHTML=html;
 }
 function setFilter(f){currentFilter=f;renderPage();}
 function getFicheById(id){return allFiches.find(function(f){return f.id===id;});}
@@ -243,95 +238,91 @@ function showToast(msg){var t=document.createElement('div');t.textContent=msg;t.
 var inactivityTimer;
 function resetTimer(){clearTimeout(inactivityTimer);inactivityTimer=setTimeout(function(){localStorage.removeItem('ficheai_user');window.location.href='/login.html';},30*60*1000);}
 document.addEventListener('mousemove',resetTimer);document.addEventListener('keypress',resetTimer);document.addEventListener('click',resetTimer);resetTimer();
-
 // ═══════════════════════════════════════════
 // EXPORT PDF DESIGNÉ — Plan Pro/Ultimate
 // ═══════════════════════════════════════════
 function formatContentForPDF(content) {
-  var lines = content.split('\n');
-  var html = ''; var inList = false;
-  lines.forEach(function(line) {
-    var trimmed = line.trim();
-    if (!trimmed) { if(inList){html += '</ul>'; inList=false;} return; }
-    if (/^[━─=]{3,}$/.test(trimmed)) { if(inList){html += '</ul>'; inList=false;} html += '<hr class="pdf-sep">'; return; }
-    var sectionMatch = trimmed.match(/^([📚🎯📖⚡❓🔗🃏🧠💬📅✅])\s*(.+)/u);
-    if (sectionMatch && sectionMatch[2].length < 70) {
-      if(inList){html += '</ul>'; inList=false;}
-      html += '<h2 class="pdf-section">' + escapePdf(sectionMatch[2]) + '</h2>'; return;
-    }
-    var bulletMatch = trimmed.match(/^[▸→✦•-]\s*(.+)/);
-    if (bulletMatch) {
-      if(!inList){html += '<ul class="pdf-list">'; inList=true;}
-      html += '<li>' + boldify(escapePdf(bulletMatch[1])) + '</li>'; return;
-    }
-    if(inList){html += '</ul>'; inList=false;}
-    html += '<p class="pdf-p">' + boldify(escapePdf(trimmed)) + '</p>';
-  });
-  if(inList) html += '</ul>';
-  return html;
+var lines = content.split('\n');
+var html = ''; var inList = false;
+lines.forEach(function(line) {
+var trimmed = line.trim();
+if (!trimmed) { if(inList){html += '</ul>'; inList=false;} return; }
+if (/^[━─=]{3,}$/.test(trimmed)) { if(inList){html += '</ul>'; inList=false;} html += '<hr class="pdf-sep">'; return; }
+var sectionMatch = trimmed.match(/^([📚🎯📖⚡❓🔗🃏🧠💬📅✅])\s*(.+)/u);
+if (sectionMatch && sectionMatch[2].length < 70) {
+if(inList){html += '</ul>'; inList=false;}
+html += '<h2 class="pdf-section">' + escapePdf(sectionMatch[2]) + '</h2>'; return;
+}
+var bulletMatch = trimmed.match(/^[▸→✦•-]\s*(.+)/);
+if (bulletMatch) {
+if(!inList){html += '<ul class="pdf-list">'; inList=true;}
+html += '<li>' + boldify(escapePdf(bulletMatch[1])) + '</li>'; return;
+}
+if(inList){html += '</ul>'; inList=false;}
+html += '<p class="pdf-p">' + boldify(escapePdf(trimmed)) + '</p>';
+});
+if(inList) html += '</ul>';
+return html;
 }
 function escapePdf(text) { return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function boldify(text) { return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); }
-
 function exportToPDF(content, title, format) {
-  var plan = currentUser ? (currentUser.plan || 'starter') : 'starter';
-  if (plan === 'starter') { showToast('⚠️ Export PDF disponible à partir du plan Pro !'); return; }
-  if (!content) { showToast('⚠️ Rien à exporter.'); return; }
-  showToast('📄 Génération du PDF...');
-  var cleanTitle = title.replace(/[📚🎯📖⚡❓🔗━▸✦📄✅🃏🧠💬📅]/gu, '').trim();
-  var bodyHtml = formatContentForPDF(content);
-  var container = document.createElement('div');
-  container.style.cssText = 'width:780px;padding:50px 55px;font-family:Georgia,serif;background:#ffffff;color:#1a1a2e;';
-  container.innerHTML = '\
-    <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #6c5ce7;padding-bottom:14px;margin-bottom:24px;">\
-      <div style="display:flex;align-items:center;gap:10px;">\
-        <div style="width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#6c5ce7,#fd79a8);"></div>\
-        <span style="font-family:Helvetica,Arial,sans-serif;font-size:19px;font-weight:800;color:#6c5ce7;">FicheAI</span>\
-      </div>\
-      <span style="font-family:Helvetica,Arial,sans-serif;font-size:11px;color:#999;">ficheai.fr</span>\
-    </div>\
-    <h1 style="font-family:Helvetica,Arial,sans-serif;font-size:24px;font-weight:800;color:#1a1a2e;margin:0 0 8px;line-height:1.25;">' + escapePdf(cleanTitle) + '</h1>\
-    <span style="display:inline-block;background:#f3f0ff;color:#6c5ce7;font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:700;padding:5px 14px;border-radius:100px;margin-bottom:22px;letter-spacing:0.5px;">' + (format||'FICHE').toUpperCase() + '</span>\
-    <div class="pdf-body">' + bodyHtml + '</div>\
-    <div style="margin-top:40px;padding-top:14px;border-top:1px solid #eee;font-family:Helvetica,Arial,sans-serif;font-size:10px;color:#bbb;text-align:center;">FicheAI · Fait pour les étudiants</div>\
-  ';
-  var style = document.createElement('style');
-  style.textContent = '\
-    .pdf-section{font-family:Helvetica,Arial,sans-serif;font-size:15px;font-weight:700;color:#6c5ce7;margin:22px 0 10px;padding-left:12px;border-left:3px solid #fd79a8;page-break-after:avoid;break-after:avoid;page-break-inside:avoid;break-inside:avoid;}\
-    .pdf-p{font-size:13.5px;line-height:1.7;margin:0 0 10px;color:#2d2d3d;page-break-inside:avoid;break-inside:avoid;orphans:3;widows:3;}\
-    .pdf-list{margin:0 0 12px;padding-left:0;list-style:none;}\
-    .pdf-list li{font-size:13.5px;line-height:1.7;margin-bottom:8px;padding-left:18px;position:relative;color:#2d2d3d;page-break-inside:avoid;break-inside:avoid;}\
-    .pdf-list li::before{content:"●";color:#fd79a8;position:absolute;left:0;font-size:9px;top:6px;}\
-    .pdf-sep{border:none;border-top:1px solid #e8e6f5;margin:18px 0;page-break-inside:avoid;break-inside:avoid;}\
-    strong{color:#1a1a2e;font-weight:700;}\
-    .pdf-body{padding-bottom:30px;}\
-  ';
-  container.appendChild(style);
-  document.body.appendChild(container);
-  var opt = {
-    margin: [40, 0, 40, 0],
-    filename: 'FicheAI_' + cleanTitle.replace(/[^a-zA-Z0-9]/g,'_').substring(0,40) + '.pdf',
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, windowWidth: 780 },
-    jsPDF: { unit: 'pt', format: 'a4', orientation: 'portrait' },
-    pagebreak: { mode: ['css', 'avoid-all'], avoid: ['.pdf-p', '.pdf-list li', '.pdf-section', 'h1'] }
-  };
-  html2pdf().set(opt).from(container).save().then(function() {
-    document.body.removeChild(container);
-    showToast('✅ PDF téléchargé !');
-  }).catch(function(err) {
-    document.body.removeChild(container);
-    showToast('⚠️ Erreur génération PDF');
-  });
+var plan = currentUser ? (currentUser.plan || 'starter') : 'starter';
+if (plan === 'starter') { showToast('⚠️ Export PDF disponible à partir du plan Pro !'); return; }
+if (!content) { showToast('⚠️ Rien à exporter.'); return; }
+showToast('📄 Génération du PDF...');
+var cleanTitle = title.replace(/[📚🎯📖⚡❓🔗━▸✦📄✅🃏🧠💬📅]/gu, '').trim();
+var bodyHtml = formatContentForPDF(content);
+var container = document.createElement('div');
+container.style.cssText = 'width:780px;padding:50px 55px;font-family:Georgia,serif;background:#ffffff;color:#1a1a2e;';
+container.innerHTML = '\
+<div style="display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #6c5ce7;padding-bottom:14px;margin-bottom:24px;">\
+<div style="display:flex;align-items:center;gap:10px;">\
+<div style="width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#6c5ce7,#fd79a8);"></div>\
+<span style="font-family:Helvetica,Arial,sans-serif;font-size:19px;font-weight:800;color:#6c5ce7;">FicheAI</span>\
+</div>\
+<span style="font-family:Helvetica,Arial,sans-serif;font-size:11px;color:#999;">ficheai.fr</span>\
+</div>\
+<h1 style="font-family:Helvetica,Arial,sans-serif;font-size:24px;font-weight:800;color:#1a1a2e;margin:0 0 8px;line-height:1.25;">' + escapePdf(cleanTitle) + '</h1>\
+<span style="display:inline-block;background:#f3f0ff;color:#6c5ce7;font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:700;padding:5px 14px;border-radius:100px;margin-bottom:22px;letter-spacing:0.5px;">' + (format||'FICHE').toUpperCase() + '</span>\
+<div class="pdf-body">' + bodyHtml + '</div>\
+<div style="margin-top:40px;padding-top:14px;border-top:1px solid #eee;font-family:Helvetica,Arial,sans-serif;font-size:10px;color:#bbb;text-align:center;">FicheAI · Fait pour les étudiants</div>\
+';
+var style = document.createElement('style');
+style.textContent = '\
+.pdf-section{font-family:Helvetica,Arial,sans-serif;font-size:15px;font-weight:700;color:#6c5ce7;margin:22px 0 10px;padding-left:12px;border-left:3px solid #fd79a8;page-break-after:avoid;break-after:avoid;page-break-inside:avoid;break-inside:avoid;}\
+.pdf-p{font-size:13.5px;line-height:1.7;margin:0 0 10px;color:#2d2d3d;page-break-inside:avoid;break-inside:avoid;orphans:3;widows:3;}\
+.pdf-list{margin:0 0 12px;padding-left:0;list-style:none;}\
+.pdf-list li{font-size:13.5px;line-height:1.7;margin-bottom:8px;padding-left:18px;position:relative;color:#2d2d3d;page-break-inside:avoid;break-inside:avoid;}\
+.pdf-list li::before{content:"●";color:#fd79a8;position:absolute;left:0;font-size:9px;top:6px;}\
+.pdf-sep{border:none;border-top:1px solid #e8e6f5;margin:18px 0;page-break-inside:avoid;break-inside:avoid;}\
+strong{color:#1a1a2e;font-weight:700;}\
+.pdf-body{padding-bottom:30px;}\
+';
+container.appendChild(style);
+document.body.appendChild(container);
+var opt = {
+margin: [40, 0, 40, 0],
+filename: 'FicheAI_' + cleanTitle.replace(/[^a-zA-Z0-9]/g,'_').substring(0,40) + '.pdf',
+image: { type: 'jpeg', quality: 0.98 },
+html2canvas: { scale: 2, useCORS: true, windowWidth: 780 },
+jsPDF: { unit: 'pt', format: 'a4', orientation: 'portrait' },
+pagebreak: { mode: ['css', 'avoid-all'], avoid: ['.pdf-p', '.pdf-list li', '.pdf-section', 'h1'] }
+};
+html2pdf().set(opt).from(container).save().then(function() {
+document.body.removeChild(container);
+showToast('✅ PDF téléchargé !');
+}).catch(function(err) {
+document.body.removeChild(container);
+showToast('⚠️ Erreur génération PDF');
+});
 }
-
 function downloadModalPDF() { exportToPDF(modalContent, modalTitle, currentFilter !== 'all' ? currentFilter : 'fiche'); }
 function telechargerFichePDF(id) {
-  var fiche = getFicheById(id);
-  if (!fiche) return;
-  exportToPDF(fiche.contenu, (fiche.format_icon||'📄')+' '+(fiche.titre||'Fiche'), fiche.format);
+var fiche = getFicheById(id);
+if (!fiche) return;
+exportToPDF(fiche.contenu, (fiche.format_icon||'📄')+' '+(fiche.titre||'Fiche'), fiche.format);
 }
-
 </script>
 </body>
 </html>
