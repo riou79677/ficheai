@@ -464,7 +464,7 @@ FicheAI
 <li>✓ IA multilingue</li>
 <li>✓ Support prioritaire</li>
 </ul>
-<a href="https://buy.stripe.com/00wfZibWR8Zl8o7eUK43S05" target="_blank" style="display:block;text-align:center;padding:0.8rem;border-radius:100px;background:linear-gradient(135deg,var(--purple),var(--pink));color:white;text-decoration:none;font-weight:700;font-size:0.85rem;box-shadow:0 4px 20px rgba(108,92,231,0.35)">Essayer 7 jours gratuits</a>
+<button onclick="handlePlanClick('pro','monthly')" style="display:block;width:100%;text-align:center;padding:0.8rem;border-radius:100px;background:linear-gradient(135deg,var(--purple),var(--pink));color:white;text-decoration:none;font-weight:700;font-size:0.85rem;box-shadow:0 4px 20px rgba(108,92,231,0.35);border:none;cursor:pointer;font-family:var(--font-b)">Essayer 7 jours gratuits</button>
 </div>
 <div style="background:linear-gradient(180deg,rgba(253,203,110,0.07) 0%,var(--bg2) 100%);border:1px solid rgba(253,203,110,0.3);border-radius:22px;padding:2rem" class="reveal">
 <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem">Ultimate</div>
@@ -479,7 +479,7 @@ FicheAI
 <li>✓ 📈 Suivi de progression</li>
 <li>✓ Accès anticipé nouveautés</li>
 </ul>
-<a href="https://buy.stripe.com/aFadRaaSN2AX33NeUK43S07" target="_blank" style="display:block;text-align:center;padding:0.8rem;border-radius:100px;background:linear-gradient(135deg,#e17055,var(--gold));color:white;text-decoration:none;font-weight:700;font-size:0.85rem">S'abonner à Ultimate</a>
+<button onclick="handlePlanClick('ultimate','monthly')" style="display:block;width:100%;text-align:center;padding:0.8rem;border-radius:100px;background:linear-gradient(135deg,#e17055,var(--gold));color:white;text-decoration:none;font-weight:700;font-size:0.85rem;border:none;cursor:pointer;font-family:var(--font-b)">S'abonner à Ultimate</button>
 </div>
 </div>
 </section>
@@ -543,7 +543,7 @@ FicheAI
 <div class="footer-col">
 <h4>Aide</h4>
 <a href="#faq">FAQ</a>
-<a href="mailto:contact@ficheai.fr">Contact</a>
+<a href="/contact.html">Contact</a>
 </div>
 </div>
 <div class="footer-bottom">
@@ -565,6 +565,38 @@ var item = btn.parentElement;
 var isOpen = item.classList.contains('open');
 document.querySelectorAll('.faq-item').forEach(function(i) { i.classList.remove('open'); });
 if (!isOpen) item.classList.add('open');
+}
+
+async function handlePlanClick(plan, billing) {
+  var userData = null;
+  try { userData = JSON.parse(localStorage.getItem('ficheai_user')); } catch(e) {}
+  if (!userData || !userData.email) {
+    window.location.href = '/signup.html?plan=' + plan + '&billing=' + billing;
+    return;
+  }
+  var btn = event.currentTarget;
+  var originalText = btn.textContent;
+  btn.textContent = 'Chargement...';
+  btn.disabled = true;
+  try {
+    var response = await fetch('/api/create-checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan: plan, billing: billing, email: userData.email })
+    });
+    var data = await response.json();
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      alert('Une erreur est survenue. Réessaie ou contacte le support.');
+      btn.textContent = originalText;
+      btn.disabled = false;
+    }
+  } catch(e) {
+    alert('Une erreur est survenue. Réessaie ou contacte le support.');
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
 }
 
 document.querySelectorAll('.demo-tab').forEach(function(tab) {
