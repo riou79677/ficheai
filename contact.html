@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact — FicheAI</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#07070f;--bg2:#0d0d1a;--bg3:#111120;--surface:#181830;
+--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.12);
+--purple:#6c5ce7;--purple2:#a29bfe;--pink:#fd79a8;--cyan:#00cec9;--gold:#fdcb6e;
+--text:#f0efff;--text2:#9898b8;--text3:#555570;
+--font-h:'Syne',sans-serif;--font-b:'DM Sans',sans-serif;
+--ease:cubic-bezier(0.4,0,0.2,1);
+}
+body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+.bg-ambient{position:fixed;inset:0;pointer-events:none;z-index:0;
+background:radial-gradient(ellipse at 15% 15%,rgba(108,92,231,0.08) 0%,transparent 55%),
+radial-gradient(ellipse at 85% 85%,rgba(253,121,168,0.05) 0%,transparent 55%);}
+nav{position:fixed;top:0;left:0;right:0;z-index:200;
+background:rgba(7,7,15,0.8);backdrop-filter:blur(28px) saturate(1.5);
+border-bottom:1px solid var(--border);height:64px;
+display:flex;align-items:center;justify-content:space-between;padding:0 2rem;}
+.logo{font-family:var(--font-h);font-size:1.3rem;font-weight:800;
+display:flex;align-items:center;gap:10px;text-decoration:none;
+background:linear-gradient(135deg,var(--purple2),var(--pink));
+-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.logo-icon{width:32px;height:32px;border-radius:9px;flex-shrink:0;
+background:linear-gradient(135deg,var(--purple),var(--pink));
+display:flex;align-items:center;justify-content:center;
+box-shadow:0 2px 16px rgba(108,92,231,0.35);}
+.logo-icon svg{width:16px;height:16px;}
+.main{flex:1;display:flex;align-items:center;justify-content:center;padding:6rem 1.5rem 3rem;position:relative;z-index:1;}
+.card{background:var(--bg2);border:1px solid var(--border2);border-radius:24px;padding:2.5rem;width:100%;max-width:480px;}
+.card h1{font-family:var(--font-h);font-size:1.8rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:0.5rem;}
+.card p{font-size:0.88rem;color:var(--text2);margin-bottom:2rem;line-height:1.6;}
+.field{margin-bottom:1.2rem;}
+.field label{display:block;font-size:0.8rem;font-weight:600;color:var(--text2);margin-bottom:0.5rem;letter-spacing:0.03em;}
+.field input,.field textarea,.field select{
+width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:12px;
+padding:0.75rem 1rem;font-size:0.88rem;color:var(--text);font-family:var(--font-b);
+outline:none;transition:border-color 0.2s var(--ease);resize:none;}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--purple2);}
+.field input::placeholder,.field textarea::placeholder{color:var(--text3);}
+.field select option{background:var(--bg3);color:var(--text);}
+.field textarea{min-height:120px;}
+.btn-submit{width:100%;padding:0.9rem;border-radius:100px;
+background:linear-gradient(135deg,var(--purple),var(--pink));color:white;
+font-weight:700;font-size:0.95rem;font-family:var(--font-b);
+border:none;cursor:pointer;transition:all 0.2s var(--ease);
+box-shadow:0 4px 20px rgba(108,92,231,0.35);}
+.btn-submit:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(108,92,231,0.5);}
+.btn-submit:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
+.success{display:none;text-align:center;padding:2rem 0;}
+.success-icon{font-size:3rem;margin-bottom:1rem;}
+.success h2{font-family:var(--font-h);font-size:1.3rem;font-weight:800;margin-bottom:0.5rem;}
+.success p{font-size:0.88rem;color:var(--text2);}
+.back-link{display:inline-block;margin-top:1.5rem;font-size:0.85rem;color:var(--purple2);text-decoration:none;font-weight:600;}
+.back-link:hover{text-decoration:underline;}
+.err{color:#ff7675;font-size:0.8rem;margin-top:0.4rem;display:none;}
+</style>
+</head>
+<body>
+<div class="bg-ambient"></div>
+<nav>
+  <a href="/index.html" class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+      </svg>
+    </div>
+    FicheAI
+  </a>
+</nav>
+
+<main class="main">
+  <div class="card">
+    <div id="form-section">
+      <h1>Nous contacter</h1>
+      <p>Une question, un bug, une suggestion ? Envoie-nous un message et on te répond rapidement.</p>
+      <div class="field">
+        <label>Ton email</label>
+        <input type="email" id="email" placeholder="ton@email.com">
+        <div class="err" id="err-email">Entre un email valide.</div>
+      </div>
+      <div class="field">
+        <label>Sujet</label>
+        <select id="subject">
+          <option value="">Choisir un sujet...</option>
+          <option value="bug">🐛 Signaler un bug</option>
+          <option value="question">❓ Question sur FicheAI</option>
+          <option value="abonnement">💳 Problème d'abonnement</option>
+          <option value="suggestion">💡 Suggestion / idée</option>
+          <option value="autre">Autre</option>
+        </select>
+        <div class="err" id="err-subject">Choisis un sujet.</div>
+      </div>
+      <div class="field">
+        <label>Message</label>
+        <textarea id="message" placeholder="Décris ton problème ou ta question en détail..."></textarea>
+        <div class="err" id="err-message">Le message ne peut pas être vide.</div>
+      </div>
+      <button class="btn-submit" id="btn-send" onclick="sendContact()">Envoyer le message</button>
+    </div>
+    <div class="success" id="success-section">
+      <div class="success-icon">✅</div>
+      <h2>Message envoyé !</h2>
+      <p>On a bien reçu ton message et on te répondra dans les 24h à l'adresse que tu as indiquée.</p>
+      <a href="/index.html" class="back-link">← Retour à l'accueil</a>
+    </div>
+  </div>
+</main>
+
+<script>
+// Pré-remplir l'email si l'utilisateur est connecté
+try {
+  var u = JSON.parse(localStorage.getItem('ficheai_user'));
+  if (u && u.email) document.getElementById('email').value = u.email;
+} catch(e) {}
+
+async function sendContact() {
+  var email = document.getElementById('email').value.trim();
+  var subject = document.getElementById('subject').value;
+  var message = document.getElementById('message').value.trim();
+  var ok = true;
+
+  document.getElementById('err-email').style.display = 'none';
+  document.getElementById('err-subject').style.display = 'none';
+  document.getElementById('err-message').style.display = 'none';
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    document.getElementById('err-email').style.display = 'block'; ok = false;
+  }
+  if (!subject) {
+    document.getElementById('err-subject').style.display = 'block'; ok = false;
+  }
+  if (!message) {
+    document.getElementById('err-message').style.display = 'block'; ok = false;
+  }
+  if (!ok) return;
+
+  var btn = document.getElementById('btn-send');
+  btn.disabled = true;
+  btn.textContent = 'Envoi en cours...';
+
+  // Envoi via l'API contact (endpoint à créer) ou fallback mailto
+  try {
+    var response = await fetch('/api/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, subject, message })
+    });
+    if (response.ok) {
+      document.getElementById('form-section').style.display = 'none';
+      document.getElementById('success-section').style.display = 'block';
+    } else {
+      throw new Error('API error');
+    }
+  } catch(e) {
+    // Fallback : ouvrir mailto si l'API n'existe pas encore
+    window.location.href = 'mailto:contact@ficheai.fr?subject=' + encodeURIComponent('[FicheAI] ' + subject) + '&body=' + encodeURIComponent('De : ' + email + '\n\n' + message);
+    btn.disabled = false;
+    btn.textContent = 'Envoyer le message';
+  }
+}
+</script>
+</body>
+</html>
