@@ -102,45 +102,72 @@ textarea::placeholder{color:var(--text3)}
 .chat-context-text span{color:var(--cyan);font-weight:600}
 .chat-use-btn{background:rgba(108,92,231,0.12);border:1px solid rgba(108,92,231,0.25);border-radius:8px;padding:0.3rem 0.7rem;font-size:0.75rem;font-weight:600;color:var(--purple2);cursor:pointer;font-family:var(--font-b);transition:all 0.18s;white-space:nowrap}
 .chat-use-btn:hover{background:rgba(108,92,231,0.22)}
-.chat-messages{background:var(--bg2);border:1px solid var(--border);border-radius:18px 18px 0 0;padding:1.2rem;overflow-y:auto;display:flex;flex-direction:column;gap:1rem;min-height:420px;max-height:520px;scroll-behavior:smooth}
-.chat-welcome{text-align:center;padding:1.5rem 1rem;color:var(--text3)}
-.chat-welcome-icon{font-size:2.5rem;margin-bottom:0.8rem}
-.chat-welcome h3{font-family:var(--font-h);font-size:1rem;color:var(--text2);margin-bottom:0.5rem}
-.chat-welcome p{font-size:0.82rem;line-height:1.6;margin-bottom:1rem}
+.chat-header{display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border:1px solid var(--border);border-bottom:none;border-radius:18px 18px 0 0;padding:0.8rem 1.1rem}
+.chat-header-left{display:flex;align-items:center;gap:8px}
+.chat-header-title{font-family:var(--font-h);font-size:0.85rem;font-weight:700;background:linear-gradient(135deg,var(--purple2),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.chat-header-dot{width:7px;height:7px;border-radius:50%;background:#00cec9;box-shadow:0 0 6px rgba(0,206,201,0.6);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.chat-header-right{display:flex;align-items:center;gap:6px}
+.chat-fullscreen-btn{background:transparent;border:1px solid var(--border2);border-radius:8px;padding:0.3rem 0.6rem;font-size:0.72rem;color:var(--text3);cursor:pointer;font-family:var(--font-b);transition:all 0.18s;display:flex;align-items:center;gap:4px}
+.chat-fullscreen-btn:hover{border-color:var(--purple2);color:var(--purple2)}
+.chat-clear-btn{background:transparent;border:1px solid var(--border2);border-radius:8px;padding:0.3rem 0.6rem;font-size:0.72rem;color:var(--text3);cursor:pointer;font-family:var(--font-b);transition:all 0.18s}
+.chat-clear-btn:hover{border-color:#fd79a8;color:#fd79a8}
+.chat-messages{background:var(--bg2);border:1px solid var(--border);border-top:none;border-bottom:none;padding:1.2rem;overflow-y:auto;display:flex;flex-direction:column;gap:1rem;min-height:420px;max-height:520px;scroll-behavior:smooth}
+.chat-welcome{text-align:center;padding:2rem 1rem;color:var(--text3)}
+.chat-welcome-icon{font-size:3rem;margin-bottom:1rem;filter:drop-shadow(0 0 20px rgba(108,92,231,0.4))}
+.chat-welcome h3{font-family:var(--font-h);font-size:1.1rem;color:var(--text);margin-bottom:0.5rem;background:linear-gradient(135deg,var(--purple2),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.chat-welcome p{font-size:0.82rem;line-height:1.6;margin-bottom:1.2rem;max-width:320px;margin-left:auto;margin-right:auto}
 .chat-suggestions{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
-.chat-sug{background:var(--bg3);border:1px solid var(--border2);border-radius:100px;padding:0.4rem 0.9rem;font-size:0.76rem;color:var(--text2);cursor:pointer;font-family:var(--font-b);transition:all 0.18s}
-.chat-sug:hover{border-color:var(--purple2);color:var(--purple2)}
+.chat-sug{background:rgba(108,92,231,0.07);border:1px solid rgba(108,92,231,0.2);border-radius:100px;padding:0.4rem 0.9rem;font-size:0.76rem;color:var(--purple2);cursor:pointer;font-family:var(--font-b);transition:all 0.18s}
+.chat-sug:hover{background:rgba(108,92,231,0.15);border-color:var(--purple2);transform:translateY(-1px)}
 .msg{display:flex;gap:10px;align-items:flex-start;animation:fadeUp 0.3s var(--ease)}
 .msg.user{flex-direction:row-reverse}
-.msg-avatar{width:30px;height:30px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;margin-top:2px}
+.msg-avatar{width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;margin-top:2px;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
 .msg.ai .msg-avatar{background:linear-gradient(135deg,var(--purple),var(--pink));color:white}
 .msg.user .msg-avatar{background:rgba(255,255,255,0.06);border:1px solid var(--border2);color:var(--text2);font-size:0.9rem}
-.msg-bubble{max-width:85%;display:flex;flex-direction:column;gap:6px}
+.msg-bubble{max-width:82%;display:flex;flex-direction:column;gap:5px}
 .msg.user .msg-bubble{align-items:flex-end}
-.msg-content{border-radius:16px;padding:0.9rem 1.1rem;font-size:0.86rem;line-height:1.75;word-break:break-word}
-.msg.ai .msg-content{background:var(--bg3);border:1px solid var(--border);color:var(--text2);border-radius:4px 16px 16px 16px}
-.msg.user .msg-content{background:linear-gradient(135deg,rgba(108,92,231,0.25),rgba(253,121,168,0.15));border:1px solid rgba(108,92,231,0.3);color:var(--text);border-radius:16px 4px 16px 16px}
-.msg-content strong{color:var(--text);font-weight:700}
+.msg-content{border-radius:16px;padding:0.9rem 1.1rem;font-size:0.86rem;line-height:1.8;word-break:break-word}
+.msg.ai .msg-content{background:linear-gradient(135deg,rgba(17,17,32,0.9),rgba(13,13,26,0.9));border:1px solid var(--border2);color:var(--text2);border-radius:4px 16px 16px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.15)}
+.msg.user .msg-content{background:linear-gradient(135deg,rgba(108,92,231,0.3),rgba(253,121,168,0.2));border:1px solid rgba(108,92,231,0.35);color:var(--text);border-radius:16px 4px 16px 16px;box-shadow:0 2px 12px rgba(108,92,231,0.15)}
+.msg-content strong{color:var(--purple2);font-weight:700}
 .msg-actions-row{display:flex;gap:5px}
 .msg-act{background:transparent;border:1px solid var(--border);border-radius:7px;padding:0.22rem 0.55rem;font-size:0.68rem;color:var(--text3);cursor:pointer;font-family:var(--font-b);transition:all 0.18s}
 .msg-act:hover{border-color:var(--purple2);color:var(--purple2)}
 .msg-time{font-size:0.65rem;color:var(--text3)}
-.typing-bubble{background:var(--bg3);border:1px solid var(--border);border-radius:4px 16px 16px 16px;padding:0.85rem 1rem;display:flex;gap:4px;align-items:center}
-.typing-dot{width:6px;height:6px;background:var(--text3);border-radius:50%;animation:typeBounce 1.2s infinite}
+.typing-bubble{background:linear-gradient(135deg,rgba(17,17,32,0.9),rgba(13,13,26,0.9));border:1px solid var(--border2);border-radius:4px 16px 16px 16px;padding:0.85rem 1rem;display:flex;gap:5px;align-items:center}
+.typing-dot{width:7px;height:7px;background:var(--purple2);border-radius:50%;animation:typeBounce 1.2s infinite;opacity:0.7}
 .typing-dot:nth-child(2){animation-delay:0.2s}
 .typing-dot:nth-child(3){animation-delay:0.4s}
 @keyframes typeBounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-7px)}}
-.chat-input-zone{background:var(--bg2);border:1px solid var(--border);border-top:none;border-radius:0 0 18px 18px;padding:0.8rem}
+.chat-input-zone{background:var(--bg2);border:1px solid var(--border);border-top:none;border-radius:0 0 18px 18px;padding:0.9rem}
 .chat-input-row{display:flex;gap:8px;align-items:flex-end}
-.chat-input{flex:1;background:var(--bg3);border:1.5px solid var(--border2);border-radius:12px;padding:0.72rem 1rem;font-size:0.88rem;color:var(--text);font-family:var(--font-b);outline:none;resize:none;max-height:120px;min-height:44px;line-height:1.5;transition:border 0.2s}
-.chat-input:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(108,92,231,0.1)}
+.chat-input{flex:1;background:var(--bg3);border:1.5px solid var(--border2);border-radius:14px;padding:0.75rem 1rem;font-size:0.88rem;color:var(--text);font-family:var(--font-b);outline:none;resize:none;max-height:120px;min-height:46px;line-height:1.5;transition:all 0.2s}
+.chat-input:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(108,92,231,0.1);background:rgba(17,17,32,0.8)}
 .chat-input::placeholder{color:var(--text3)}
-.chat-send{width:44px;height:44px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--purple),var(--pink));color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s;box-shadow:0 2px 12px rgba(108,92,231,0.3)}
-.chat-send:hover{transform:scale(1.08)}
-.chat-send:disabled{opacity:0.4;cursor:not-allowed;transform:none}
-.chat-footer{display:flex;align-items:center;justify-content:space-between;margin-top:0.5rem}
+.chat-send{width:46px;height:46px;border:none;border-radius:14px;background:linear-gradient(135deg,var(--purple),var(--pink));color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s;box-shadow:0 4px 16px rgba(108,92,231,0.4)}
+.chat-send:hover{transform:scale(1.08);box-shadow:0 6px 24px rgba(108,92,231,0.5)}
+.chat-send:disabled{opacity:0.4;cursor:not-allowed;transform:none;box-shadow:none}
+.chat-footer{display:flex;align-items:center;justify-content:space-between;margin-top:0.6rem}
 .chat-count{font-size:0.7rem;color:var(--text3)}
 .chat-hint{font-size:0.7rem;color:var(--text3)}
+.chat-fullscreen-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);z-index:5000;align-items:center;justify-content:center;padding:1rem}
+.chat-fullscreen-overlay.active{display:flex}
+.chat-fullscreen-inner{width:100%;max-width:780px;height:90vh;display:flex;flex-direction:column;background:var(--bg);border:1px solid var(--border2);border-radius:24px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,0.6)}
+.chat-fullscreen-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.3rem;background:var(--bg2);border-bottom:1px solid var(--border)}
+.chat-fullscreen-title{font-family:var(--font-h);font-size:1rem;font-weight:800;background:linear-gradient(135deg,var(--purple2),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:flex;align-items:center;gap:8px}
+.chat-fullscreen-close{background:rgba(255,255,255,0.05);border:1px solid var(--border2);border-radius:10px;padding:0.4rem 0.9rem;font-size:0.8rem;font-weight:600;color:var(--text2);cursor:pointer;font-family:var(--font-b);transition:all 0.18s}
+.chat-fullscreen-close:hover{border-color:#fd79a8;color:#fd79a8}
+.chat-fullscreen-messages{flex:1;overflow-y:auto;padding:1.5rem;display:flex;flex-direction:column;gap:1rem;scroll-behavior:smooth}
+.chat-fullscreen-input-zone{padding:1rem 1.3rem;background:var(--bg2);border-top:1px solid var(--border)}
+.chat-fullscreen-input-row{display:flex;gap:8px;align-items:flex-end}
+.chat-fullscreen-input{flex:1;background:var(--bg3);border:1.5px solid var(--border2);border-radius:14px;padding:0.8rem 1rem;font-size:0.9rem;color:var(--text);font-family:var(--font-b);outline:none;resize:none;max-height:150px;min-height:48px;line-height:1.5;transition:all 0.2s}
+.chat-fullscreen-input:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(108,92,231,0.1)}
+.chat-fullscreen-input::placeholder{color:var(--text3)}
+.chat-fullscreen-send{width:48px;height:48px;border:none;border-radius:14px;background:linear-gradient(135deg,var(--purple),var(--pink));color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s;box-shadow:0 4px 16px rgba(108,92,231,0.4)}
+.chat-fullscreen-send:hover{transform:scale(1.08)}
+.chat-fullscreen-send:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+.chat-fullscreen-footer{display:flex;align-items:center;justify-content:space-between;margin-top:0.5rem;font-size:0.7rem;color:var(--text3)}
 .plan-lock{background:linear-gradient(135deg,rgba(108,92,231,0.08),rgba(253,121,168,0.05));border:1px solid rgba(108,92,231,0.2);border-radius:18px;padding:2.5rem;text-align:center}
 .plan-lock-icon{font-size:2.5rem;margin-bottom:1rem}
 .plan-lock h3{font-family:var(--font-h);font-size:1.2rem;margin-bottom:0.6rem}
@@ -268,6 +295,16 @@ textarea::placeholder{color:var(--text3)}
         <span class="chat-context-text" id="chat-context-text">Aucun cours chargé — <span>colle ton cours dans la zone texte puis clique "Charger"</span></span>
         <button class="chat-use-btn" onclick="useCourseInChat()">Charger le cours</button>
       </div>
+      <div class="chat-header">
+        <div class="chat-header-left">
+          <div class="chat-header-dot"></div>
+          <span class="chat-header-title">✨ Assistant FicheAI</span>
+        </div>
+        <div class="chat-header-right">
+          <button class="chat-clear-btn" onclick="clearChat()">🗑️ Effacer</button>
+          <button class="chat-fullscreen-btn" onclick="openChatFullscreen()">⛶ Plein écran</button>
+        </div>
+      </div>
       <div class="chat-messages" id="chat-messages">
         <div class="chat-welcome" id="chat-welcome">
           <div class="chat-welcome-icon">✨</div>
@@ -295,9 +332,32 @@ textarea::placeholder{color:var(--text3)}
         </div>
       </div>
     </div>
-  </div>
-</div>
 
+    <!-- Overlay plein écran chat -->
+    <div class="chat-fullscreen-overlay" id="chat-fullscreen-overlay">
+      <div class="chat-fullscreen-inner">
+        <div class="chat-fullscreen-header">
+          <div class="chat-fullscreen-title">
+            <div class="chat-header-dot"></div>
+            ✨ Assistant FicheAI — Plein écran
+          </div>
+          <button class="chat-fullscreen-close" onclick="closeChatFullscreen()">✕ Fermer</button>
+        </div>
+        <div class="chat-fullscreen-messages" id="chat-fullscreen-messages"></div>
+        <div class="chat-fullscreen-input-zone">
+          <div class="chat-fullscreen-input-row">
+            <textarea class="chat-fullscreen-input" id="chat-fullscreen-input" placeholder="Dis-moi ce que tu veux faire avec ton cours…" rows="1"></textarea>
+            <button class="chat-fullscreen-send" id="chat-fullscreen-send-btn" onclick="sendChatMessage(true)">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+          <div class="chat-fullscreen-footer">
+            <span id="chat-fullscreen-count"></span>
+            <span>Entrée pour envoyer · Maj+Entrée pour sauter une ligne</span>
+          </div>
+        </div>
+      </div>
+    </div>
 <button class="dev-toggle" id="dev-toggle" onclick="toggleDevPanel()">🛠️ Dev</button>
 <div id="dev-panel" style="display:none;position:fixed;bottom:3.5rem;right:1rem;z-index:9999;">
   <div style="background:#0d0d1a;border:1px solid rgba(108,92,231,0.4);border-radius:12px;padding:1rem;min-width:220px;box-shadow:0 8px 32px rgba(0,0,0,0.5);">
@@ -786,10 +846,10 @@ function formatChatText(text) {
     .replace(/\n/g, '<br>');
 }
 
-function addMessage(role, text) {
+function addMessage(role, text, isFullscreen) {
   var welcome = document.getElementById('chat-welcome');
   if (welcome) welcome.style.display = 'none';
-  var messages = document.getElementById('chat-messages');
+  var messages = document.getElementById(isFullscreen ? 'chat-fullscreen-messages' : 'chat-messages');
   var div = document.createElement('div');
   div.className = 'msg ' + (role === 'user' ? 'user' : 'ai');
   var now = new Date();
@@ -814,8 +874,8 @@ function saveMsg(btn) {
   .catch(function() { showToast('⚠️ Erreur sauvegarde'); });
 }
 
-function addTyping() {
-  var messages = document.getElementById('chat-messages');
+function addTyping(isFullscreen) {
+  var messages = document.getElementById(isFullscreen ? 'chat-fullscreen-messages' : 'chat-messages');
   var div = document.createElement('div');
   div.className = 'msg ai';
   div.id = 'typing-msg';
@@ -826,22 +886,66 @@ function addTyping() {
 
 function removeTyping() { var t = document.getElementById('typing-msg'); if (t) t.remove(); }
 
-async function sendChatMessage() {
+function openChatFullscreen() {
+  var overlay = document.getElementById('chat-fullscreen-overlay');
+  var fsMessages = document.getElementById('chat-fullscreen-messages');
+  // Copier les messages existants dans le plein écran
+  var mainMessages = document.getElementById('chat-messages');
+  fsMessages.innerHTML = mainMessages.innerHTML;
+  overlay.classList.add('active');
+  document.body.style.overflow = 'hidden';
+  fsMessages.scrollTop = fsMessages.scrollHeight;
+  document.getElementById('chat-fullscreen-input').focus();
+  // Synchroniser les événements keyboard sur l'input plein écran
+  var fsInput = document.getElementById('chat-fullscreen-input');
+  fsInput.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 150) + 'px'; });
+  fsInput.addEventListener('keydown', function(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage(true); } });
+  // Sync compteur
+  var countEl = document.getElementById('chat-count');
+  var fsCount = document.getElementById('chat-fullscreen-count');
+  if (countEl && fsCount) fsCount.textContent = countEl.textContent;
+}
+
+function closeChatFullscreen() {
+  var overlay = document.getElementById('chat-fullscreen-overlay');
+  overlay.classList.remove('active');
+  document.body.style.overflow = '';
+  // Synchroniser les messages du plein écran vers la vue normale
+  var fsMessages = document.getElementById('chat-fullscreen-messages');
+  var mainMessages = document.getElementById('chat-messages');
+  mainMessages.innerHTML = fsMessages.innerHTML;
+  mainMessages.scrollTop = mainMessages.scrollHeight;
+}
+
+function clearChat() {
+  chatHistory = [];
+  chatMsgCount = 0;
+  var mainMessages = document.getElementById('chat-messages');
+  mainMessages.innerHTML = '<div class="chat-welcome" id="chat-welcome"><div class="chat-welcome-icon">✨</div><h3>Bonjour ! Je suis ton assistant FicheAI</h3><p>Charge ton cours puis parle-moi librement.<br>Je génère, explique, résume et t\'aide à réviser.</p><div class="chat-suggestions"><div class="chat-sug" onclick="sendSuggestion(\'Génère une fiche de révision complète sur mon cours\')">📄 Faire une fiche</div><div class="chat-sug" onclick="sendSuggestion(\'Crée un quiz de 5 questions sur mon cours\')">✅ Créer un quiz</div><div class="chat-sug" onclick="sendSuggestion(\'Explique-moi les points les plus importants\')">💡 Points clés</div><div class="chat-sug" onclick="sendSuggestion(\'Quelles questions risquent de tomber à l\'examen ?\')" >🎯 Questions d\'exam</div><div class="chat-sug" onclick="sendSuggestion(\'Fais-moi 10 flashcards sur ce cours\')">🃏 Flashcards</div></div></div>';
+  updateChatCount();
+  showToast('💬 Conversation effacée');
+}
+
+// Fermer plein écran avec Échap
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { var overlay = document.getElementById('chat-fullscreen-overlay'); if (overlay && overlay.classList.contains('active')) closeChatFullscreen(); } });
+
+async function sendChatMessage(isFullscreen) {
   var plan = getPlan();
   if (plan === 'starter') { showToast('💬 Chat IA disponible à partir du plan Pro !'); return; }
   var limit = plan === 'ultimate' ? 999999 : 20;
   if (chatMsgCount >= limit && limit !== 999999) { showToast('⚠️ Limite de ' + limit + ' messages atteinte !'); return; }
-  var input = document.getElementById('chat-input');
-  var text = input.value.trim();
+  var inputId = isFullscreen ? 'chat-fullscreen-input' : 'chat-input';
+  var input = document.getElementById(inputId);
+  var text = input ? input.value.trim() : '';
   if (!text) return;
   input.value = '';
   input.style.height = 'auto';
-  addMessage('user', text);
+  addMessage('user', text, isFullscreen);
   chatHistory.push({ role: 'user', content: text });
   chatMsgCount++;
   updateChatCount();
-  addTyping();
-  document.getElementById('chat-send-btn').disabled = true;
+  addTyping(isFullscreen);
+  document.getElementById(isFullscreen ? 'chat-fullscreen-send-btn' : 'chat-send-btn').disabled = true;
   try {
     var response = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: chatHistory.slice(-12), courseContent: courseContent.substring(0, 6000), email: currentUserEmail, language: document.getElementById('lang-sel').value }) });
     var data = await readResponseSafely(response, 'chat');
@@ -850,14 +954,14 @@ async function sendChatMessage() {
       if (response.status === 403 && savedUser && savedUser.plan === 'ultimate') {
         showRechargeModal(data.error);
       } else {
-        addMessage('ai', '⚠️ ' + data.error);
+        addMessage('ai', '⚠️ ' + data.error, isFullscreen);
       }
       return;
     }
     chatHistory.push({ role: 'assistant', content: data.result });
-    addMessage('ai', data.result);
-  } catch(e) { removeTyping(); addMessage('ai', '⚠️ Erreur réseau. Réessaie.'); }
-  document.getElementById('chat-send-btn').disabled = false;
+    addMessage('ai', data.result, isFullscreen);
+  } catch(e) { removeTyping(); addMessage('ai', '⚠️ Erreur réseau. Réessaie.', isFullscreen); }
+  document.getElementById(isFullscreen ? 'chat-fullscreen-send-btn' : 'chat-send-btn').disabled = false;
 }
 
 function updateChatCount() {
@@ -865,6 +969,8 @@ function updateChatCount() {
   var limit = plan === 'ultimate' ? '∞' : 20;
   var el = document.getElementById('chat-count');
   if (el) el.textContent = chatMsgCount + ' / ' + limit + ' messages ce mois';
+  var elFs = document.getElementById('chat-fullscreen-count');
+  if (elFs) elFs.textContent = chatMsgCount + ' / ' + limit + ' messages ce mois';
 }
 
 function sendSuggestion(text) { document.getElementById('chat-input').value = text; sendChatMessage(); }
