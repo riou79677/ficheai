@@ -378,7 +378,7 @@ var SUPABASE_KEY = 'sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ';
 var PRO_M = 'https://buy.stripe.com/00wfZibWR8Zl8o7eUK43S05';
 var ULT_M = 'https://buy.stripe.com/aFadRaaSN2AX33NeUK43S07';
 var currentFormat = 'fiche', currentFormatName = 'Fiche de révision', currentFormatIcon = '📄';
-var tokensLeft = 5, lastResult = '', sessionHistory = [], currentUserEmail = null, savedUser = null;
+var tokensLeft = 5, lastResult = '', sessionHistory = [], currentUserEmail = null, currentUserToken = null, savedUser = null;
 var devPanelOpen = false, currentMode = 'express';
 var courseContent = '', chatHistory = [], chatMsgCount = 0;
 
@@ -461,6 +461,7 @@ try { savedUser = JSON.parse(localStorage.getItem('ficheai_user')); } catch(e) {
 
 if (savedUser && savedUser.email) {
   currentUserEmail = savedUser.email;
+  currentUserToken = savedUser.access_token || null;
   document.getElementById('user-display').style.display = 'inline-block';
   ensureUsername();
   document.getElementById('nav-login-link').style.display = 'none';
@@ -745,7 +746,7 @@ document.getElementById('gen-btn').addEventListener('click', async function() {
   content.style.display = 'none';
   resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   try {
-    var response = await fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ course: input, format: currentFormat, language: document.getElementById('lang-sel').value, email: currentUserEmail }) });
+    var response = await fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (currentUserToken || '') }, body: JSON.stringify({ course: input, format: currentFormat, language: document.getElementById('lang-sel').value }) });
     var data = await readResponseSafely(response, 'génération');
     if (data.error) {
       if (response.status === 403 && savedUser && savedUser.plan === 'ultimate') {
@@ -947,7 +948,7 @@ async function sendChatMessage(isFullscreen) {
   addTyping(isFullscreen);
   document.getElementById(isFullscreen ? 'chat-fullscreen-send-btn' : 'chat-send-btn').disabled = true;
   try {
-    var response = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: chatHistory.slice(-12), courseContent: courseContent.substring(0, 6000), email: currentUserEmail, language: document.getElementById('lang-sel').value }) });
+    var response = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (currentUserToken || '') }, body: JSON.stringify({ messages: chatHistory.slice(-12), courseContent: courseContent.substring(0, 6000), language: document.getElementById('lang-sel').value }) });
     var data = await readResponseSafely(response, 'chat');
     removeTyping();
     if (data.error) {
