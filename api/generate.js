@@ -292,7 +292,7 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-5',
+        model: 'claude-sonnet-4-6',
         max_tokens: 1500,
         system: 'Tu es FicheAI, un assistant pédagogique expert. ' + langInstruction + ' ' + niveauInstruction + ' Sois précis, structuré et pédagogique.',
         messages: [{
