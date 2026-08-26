@@ -146,6 +146,37 @@ export default async function handler(req, res) {
       return res.status(200).json(result);
     }
 
+    if (action === 'get_contact_messages') {
+      const limit = payload?.limit || 50;
+      const onlyUnread = payload?.unread_only || false;
+      let url = SUPABASE_URL + '/rest/v1/contact_messages?select=*&order=created_at.desc&limit=' + limit;
+      if (onlyUnread) url += '&read=eq.false';
+      const msgsR = await fetch(url, { headers: sb });
+      const msgs = await msgsR.json();
+      return res.status(200).json({ messages: msgs });
+    }
+
+    if (action === 'mark_contact_read') {
+      const { id } = payload || {};
+      if (!id) return res.status(400).json({ error: 'ID manquant' });
+      await fetch(SUPABASE_URL + '/rest/v1/contact_messages?id=eq.' + id, {
+        method: 'PATCH',
+        headers: { ...sb, 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ read: true })
+      });
+      return res.status(200).json({ success: true });
+    }
+
+    if (action === 'delete_contact_message') {
+      const { id } = payload || {};
+      if (!id) return res.status(400).json({ error: 'ID manquant' });
+      await fetch(SUPABASE_URL + '/rest/v1/contact_messages?id=eq.' + id, {
+        method: 'DELETE',
+        headers: { ...sb, 'Prefer': 'return=minimal' }
+      });
+      return res.status(200).json({ success: true });
+    }
+
     return res.status(400).json({ error: 'Action inconnue' });
 
   } catch (error) {
