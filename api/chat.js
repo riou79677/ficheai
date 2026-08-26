@@ -11,10 +11,31 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Configuration serveur incomplète' });
   }
 
-  const { messages, courseContent, email, language } = req.body || {};
+  const { messages, courseContent, language } = req.body || {};
 
   if (!messages || !Array.isArray(messages)) {
     return res.status(400).json({ error: 'Paramètres manquants' });
+  }
+
+  // ── Vérification du token Supabase : on récupère l'email depuis le serveur ──
+  // On ne fait plus confiance à l'email envoyé par le client.
+  const authHeader = req.headers['authorization'] || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  if (!token) {
+    return res.status(401).json({ error: 'Connecte-toi pour utiliser le Chat IA.' });
+  }
+  const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || 'sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ';
+  let email;
+  try {
+    const authRes = await fetch(SUPABASE_URL + '/auth/v1/user', {
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + token }
+    });
+    if (!authRes.ok) return res.status(401).json({ error: 'Session invalide, reconnecte-toi.' });
+    const authData = await authRes.json();
+    email = authData.email;
+    if (!email) return res.status(401).json({ error: 'Session invalide.' });
+  } catch(e) {
+    return res.status(503).json({ error: 'Service momentanément indisponible' });
   }
 
   // ── Mode maintenance ──
@@ -27,11 +48,6 @@ export default async function handler(req, res) {
       return res.status(503).json({ error: maint.message || 'FicheAI est en maintenance. On revient très vite !' });
     }
   } catch (e) { /* si la vérification échoue, on laisse passer */ }
-
-  // ── SÉCURITÉ : le Chat IA est un produit payant → compte requis + plan vérifié serveur ──
-  if (!email) {
-    return res.status(401).json({ error: 'Connecte-toi pour utiliser le Chat IA.' });
-  }
 
   let user;
   try {
