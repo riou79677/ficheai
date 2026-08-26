@@ -12,10 +12,30 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Configuration serveur incomplète' });
   }
 
-  const { course, format, language, email } = req.body || {};
+  const { course, format, language } = req.body || {};
 
   if (!course || !format) {
     return res.status(400).json({ error: 'Paramètres manquants' });
+  }
+
+  // ── Vérification du token Supabase : on récupère l'email depuis le serveur ──
+  const authHeader = req.headers['authorization'] || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  if (!token) {
+    return res.status(401).json({ error: 'Connecte-toi pour générer une fiche.' });
+  }
+  const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || 'sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ';
+  let email;
+  try {
+    const authRes = await fetch(SUPABASE_URL + '/auth/v1/user', {
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + token }
+    });
+    if (!authRes.ok) return res.status(401).json({ error: 'Session invalide, reconnecte-toi.' });
+    const authData = await authRes.json();
+    email = authData.email;
+    if (!email) return res.status(401).json({ error: 'Session invalide.' });
+  } catch(e) {
+    return res.status(503).json({ error: 'Service momentanément indisponible' });
   }
 
   // ── Mode maintenance : bloque tout le monde pendant que le site est en pause ──
@@ -28,11 +48,6 @@ export default async function handler(req, res) {
       return res.status(503).json({ error: maint.message || 'FicheAI est en maintenance. On revient très vite !' });
     }
   } catch (e) { /* si la vérification échoue, on laisse passer plutôt que de bloquer tout le monde */ }
-
-  // ── SÉCURITÉ : la génération consomme des crédits Claude → réservée aux comptes ──
-  if (!email) {
-    return res.status(401).json({ error: 'Connecte-toi pour générer une fiche (5 gratuites à l\'inscription).' });
-  }
 
   // Récupération du niveau scolaire + statut de bannissement, puis vérification/décompte via la fonction unifiée
   let user;
@@ -292,7 +307,7 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
+        model: 'claude-sonnet-4-5',
         max_tokens: 1500,
         system: 'Tu es FicheAI, un assistant pédagogique expert. ' + langInstruction + ' ' + niveauInstruction + ' Sois précis, structuré et pédagogique.',
         messages: [{
