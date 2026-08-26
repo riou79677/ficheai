@@ -1,7 +1,11 @@
 // API réservée à l'administrateur du site. Toute action nécessite un token Supabase valide
 // appartenant à un compte ayant is_dev = true en base (vérifié à chaque appel).
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  const allowedOrigins = ['https://studyai-kappa-swart.vercel.app', 'https://ficheai.fr'];
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
