@@ -3,165 +3,137 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FicheAI — Paiement confirmé 🎉</title>
+<title>Paiement confirmé — FicheAI</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#07070f;--bg2:#0d0d1a;--bg3:#111120;--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.12);--purple:#6c5ce7;--purple2:#a29bfe;--pink:#fd79a8;--cyan:#00cec9;--gold:#fdcb6e;--text:#f0efff;--text2:#9898b8;--text3:#555570;--font-h:'Syne',sans-serif;--font-b:'DM Sans',sans-serif;}
-html{scroll-behavior:smooth}
-body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;-webkit-font-smoothing:antialiased;padding:2rem;}
-body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-  background:radial-gradient(ellipse at 20% 20%,rgba(108,92,231,0.12) 0%,transparent 55%),
-             radial-gradient(ellipse at 80% 80%,rgba(253,121,168,0.08) 0%,transparent 55%),
-             radial-gradient(ellipse at 50% 50%,rgba(0,206,201,0.05) 0%,transparent 60%);}
-
-.card{background:var(--bg2);border:1px solid var(--border2);border-radius:28px;padding:3rem 2.5rem;max-width:520px;width:100%;text-align:center;position:relative;z-index:1;box-shadow:0 24px 80px rgba(0,0,0,0.4);}
-
-/* CONFETTI ANIMATION */
-.confetti{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
-.confetti-piece{position:absolute;width:10px;height:10px;border-radius:2px;animation:confettiFall linear forwards;}
-@keyframes confettiFall{
-  0%{transform:translateY(-20px) rotate(0deg);opacity:1;}
-  100%{transform:translateY(110vh) rotate(720deg);opacity:0;}
+:root{
+--bg:#07070f;--bg2:#0d0d1a;--bg3:#111120;--surface:#181830;
+--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.12);
+--purple:#6c5ce7;--purple2:#a29bfe;--pink:#fd79a8;--cyan:#00cec9;--gold:#fdcb6e;
+--text:#f0efff;--text2:#9898b8;--text3:#555570;
+--font-h:'Syne',sans-serif;--font-b:'DM Sans',sans-serif;
+--ease:cubic-bezier(0.4,0,0.2,1);
 }
-
-/* CHECKMARK ANIMÉ */
-.success-icon{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--pink));display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;box-shadow:0 8px 32px rgba(108,92,231,0.4);animation:popIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275) both;}
-@keyframes popIn{from{opacity:0;transform:scale(0.3)}to{opacity:1;transform:scale(1)}}
-.success-icon svg{width:40px;height:40px;}
-.checkmark{stroke-dasharray:50;stroke-dashoffset:50;animation:drawCheck 0.6s 0.4s ease forwards;}
-@keyframes drawCheck{to{stroke-dashoffset:0}}
-
-.badge{display:inline-flex;align-items:center;gap:6px;background:rgba(253,203,110,0.12);border:1px solid rgba(253,203,110,0.3);border-radius:100px;padding:0.4rem 1rem;font-size:0.8rem;font-weight:700;color:var(--gold);margin-bottom:1.5rem;animation:fadeUp 0.5s 0.3s ease both;}
-.badge.pro{background:rgba(108,92,231,0.12);border-color:rgba(108,92,231,0.3);color:var(--purple2);}
-.badge.recharge{background:rgba(0,206,201,0.12);border-color:rgba(0,206,201,0.3);color:var(--cyan);}
-
-h1{font-family:var(--font-h);font-size:1.8rem;font-weight:800;margin-bottom:0.8rem;background:linear-gradient(135deg,#fff,var(--purple2),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:fadeUp 0.5s 0.4s ease both;}
-
-.subtitle{font-size:0.95rem;color:var(--text2);line-height:1.65;margin-bottom:2rem;animation:fadeUp 0.5s 0.5s ease both;}
-
-.features{display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin-bottom:2rem;animation:fadeUp 0.5s 0.6s ease both;}
-.feature{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:0.9rem;text-align:left;}
-.feature-icon{font-size:1.3rem;margin-bottom:0.4rem;}
-.feature-title{font-size:0.82rem;font-weight:700;color:var(--text);margin-bottom:0.2rem;}
-.feature-desc{font-size:0.72rem;color:var(--text3);line-height:1.4;}
-
-.btn-main{display:block;width:100%;padding:1rem;border:none;border-radius:14px;font-size:1rem;font-weight:700;cursor:pointer;font-family:var(--font-h);background:linear-gradient(135deg,var(--purple),var(--pink));color:white;text-decoration:none;text-align:center;transition:all 0.2s;box-shadow:0 4px 20px rgba(108,92,231,0.35);margin-bottom:0.8rem;animation:fadeUp 0.5s 0.7s ease both;}
-.btn-main:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(108,92,231,0.5);}
-.btn-secondary{display:block;width:100%;padding:0.85rem;border:1.5px solid var(--border2);border-radius:14px;font-size:0.9rem;font-weight:600;cursor:pointer;font-family:var(--font-b);background:transparent;color:var(--text2);text-decoration:none;text-align:center;transition:all 0.2s;animation:fadeUp 0.5s 0.75s ease both;}
-.btn-secondary:hover{border-color:var(--purple2);color:var(--purple2);}
-
-.note{font-size:0.75rem;color:var(--text3);margin-top:1.2rem;line-height:1.6;animation:fadeUp 0.5s 0.8s ease both;}
-
-@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+.bg-ambient{position:fixed;inset:0;pointer-events:none;z-index:0;
+background:radial-gradient(ellipse at 20% 20%,rgba(108,92,231,0.12) 0%,transparent 55%),
+radial-gradient(ellipse at 80% 80%,rgba(253,121,168,0.08) 0%,transparent 55%);}
+nav{position:fixed;top:0;left:0;right:0;z-index:200;
+background:rgba(7,7,15,0.8);backdrop-filter:blur(28px) saturate(1.5);
+border-bottom:1px solid var(--border);height:64px;
+display:flex;align-items:center;padding:0 2rem;}
+.logo{font-family:var(--font-h);font-size:1.3rem;font-weight:800;
+display:flex;align-items:center;gap:10px;text-decoration:none;
+background:linear-gradient(135deg,var(--purple2),var(--pink));
+-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.logo-icon{width:32px;height:32px;border-radius:9px;flex-shrink:0;
+background:linear-gradient(135deg,var(--purple),var(--pink));
+display:flex;align-items:center;justify-content:center;
+box-shadow:0 2px 16px rgba(108,92,231,0.35);}
+.logo-icon svg{width:16px;height:16px;}
+.main{flex:1;display:flex;align-items:center;justify-content:center;padding:6rem 1.5rem 3rem;position:relative;z-index:1;}
+.card{background:var(--bg2);border:1px solid var(--border2);border-radius:28px;padding:3rem 2.5rem;width:100%;max-width:520px;text-align:center;}
+.icon-wrap{width:88px;height:88px;border-radius:50%;background:linear-gradient(135deg,rgba(0,206,201,0.15),rgba(108,92,231,0.15));border:2px solid rgba(0,206,201,0.3);display:flex;align-items:center;justify-content:center;margin:0 auto 1.8rem;font-size:2.8rem;animation:popIn 0.5s var(--ease)}
+@keyframes popIn{0%{transform:scale(0.5);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+h1{font-family:var(--font-h);font-size:1.9rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:0.6rem;background:linear-gradient(135deg,var(--cyan),var(--purple2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.subtitle{font-size:0.95rem;color:var(--text2);margin-bottom:2rem;line-height:1.6}
+.plan-badge{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,rgba(108,92,231,0.15),rgba(253,121,168,0.1));border:1px solid rgba(108,92,231,0.3);border-radius:100px;padding:0.5rem 1.2rem;font-size:0.85rem;font-weight:700;color:var(--purple2);margin-bottom:2rem}
+.features{background:var(--bg3);border:1px solid var(--border);border-radius:16px;padding:1.3rem;margin-bottom:2rem;text-align:left}
+.features-title{font-size:0.78rem;font-weight:700;color:var(--text3);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:1rem}
+.feature-item{display:flex;align-items:center;gap:10px;font-size:0.87rem;color:var(--text2);margin-bottom:0.7rem}
+.feature-item:last-child{margin-bottom:0}
+.feature-item span:first-child{font-size:1rem;flex-shrink:0}
+.btn-primary{display:block;width:100%;padding:1rem;border-radius:100px;background:linear-gradient(135deg,var(--purple),var(--pink));color:white;font-weight:700;font-size:1rem;font-family:var(--font-b);border:none;cursor:pointer;text-decoration:none;transition:all 0.2s var(--ease);box-shadow:0 4px 24px rgba(108,92,231,0.4);margin-bottom:1rem}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(108,92,231,0.55)}
+.btn-secondary{display:block;width:100%;padding:0.9rem;border-radius:100px;background:transparent;color:var(--text2);font-weight:600;font-size:0.9rem;font-family:var(--font-b);border:1px solid var(--border2);cursor:pointer;text-decoration:none;transition:all 0.2s var(--ease)}
+.btn-secondary:hover{border-color:var(--purple2);color:var(--purple2)}
+.loading-state{color:var(--text3);font-size:0.85rem;margin-top:1.5rem}
 </style>
 </head>
 <body>
+<div class="bg-ambient"></div>
+<nav>
+  <a href="/index.html" class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+      </svg>
+    </div>
+    FicheAI
+  </a>
+</nav>
 
-<!-- Confetti -->
-<div class="confetti" id="confetti"></div>
-
-<div class="card">
-  <div class="success-icon">
-    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-      <polyline class="checkmark" points="20 6 9 17 4 12"/>
-    </svg>
+<main class="main">
+  <div class="card">
+    <div class="icon-wrap">🎉</div>
+    <h1>Paiement confirmé !</h1>
+    <p class="subtitle">Bienvenue dans FicheAI. Ton abonnement est maintenant actif et toutes les fonctionnalités sont débloquées.</p>
+    <div class="plan-badge" id="plan-badge">✨ Chargement...</div>
+    <div class="features" id="features-list">
+      <div class="features-title">Ce que tu as débloqué</div>
+      <div class="feature-item"><span>⚡</span><span id="feat-gen">Chargement...</span></div>
+      <div class="feature-item"><span>💬</span><span id="feat-chat">Chat IA illimité</span></div>
+      <div class="feature-item"><span>🃏</span><span id="feat-flash">Flashcards avancées</span></div>
+      <div class="feature-item"><span>📝</span><span id="feat-exam">Générateur de sujets d'examen</span></div>
+      <div class="feature-item"><span>🌍</span><span id="feat-lang">Multilangue (FR, EN, ES, DE)</span></div>
+    </div>
+    <a href="/app.html" class="btn-primary">Commencer à réviser →</a>
+    <a href="/index.html" class="btn-secondary">Retour à l'accueil</a>
+    <p class="loading-state" id="loading-msg">Activation de ton compte en cours...</p>
   </div>
-
-  <div class="badge">🎉 Paiement confirmé</div>
-
-  <h1>Bienvenue dans FicheAI !</h1>
-
-  <p class="subtitle">Ton abonnement est activé. Tu as maintenant accès à toutes les fonctionnalités de ton plan — commence à réviser plus intelligemment dès maintenant !</p>
-
-  <div class="features" id="features-grid">
-    <div class="feature">
-      <div class="feature-icon">⚡</div>
-      <div class="feature-title" id="feat-gen-title">Générations</div>
-      <div class="feature-desc" id="feat-gen-desc">Selon ton plan</div>
-    </div>
-    <div class="feature">
-      <div class="feature-icon">💬</div>
-      <div class="feature-title">Chat IA</div>
-      <div class="feature-desc">Discute librement sur ton cours</div>
-    </div>
-    <div class="feature">
-      <div class="feature-icon">📄</div>
-      <div class="feature-title">Export PDF</div>
-      <div class="feature-desc">Télécharge tes fiches en PDF soigné</div>
-    </div>
-    <div class="feature">
-      <div class="feature-icon">📚</div>
-      <div class="feature-title">Bibliothèque</div>
-      <div class="feature-desc">Sauvegarde et retrouve tes fiches</div>
-    </div>
-  </div>
-
-  <a href="/app.html" class="btn-main">⚡ Commencer à réviser maintenant</a>
-  <a href="/dashboard.html" class="btn-secondary">📚 Voir ma bibliothèque</a>
-
-  <p class="note">Un email de confirmation a été envoyé à ton adresse. Tu peux gérer ton abonnement à tout moment depuis les <a href="/settings.html" style="color:var(--purple2);text-decoration:none;">Paramètres</a>.</p>
-</div>
+</main>
 
 <script>
-// Détection du plan depuis l'URL (Stripe peut passer des paramètres)
-var urlParams = new URLSearchParams(window.location.search);
-var type = urlParams.get('type');
-var plan = urlParams.get('plan') || 'pro';
+(function() {
+  // Récupère le plan depuis le localStorage pour personnaliser la page
+  var user = null;
+  try { user = JSON.parse(localStorage.getItem('ficheai_user')); } catch(e) {}
 
-var badgeEl = document.querySelector('.badge');
-if (type === 'recharge') {
-  var amount = urlParams.get('amount') || '';
-  badgeEl.classList.add('recharge');
-  badgeEl.textContent = '⚡ Recharge activée';
-  document.querySelector('h1').textContent = '+' + amount + ' générations ajoutées !';
-  document.querySelector('.subtitle').textContent = 'Ton crédit est déjà disponible sur ton compte. Retourne sur FicheAI pour continuer tes révisions sans attendre.';
-  document.getElementById('features-grid').style.display = 'none';
-  document.querySelector('.note').innerHTML = 'Un email de confirmation a été envoyé à ton adresse. Redirection automatique dans quelques secondes...';
-  setTimeout(function(){ window.location.href = '/app.html'; }, 4000);
-} else if (plan === 'ultimate') {
-  badgeEl.textContent = '👑 Plan Ultimate activé';
-  document.querySelector('h1').textContent = 'Bienvenue, tu es Ultimate !';
-  document.getElementById('feat-gen-title').textContent = '300 générations / mois';
-  document.getElementById('feat-gen-desc').textContent = 'Un usage large pour réviser sans y penser';
-} else {
-  badgeEl.classList.add('pro');
-  badgeEl.textContent = '⚡ Plan Pro activé';
-  document.getElementById('feat-gen-title').textContent = '50 générations / mois';
-  document.getElementById('feat-gen-desc').textContent = 'De quoi couvrir toutes tes matières';
-}
+  var plan = user && user.plan ? user.plan : 'pro';
+  var planBadge = document.getElementById('plan-badge');
+  var featGen = document.getElementById('feat-gen');
+  var loadingMsg = document.getElementById('loading-msg');
 
-// Confetti
-function createConfetti() {
-  var colors = ['#6c5ce7','#fd79a8','#00cec9','#fdcb6e','#a29bfe','#ffffff'];
-  var container = document.getElementById('confetti');
-  for (var i = 0; i < 80; i++) {
-    var piece = document.createElement('div');
-    piece.className = 'confetti-piece';
-    var color = colors[Math.floor(Math.random() * colors.length)];
-    var size = Math.random() * 8 + 6;
-    var left = Math.random() * 100;
-    var duration = Math.random() * 2.5 + 2;
-    var delay = Math.random() * 1.5;
-    var shape = Math.random() > 0.5 ? '50%' : '2px';
-    piece.style.cssText = 'left:'+left+'%;top:-20px;width:'+size+'px;height:'+size+'px;background:'+color+';border-radius:'+shape+';animation-duration:'+duration+'s;animation-delay:'+delay+'s;';
-    container.appendChild(piece);
+  if (plan === 'ultimate') {
+    planBadge.textContent = '👑 Plan Ultimate activé';
+    planBadge.style.background = 'linear-gradient(135deg,rgba(253,203,110,0.15),rgba(225,112,85,0.1))';
+    planBadge.style.borderColor = 'rgba(253,203,110,0.4)';
+    planBadge.style.color = '#fdcb6e';
+    featGen.textContent = '300 générations par mois';
+  } else {
+    planBadge.textContent = '🚀 Plan Pro activé';
+    featGen.textContent = '50 générations par mois';
   }
-  // Nettoyer après
-  setTimeout(function() { container.innerHTML = ''; }, 5000);
-}
 
-createConfetti();
-
-// Mettre à jour le plan dans localStorage si connecté
-try {
-  var savedUser = JSON.parse(localStorage.getItem('ficheai_user'));
-  if (savedUser && plan) {
-    savedUser.plan = plan;
-    savedUser.remaining = plan === 'ultimate' ? 999999 : 50;
-    localStorage.setItem('ficheai_user', JSON.stringify(savedUser));
-  }
-} catch(e) {}
+  // Rafraîchir le profil utilisateur depuis Supabase après quelques secondes
+  // pour que le plan soit bien mis à jour localement
+  setTimeout(async function() {
+    if (!user || !user.email) {
+      loadingMsg.textContent = '';
+      return;
+    }
+    try {
+      // Attendre que le webhook Stripe ait eu le temps de mettre à jour le plan
+      await new Promise(r => setTimeout(r, 3000));
+      var res = await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'get_user_plan', payload: { email: user.email } })
+      });
+      // Si l'endpoint répond, on met à jour le localStorage
+      if (res.ok) {
+        var data = await res.json();
+        if (data.plan) {
+          user.plan = data.plan;
+          localStorage.setItem('ficheai_user', JSON.stringify(user));
+        }
+      }
+    } catch(e) {}
+    loadingMsg.textContent = '✅ Compte activé — bonne révision !';
+    loadingMsg.style.color = '#00cec9';
+  }, 1000);
+})();
 </script>
 </body>
 </html>
