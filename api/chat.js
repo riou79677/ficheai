@@ -110,13 +110,32 @@ export default async function handler(req, res) {
   };
   const niveauInstruction = niveauMap[user.niveau_scolaire] || niveauMap.lycee;
 
-  const systemPrompt = `Tu es FicheAI, un assistant pédagogique expert et bienveillant. Tu aides les étudiants à réviser leurs cours de façon efficace.
-${langInstruction}
-${niveauInstruction}
-${courseContent ? '\n\nVoici le cours de l\'étudiant :\n---\n' + String(courseContent).substring(0, 6000) + '\n---' : ''}
+  const hasCourse = courseContent && String(courseContent).trim().length > 50;
+  const courseBlock = hasCourse
+    ? '\n\n📚 COURS DE L\'ÉTUDIANT :\n---\n' + String(courseContent).substring(0, 8000) + '\n---'
+    : '';
 
-Tu peux générer des fiches de révision, quiz, flashcards, mind maps, expliquer des notions, anticiper les questions d'examen.
-Sois toujours clair, structuré, encourageant et pédagogique. Utilise des émojis pour structurer tes réponses.`;
+  const ragInstruction = hasCourse
+    ? `RÈGLE ABSOLUE : Tu dois baser TOUTES tes réponses exclusivement sur le cours fourni ci-dessus.
+- Si la question porte sur un sujet absent du cours, dis-le clairement : "Ce sujet n'est pas abordé dans ton cours. Voici ce que ton cours contient sur un sujet proche : [...]"
+- Ne jamais inventer ou compléter avec des connaissances extérieures au cours.
+- Cite toujours des éléments précis du cours dans tes réponses.
+- Si on te demande de générer une fiche, un quiz ou des flashcards, base-toi uniquement sur le contenu du cours fourni.`
+    : `Aucun cours n'a été chargé. Invite gentiment l'étudiant à coller son cours dans la zone de texte et à cliquer sur "Charger le cours" pour que tu puisses l'aider à réviser de façon personnalisée.`;
+
+  const systemPrompt = \`Tu es FicheAI, un tuteur pédagogique expert et bienveillant, spécialisé dans la révision de cours.
+\${langInstruction}
+\${niveauInstruction}
+\${courseBlock}
+
+\${ragInstruction}
+
+Quand tu réponds :
+- Structure tes réponses avec des émojis et des titres clairs
+- Sois encourageant et précis
+- Pour les fiches : utilise des titres, sous-titres, points clés
+- Pour les quiz : numérote les questions, donne les réponses après
+- Pour les flashcards : format Q: / R: clair\`;
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
