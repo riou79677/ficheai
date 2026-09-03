@@ -1,29 +1,98 @@
 const SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
 
-// ── Algorithme de répétition espacée (SM-2 simplifié, façon Anki) ──
-// quality : 1 = À revoir, 3 = Difficile, 4 = Bien, 5 = Facile
-function schedule(card, quality) {
-  let interval = card.interval_days || 0;
-  let ease = card.ease || 2.5;
-  let reps = card.repetitions || 0;
+// ── Algorithme FSRS-5 (Free Spaced Repetition Scheduler) ──
+// rating : 1=Oubli, 2=Difficile, 3=Bien, 4=Facile
+// Paramètres FSRS-5 par défaut (optimisés sur 20M+ révisions)
+const FSRS_W = [
+  0.4072, 1.1829, 3.1262, 15.4722, 7.2102,
+  0.5316, 1.0651, 0.0589, 1.5330, 0.1544,
+  1.0070, 1.9395, 0.1100, 0.2900, 2.2700,
+  0.2500, 2.9898, 0.5100, 0.4300
+];
 
-  if (quality < 3) {
-    // À revoir : on recommence, la carte revient tout de suite
-    reps = 0;
-    interval = 0;
-    ease = Math.max(1.3, ease - 0.2);
+function fsrsInitialStability(rating) {
+  return Math.max(FSRS_W[rating - 1], 0.1);
+}
+
+function fsrsDifficulty(d, rating) {
+  const deltaD = FSRS_W[4] - (rating - 3) * FSRS_W[5];
+  const newD = d + deltaD * (10 - d) / 9;
+  return Math.min(Math.max(newD, 1), 10);
+}
+
+function fsrsInitialDifficulty(rating) {
+  return Math.min(Math.max(FSRS_W[4] - (rating - 3) * FSRS_W[5], 1), 10);
+}
+
+function fsrsRetrievability(elapsedDays, stability) {
+  return Math.pow(1 + elapsedDays / (9 * stability), -1);
+}
+
+function fsrsNextStability(d, s, r, rating) {
+  if (rating === 1) {
+    // Oubli : stabilité de rappel
+    return FSRS_W[11] * Math.pow(d, -FSRS_W[12]) * (Math.pow(s + 1, FSRS_W[13]) - 1) * Math.exp((1 - r) * FSRS_W[14]);
+  }
+  // Rappel réussi
+  const hardPenalty = rating === 2 ? FSRS_W[15] : 1;
+  const easyBonus = rating === 4 ? FSRS_W[16] : 1;
+  return s * (Math.exp(FSRS_W[8]) * (11 - d) * Math.pow(s, -FSRS_W[9]) * (Math.exp((1 - r) * FSRS_W[10]) - 1) * hardPenalty * easyBonus + 1);
+}
+
+function fsrsNextInterval(stability, requestedRetention) {
+  const rr = requestedRetention || 0.9;
+  const interval = Math.round(9 * stability * (1 / rr - 1));
+  return Math.min(Math.max(interval, 1), 36500);
+}
+
+function schedule(card, rating) {
+  // rating : 1=Oubli, 2=Difficile, 3=Bien, 4=Facile
+  // Compatibilité avec l'ancien système quality 1/3/4/5 → rating 1/2/3/4
+  if (rating === 5) rating = 4;
+  if (rating === 3 && !card.stability) rating = 3;
+
+  const now = new Date();
+  const isNew = !card.stability || card.repetitions === 0;
+
+  let stability, difficulty, interval;
+
+  if (isNew) {
+    // Première révision
+    stability = fsrsInitialStability(rating);
+    difficulty = fsrsInitialDifficulty(rating);
+    if (rating === 1) {
+      interval = 0; // Revoir immédiatement
+    } else {
+      interval = fsrsNextInterval(stability, 0.9);
+    }
   } else {
-    if (reps === 0) interval = 1;
-    else if (reps === 1) interval = 6;
-    else interval = Math.round(interval * ease);
-    reps += 1;
-    ease = ease + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
-    if (ease < 1.3) ease = 1.3;
+    const s = card.stability || 1;
+    const d = card.ease || 5; // On réutilise ease pour difficulty
+    const lastReview = card.last_review ? new Date(card.last_review) : new Date(now - 86400000);
+    const elapsedDays = Math.max((now - lastReview) / 86400000, 0.001);
+    const r = fsrsRetrievability(elapsedDays, s);
+
+    difficulty = fsrsDifficulty(d, rating);
+    stability = fsrsNextStability(d, s, r, rating);
+
+    if (rating === 1) {
+      interval = 0; // Revoir immédiatement
+    } else {
+      interval = fsrsNextInterval(stability, 0.9);
+    }
   }
 
   const due = new Date();
   if (interval > 0) due.setDate(due.getDate() + interval);
-  return { interval_days: interval, ease: ease, repetitions: reps, due_date: due.toISOString() };
+
+  return {
+    interval_days: interval,
+    ease: Math.round(difficulty * 100) / 100, // Réutiliser ease pour difficulty
+    stability: Math.round(stability * 1000) / 1000,
+    repetitions: (card.repetitions || 0) + 1,
+    last_review: now.toISOString(),
+    due_date: due.toISOString()
+  };
 }
 
 export default async function handler(req, res) {
@@ -66,9 +135,27 @@ export default async function handler(req, res) {
     return found;
   }
 
+  // ── Vérification token Supabase ──
+  const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || 'sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ';
+  const authHeader = req.headers['authorization'] || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  if (!token) return res.status(401).json({ error: 'Connecte-toi pour accéder aux flashcards.' });
+  let verifiedEmail;
+  try {
+    const authRes = await fetch(SUPABASE_URL + '/auth/v1/user', {
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + token }
+    });
+    if (!authRes.ok) return res.status(401).json({ error: 'Session invalide, reconnecte-toi.' });
+    const authData = await authRes.json();
+    verifiedEmail = authData.email;
+    if (!verifiedEmail) return res.status(401).json({ error: 'Session invalide.' });
+  } catch(e) {
+    return res.status(503).json({ error: 'Service momentanément indisponible' });
+  }
+
   // ─────────────── LECTURE (GET) ───────────────
   if (req.method === 'GET') {
-    const email = req.query.email;
+    const email = verifiedEmail;
     if (!email) return res.status(401).json({ error: 'Non connecté' });
     const checkUser = await requireUser(email);
     if (checkUser === 'BANNED') return res.status(403).json({ error: 'Ce compte a été suspendu.' });
@@ -127,7 +214,7 @@ export default async function handler(req, res) {
   // ─────────────── ÉCRITURE (POST) ───────────────
   if (req.method === 'POST') {
     const body = req.body || {};
-    const email = body.email;
+    const email = verifiedEmail;
     const user = await requireUser(email);
     if (user === 'BANNED') return res.status(403).json({ error: 'Ce compte a été suspendu.' });
     if (!user) return res.status(403).json({ error: 'Compte introuvable. Reconnecte-toi.' });
@@ -218,7 +305,7 @@ export default async function handler(req, res) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
           body: JSON.stringify({
-            model: 'claude-sonnet-4-5',
+            model: 'claude-sonnet-4-6',
             max_tokens: 1500,
             system: 'Tu es un expert en pédagogie et en mémorisation active. Tu crées des flashcards de révision de qualité. ' + niveauInstruction,
             messages: [{
