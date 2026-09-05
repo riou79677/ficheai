@@ -123,6 +123,11 @@ tr.dev-row{background:linear-gradient(90deg,rgba(253,203,110,0.06),transparent);
 </div>
 
 <div class="section">
+<h2>👑 Administrateur</h2>
+<div id="admin-account-section"></div>
+</div>
+
+<div class="section">
 <h2>👥 Utilisateurs</h2>
 <input type="text" id="search-input" placeholder="🔍 Rechercher par pseudo ou email..." style="width:100%;background:var(--bg3);border:1.5px solid var(--border2);border-radius:10px;padding:0.7rem 1rem;font-size:0.85rem;color:var(--text);font-family:inherit;outline:none;margin-bottom:1rem" oninput="filterUsers(this.value)">
 <table>
@@ -310,9 +315,22 @@ function renderUsers(users){
 var html = '';
 var DEV_EMAIL = 'ilanmoh228@gmail.com';
 users.sort(function(a,b){ return new Date(b.created_at) - new Date(a.created_at); });
-users.forEach(function(u){
+
+// Afficher le compte admin séparément
+var adminUser = users.find(function(u){ return u.email === DEV_EMAIL; });
+if (adminUser) {
+  var adminSection = document.getElementById('admin-account-section');
+  if (adminSection) {
+    adminSection.innerHTML = '<div style="background:linear-gradient(135deg,rgba(253,203,110,0.08),rgba(225,112,85,0.05));border:1px solid rgba(253,203,110,0.25);border-radius:12px;padding:1rem 1.2rem;display:flex;align-items:center;gap:12px">' +
+      '<span style="font-size:1.5rem">👑</span>' +
+      '<div><div style="font-weight:700;color:#fdcb6e;font-size:0.95rem">' + (adminUser.username ? '@' + adminUser.username : adminUser.email) + '</div>' +
+      '<div style="font-size:0.78rem;color:#9898b8;margin-top:2px">' + adminUser.email + ' — Compte administrateur</div></div></div>';
+  }
+}
+
+var regularUsers = users.filter(function(u){ return u.email !== DEV_EMAIL; });
+regularUsers.forEach(function(u){
 var rowClass = u.banned ? 'banned-row' : '';
-if (u.email === DEV_EMAIL) rowClass += ' dev-row';
 html += '<tr class="clickable-row ' + rowClass + '" onclick="openUserModal(\'' + u.email + '\')">';
 var banInfo = '';
 if(u.banned){
@@ -476,9 +494,7 @@ function openUserModal(email) {
     ['Chat IA', (user.chat_messages_used || 0) + ' / ' + (user.chat_messages_limit || 0)],
     ['Flashcards', (user.flashcards_used || 0) + ' / ' + (user.flashcards_limit || 0)],
     ['Banni', user.banned ? '🚫 Oui' + (user.banned_reason ? ' — ' + user.banned_reason : '') : '✅ Non'],
-    ['Customer Stripe', user.stripe_customer_id ? user.stripe_customer_id.substring(0,20) + '...' : 'Aucun'],
-    ['A essayé le trial', user.has_used_trial ? '✅ Oui' : 'Non'],
-    ['Compte admin', user.is_dev ? '✅ Oui' : 'Non'],
+
   ].map(function(f) {
     return '<div class="user-modal-field"><label>' + f[0] + '</label><span>' + f[1] + '</span></div>';
   }).join('');
