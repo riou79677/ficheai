@@ -56,6 +56,24 @@ td{padding:0.6rem;border-bottom:1px solid var(--border)}
 .quota-danger{color:var(--red);font-weight:700}
 .hidden-section{display:none}
 .hidden-section.visible{display:block}
+tr.clickable-row{cursor:pointer;transition:background 0.15s}
+tr.clickable-row:hover{background:rgba(108,92,231,0.08)}
+tr.dev-row td:first-child::before{content:'👑 ';font-size:0.9rem}
+tr.dev-row{background:linear-gradient(90deg,rgba(253,203,110,0.06),transparent);border-left:3px solid #fdcb6e}
+.user-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);z-index:1000;align-items:center;justify-content:center;padding:1rem}
+.user-modal-overlay.active{display:flex}
+.user-modal{background:#0d0d1a;border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:2rem;width:100%;max-width:560px;max-height:90vh;overflow-y:auto}
+.user-modal h2{font-family:'Syne',sans-serif;font-size:1.2rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:10px}
+.user-modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin-bottom:1.5rem}
+.user-modal-field{background:#111120;border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:0.7rem 0.9rem}
+.user-modal-field label{display:block;font-size:0.7rem;font-weight:700;color:#555570;letter-spacing:0.05em;text-transform:uppercase;margin-bottom:0.3rem}
+.user-modal-field span{font-size:0.87rem;color:#f0efff}
+.user-modal-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:1rem}
+.plan-confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);z-index:2000;align-items:center;justify-content:center;padding:1rem}
+.plan-confirm-overlay.active{display:flex}
+.plan-confirm-box{background:#0d0d1a;border:1px solid rgba(253,121,168,0.3);border-radius:16px;padding:2rem;max-width:400px;width:100%;text-align:center}
+.plan-confirm-box h3{font-family:'Syne',sans-serif;margin-bottom:1rem;color:#fd79a8}
+.plan-confirm-box input{width:100%;background:#111120;border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:0.7rem 1rem;color:#f0efff;font-size:0.9rem;margin:0.8rem 0;outline:none;text-align:center;letter-spacing:0.1em}
 .mini-note{font-size:0.75rem;color:var(--text3);margin-top:0.5rem}
 </style>
 </head>
@@ -172,6 +190,7 @@ errBox.style.display = 'block';
 }
 
 document.getElementById('admin-password').addEventListener('keydown', function(e){ if(e.key === 'Enter') unlock(); });
+document.getElementById('admin-email').addEventListener('keydown', function(e){ if(e.key === 'Enter') document.getElementById('admin-password').focus(); });
 
 async function callAdmin(action, payload){
 var r = await fetch(ADMIN_API, {
@@ -289,9 +308,12 @@ renderUsers(filtres);
 
 function renderUsers(users){
 var html = '';
+var DEV_EMAIL = 'ilanmoh228@gmail.com';
 users.sort(function(a,b){ return new Date(b.created_at) - new Date(a.created_at); });
 users.forEach(function(u){
-html += '<tr class="' + (u.banned ? 'banned-row' : '') + '">';
+var rowClass = u.banned ? 'banned-row' : '';
+if (u.email === DEV_EMAIL) rowClass += ' dev-row';
+html += '<tr class="clickable-row ' + rowClass + '" onclick="openUserModal(\'' + u.email + '\')">';
 var banInfo = '';
 if(u.banned){
 banInfo = ' 🚫';
@@ -427,6 +449,139 @@ var el = document.getElementById(id);
 el.textContent = text; el.className = 'msg ' + type;
 setTimeout(function(){ el.style.display = 'none'; }, 4000);
 }
+
+// ── Profil utilisateur cliquable ──
+var currentModalUser = null;
+var pendingPlanChange = null;
+var confirmCode = null;
+
+function openUserModal(email) {
+  var user = allUsersData.find(function(u){ return u.email === email; });
+  if (!user) return;
+  currentModalUser = user;
+  var devEmail = 'ilanmoh228@gmail.com';
+  var isMe = user.email === devEmail;
+  document.getElementById('modal-title').innerHTML = (isMe ? '👑 ' : '👤 ') + (user.username ? '@' + user.username : user.email);
+
+  var niveaux = { college: 'Collège', lycee: 'Lycée', prepa: 'Prépa', superieur: 'Supérieur' };
+  var planColors = { starter: '#9898b8', pro: '#a29bfe', ultimate: '#fdcb6e' };
+  var grid = document.getElementById('modal-grid');
+  grid.innerHTML = [
+    ['Email', user.email],
+    ['Pseudo', user.username ? '@' + user.username : 'Non défini'],
+    ['Forfait', '<span style="color:' + (planColors[user.plan] || '#fff') + ';font-weight:700">' + (user.plan || 'starter').toUpperCase() + '</span>'],
+    ['Niveau scolaire', niveaux[user.niveau_scolaire] || 'Non renseigné'],
+    ['Inscrit le', new Date(user.created_at).toLocaleDateString('fr-FR')],
+    ['Générations', (user.generations_used || 0) + ' / ' + (user.generations_limit || 0)],
+    ['Chat IA', (user.chat_messages_used || 0) + ' / ' + (user.chat_messages_limit || 0)],
+    ['Flashcards', (user.flashcards_used || 0) + ' / ' + (user.flashcards_limit || 0)],
+    ['Banni', user.banned ? '🚫 Oui' + (user.banned_reason ? ' — ' + user.banned_reason : '') : '✅ Non'],
+    ['Customer Stripe', user.stripe_customer_id ? user.stripe_customer_id.substring(0,20) + '...' : 'Aucun'],
+    ['A essayé le trial', user.has_used_trial ? '✅ Oui' : 'Non'],
+    ['Compte admin', user.is_dev ? '✅ Oui' : 'Non'],
+  ].map(function(f) {
+    return '<div class="user-modal-field"><label>' + f[0] + '</label><span>' + f[1] + '</span></div>';
+  }).join('');
+
+  var actions = document.getElementById('modal-actions');
+  actions.innerHTML = '';
+  if (!isMe) {
+    actions.innerHTML += '<button class="btn-sm" onclick="openPlanChange()">✏️ Changer le forfait</button>';
+    if (user.banned) {
+      actions.innerHTML += '<button class="btn-sm" onclick="banUser('' + user.email + '', false);closeUserModal()">✅ Débannir</button>';
+    } else {
+      actions.innerHTML += '<button class="btn-sm danger" onclick="banUser('' + user.email + '', true);closeUserModal()">🚫 Bannir</button>';
+    }
+    actions.innerHTML += '<button class="btn-sm warn" onclick="deleteUser('' + user.email + '');closeUserModal()">🗑️ Supprimer</button>';
+  }
+
+  document.getElementById('user-modal-overlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeUserModal(event) {
+  if (event && event.target !== document.getElementById('user-modal-overlay')) return;
+  document.getElementById('user-modal-overlay').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function openPlanChange() {
+  if (!currentModalUser) return;
+  confirmCode = Math.floor(100000 + Math.random() * 900000).toString();
+  document.getElementById('confirm-email-display').textContent = currentModalUser.email;
+  document.getElementById('confirm-code-display').textContent = confirmCode;
+  document.getElementById('confirm-code-input').value = '';
+  document.getElementById('confirm-error').style.display = 'none';
+  document.getElementById('plan-confirm-overlay').classList.add('active');
+}
+
+function cancelPlanChange() {
+  document.getElementById('plan-confirm-overlay').classList.remove('active');
+  confirmCode = null;
+}
+
+async function validatePlanChange() {
+  var input = document.getElementById('confirm-code-input').value.trim();
+  if (input !== confirmCode) {
+    document.getElementById('confirm-error').textContent = 'Code incorrect. Réessaie.';
+    document.getElementById('confirm-error').style.display = 'block';
+    return;
+  }
+  var plans = ['starter', 'pro', 'ultimate'];
+  var current = currentModalUser.plan || 'starter';
+  var newPlan = prompt('Forfait actuel : ' + current + '\nEntrez le nouveau forfait (starter / pro / ultimate) :');
+  if (!newPlan || !plans.includes(newPlan.toLowerCase())) {
+    alert('Forfait invalide. Choisis entre : starter, pro, ultimate');
+    return;
+  }
+  newPlan = newPlan.toLowerCase();
+  try {
+    await fetch(ADMIN_API, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ secret: SECRET, action: 'set_plan', payload: { email: currentModalUser.email, plan: newPlan } })
+    });
+    cancelPlanChange();
+    closeUserModal();
+    alert('Forfait de ' + currentModalUser.email + ' changé en ' + newPlan + ' ✅');
+    await loadStats();
+  } catch(e) {
+    alert('Erreur : ' + e.message);
+  }
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeUserModal();
+    cancelPlanChange();
+  }
+});
 </script>
+
+<!-- Modal profil utilisateur -->
+<div class="user-modal-overlay" id="user-modal-overlay" onclick="closeUserModal(event)">
+  <div class="user-modal" id="user-modal">
+    <h2 id="modal-title">👤 Profil utilisateur</h2>
+    <div class="user-modal-grid" id="modal-grid"></div>
+    <div class="user-modal-actions" id="modal-actions"></div>
+    <button onclick="document.getElementById('user-modal-overlay').classList.remove('active');document.body.style.overflow=''" style="margin-top:1rem;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:0.4rem 1rem;color:#9898b8;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%">Fermer</button>
+  </div>
+</div>
+
+<!-- Modal confirmation changement de plan -->
+<div class="plan-confirm-overlay" id="plan-confirm-overlay">
+  <div class="plan-confirm-box">
+    <h3>🔐 Confirmation requise</h3>
+    <p style="font-size:0.85rem;color:#9898b8;margin-bottom:0.5rem">Modification du forfait de <strong id="confirm-email-display"></strong></p>
+    <p style="font-size:0.75rem;color:#555570;margin-bottom:0.5rem">Code de confirmation : <strong id="confirm-code-display" style="color:#a29bfe;letter-spacing:0.15em;font-size:1.1rem"></strong></p>
+    <input type="text" id="confirm-code-input" placeholder="Entre le code affiché ci-dessus" maxlength="6" style="width:100%;background:#111120;border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:0.7rem 1rem;color:#f0efff;font-size:0.9rem;margin:0.8rem 0;outline:none;text-align:center;letter-spacing:0.15em;font-family:'DM Sans',sans-serif">
+    <div style="display:flex;gap:8px">
+      <button onclick="validatePlanChange()" style="flex:1;background:linear-gradient(135deg,#6c5ce7,#fd79a8);border:none;border-radius:10px;padding:0.7rem;color:white;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">Confirmer</button>
+      <button onclick="cancelPlanChange()" style="flex:1;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:0.7rem;color:#9898b8;cursor:pointer;font-family:'DM Sans',sans-serif">Annuler</button>
+    </div>
+    <p id="confirm-error" style="color:#ff7675;font-size:0.8rem;margin-top:0.5rem;display:none"></p>
+  </div>
+</div>
+
 </body>
 </html>
