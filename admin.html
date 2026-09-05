@@ -488,11 +488,11 @@ function openUserModal(email) {
   if (!isMe) {
     actions.innerHTML += '<button class="btn-sm" onclick="openPlanChange()">✏️ Changer le forfait</button>';
     if (user.banned) {
-      actions.innerHTML += '<button class="btn-sm" onclick="banUser('' + user.email + '', false);closeUserModal()">✅ Débannir</button>';
+      actions.innerHTML += '<button class="btn-sm" onclick="banUser(\'' + user.email + '\', false);closeUserModal()">✅ Débannir</button>';
     } else {
-      actions.innerHTML += '<button class="btn-sm danger" onclick="banUser('' + user.email + '', true);closeUserModal()">🚫 Bannir</button>';
+      actions.innerHTML += '<button class="btn-sm danger" onclick="banUser(\'' + user.email + '\', true);closeUserModal()">🚫 Bannir</button>';
     }
-    actions.innerHTML += '<button class="btn-sm warn" onclick="deleteUser('' + user.email + '');closeUserModal()">🗑️ Supprimer</button>';
+    actions.innerHTML += '<button class="btn-sm warn" onclick="deleteUser(\'' + user.email + '\');closeUserModal()">🗑️ Supprimer</button>';
   }
 
   document.getElementById('user-modal-overlay').classList.add('active');
