@@ -158,10 +158,15 @@ async function unlock(){
 var email = document.getElementById('admin-email').value.trim();
 var password = document.getElementById('admin-password').value;
 var errBox = document.getElementById('lock-err');
+var btn = document.querySelector('#lock-screen button');
 errBox.style.display = 'none';
 if(!email || !password){ return; }
 
+// Feedback immédiat
+if(btn){ btn.textContent = 'Connexion...'; btn.disabled = true; }
+
 try{
+// Authentification Supabase
 var authRes = await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=password', {
 method:'POST',
 headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},
@@ -171,26 +176,36 @@ var authData = await authRes.json();
 if(!authRes.ok || !authData.access_token){
 errBox.textContent = 'Email ou mot de passe incorrect.';
 errBox.style.display = 'block';
+if(btn){ btn.textContent = 'Se connecter'; btn.disabled = false; }
 return;
 }
 
-var devRes = await fetch(SUPABASE_URL+'/rest/v1/rpc/get_is_dev', {
+// Vérification is_dev en parallèle avec la préparation de l'UI
+var devPromise = fetch(SUPABASE_URL+'/rest/v1/rpc/get_is_dev', {
 method:'POST',
 headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+authData.access_token},
 body:JSON.stringify({p_email:email})
 });
+
+var devRes = await devPromise;
 var isDev = await devRes.json();
 if(!isDev){
 errBox.textContent = 'Ce compte n\'a pas accès au panneau admin.';
 errBox.style.display = 'block';
+if(btn){ btn.textContent = 'Se connecter'; btn.disabled = false; }
 return;
 }
 
 SECRET = authData.access_token;
-loadStats();
+// Afficher le panneau immédiatement, charger les données ensuite
+document.getElementById('lock-screen').style.display = 'none';
+document.getElementById('main-panel').style.display = 'block';
+// Charger stats + utilisateurs en parallèle
+Promise.all([loadStats(), loadFiches(), loadContactMessages(false)]).catch(function(){});
 }catch(e){
 errBox.textContent = 'Erreur de connexion. Réessaie.';
 errBox.style.display = 'block';
+if(btn){ btn.textContent = 'Se connecter'; btn.disabled = false; }
 }
 }
 
