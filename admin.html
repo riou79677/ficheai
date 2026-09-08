@@ -503,9 +503,9 @@ function openUserModal(email) {
     ['Forfait', '<span style="color:' + (planColors[user.plan] || '#fff') + ';font-weight:700">' + (user.plan || 'starter').toUpperCase() + '</span>'],
     ['Niveau scolaire', niveaux[user.niveau_scolaire] || 'Non renseigné'],
     ['Inscrit le', new Date(user.created_at).toLocaleDateString('fr-FR')],
-    ['Générations', (user.generations_used || 0) + ' / ' + (user.generations_limit || 0)],
-    ['Chat IA', (user.chat_messages_used || 0) + ' / ' + (user.chat_messages_limit || 0)],
-    ['Flashcards', (user.flashcards_used || 0) + ' / ' + (user.flashcards_limit || 0)],
+    ['Générations', (user.generations_used ?? 0) + ' / ' + (user.generations_limit ?? '∞')],
+    ['Chat IA', (user.chat_messages_used ?? 0) + ' / ' + (user.chat_messages_limit ?? '∞')],
+    ['Flashcards', (user.flashcards_used ?? 0) + ' / ' + (user.flashcards_limit ?? '∞')],
     ['Banni', user.banned ? '🚫 Oui' + (user.banned_reason ? ' — ' + user.banned_reason : '') : '✅ Non'],
 
   ].map(function(f) {
