@@ -79,6 +79,14 @@ textarea::placeholder{color:var(--text3)}
 .gen-btn{width:100%;padding:1rem;border:none;border-radius:14px;font-size:0.98rem;font-weight:700;cursor:pointer;font-family:var(--font-h);background:linear-gradient(135deg,var(--purple),var(--pink));color:white;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 20px rgba(108,92,231,0.3);position:relative;overflow:hidden}
 .gen-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 32px rgba(108,92,231,0.5)}
 .gen-btn:disabled{opacity:0.45;cursor:not-allowed;transform:none;box-shadow:none}
+.signup-popup-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);backdrop-filter:blur(8px);z-index:9000;align-items:center;justify-content:center;padding:1.5rem}
+.signup-popup-overlay.active{display:flex}
+.signup-popup{background:#0d0d1a;border:1px solid rgba(108,92,231,0.4);border-radius:24px;padding:2.5rem 2rem;max-width:420px;width:100%;text-align:center;animation:fadeUp 0.3s var(--ease)}
+.signup-popup h2{font-family:var(--font-h);font-size:1.4rem;font-weight:800;margin-bottom:0.6rem;background:linear-gradient(135deg,var(--purple2),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.signup-popup p{font-size:0.87rem;color:var(--text2);line-height:1.7;margin-bottom:1.8rem}
+.signup-popup-btns{display:flex;flex-direction:column;gap:0.7rem}
+.signup-popup-btns a.primary{background:linear-gradient(135deg,var(--purple),var(--pink));color:white;padding:0.9rem 2rem;border-radius:100px;font-size:0.95rem;font-weight:700;text-decoration:none;display:block;transition:all 0.2s;box-shadow:0 4px 20px rgba(108,92,231,0.4)}
+.signup-popup-btns a.secondary{color:var(--text3);font-size:0.82rem;text-decoration:none;padding:0.5rem;display:block}
 .result-card{background:var(--bg2);border:1px solid rgba(108,92,231,0.2);border-radius:18px;padding:1.4rem;display:none;animation:fadeUp 0.35s var(--ease)}
 .result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px}
 .result-title{font-family:var(--font-h);font-size:1rem;font-weight:700}
@@ -358,6 +366,18 @@ textarea::placeholder{color:var(--text3)}
         </div>
       </div>
     </div>
+<div class="signup-popup-overlay" id="signup-popup-overlay">
+  <div class="signup-popup">
+    <div style="font-size:3rem;margin-bottom:1rem">🚀</div>
+    <h2>Crée ton compte gratuit</h2>
+    <p>Pour générer des fiches, quiz et flashcards avec FicheAI, crée ton compte en 30 secondes. C'est gratuit et tu obtiens 5 générations offertes.</p>
+    <div class="signup-popup-btns">
+      <a href="/signup.html" class="primary">Créer mon compte gratuit →</a>
+      <a href="/login.html" class="secondary">J'ai déjà un compte</a>
+      <a href="#" class="secondary" onclick="document.getElementById('signup-popup-overlay').classList.remove('active');return false;">Continuer sans compte</a>
+    </div>
+  </div>
+</div>
 <button class="dev-toggle" id="dev-toggle" onclick="toggleDevPanel()">🛠️ Dev</button>
 <div id="dev-panel" style="display:none;position:fixed;bottom:3.5rem;right:1rem;z-index:9999;">
   <div style="background:#0d0d1a;border:1px solid rgba(108,92,231,0.4);border-radius:12px;padding:1rem;min-width:220px;box-shadow:0 8px 32px rgba(0,0,0,0.5);">
@@ -628,7 +648,12 @@ function showRechargeModal(message) {
   document.body.appendChild(modal);
   modal.addEventListener('click', function(e){ if(e.target === modal) modal.remove(); });
 }
-
+function showSignupPopup() {
+  document.getElementById('signup-popup-overlay').classList.add('active');
+  document.getElementById('signup-popup-overlay').addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('active');
+  }, { once: true });
+}
 function genererDirectement() { document.getElementById('gen-btn').click(); }
 
 function setFileBadge(msg, kind) {
@@ -734,6 +759,7 @@ document.getElementById('gen-btn').addEventListener('click', async function() {
   var input = document.getElementById('course-input').value.trim();
   var errBox = document.getElementById('error-box');
   errBox.style.display = 'none';
+  if (!savedUser || !savedUser.email) { showSignupPopup(); return; }
   if (!input) { errBox.textContent = '⚠️ Colle ou importe ton cours !'; errBox.style.display = 'block'; return; }
   if (input.length < 30) { errBox.textContent = '⚠️ Le cours est trop court.'; errBox.style.display = 'block'; return; }
   if (tokensLeft <= 0) { errBox.textContent = '⚠️ Tu as utilisé toutes tes générations. Passe à Pro !'; errBox.style.display = 'block'; return; }
