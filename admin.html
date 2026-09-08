@@ -199,7 +199,7 @@ return;
 SECRET = authData.access_token;
 // Afficher le panneau immédiatement, charger les données ensuite
 document.getElementById('lock-screen').style.display = 'none';
-document.getElementById('main-panel').style.display = 'block';
+document.getElementById('dashboard').style.display = 'block';
 // Charger stats + utilisateurs en parallèle
 Promise.all([loadStats(), loadFiches(), loadContactMessages(false)]).catch(function(){});
 }catch(e){
@@ -228,7 +228,6 @@ var currentDetailView = null;
 async function loadStats(){
 try {
 var data = await callAdmin('get_stats');
-document.getElementById('lock-screen').style.display = 'none';
 document.getElementById('dashboard').classList.add('visible');
 document.getElementById('header-badge').textContent = data.total_users + ' utilisateur' + (data.total_users > 1 ? 's' : '');
 document.getElementById('stats-grid').innerHTML =
@@ -414,7 +413,6 @@ if(!confirm('Es-tu vraiment sûr ? Toutes ses fiches seront perdues.')) return;
 try{
 await callAdmin('delete_account', { email: email });
 showMsg('users-msg', '✅ Compte supprimé.', 'ok');
-loadStats();
 }catch(e){ showMsg('users-msg', '⚠️ Erreur : ' + e.message, 'error'); }
 }
 
