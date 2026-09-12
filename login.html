@@ -169,7 +169,14 @@ document.getElementById('forgot-link').addEventListener('click',async function()
   errBox.style.display='none';successBox.style.display='none';
   if(!email){errBox.textContent='Entre ton email ci-dessus puis clique sur "Mot de passe oublié".';errBox.style.display='block';return;}
   try{
-    await fetch(SUPABASE_URL+'/auth/v1/recover',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},body:JSON.stringify({email:email})});
+    await fetch(SUPABASE_URL+'/auth/v1/recover',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},
+      body:JSON.stringify({
+        email:email,
+        options:{redirectTo:'https://studyai-kappa-swart.vercel.app/update-password.html'}
+      })
+    });
     successBox.textContent='Email de réinitialisation envoyé ! Vérifie ta boîte mail.';successBox.style.display='block';
   }catch(e){
     errBox.textContent="Erreur lors de l'envoi. Réessaie.";errBox.style.display='block';
