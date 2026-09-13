@@ -21,13 +21,17 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Paramètres manquants' });
   }
 
-  // Price IDs selon plan + fréquence
+  // Ultimate annuel supprimé volontairement — uniquement mensuel disponible
   const PRICE_IDS = {
     pro_monthly:      'price_1TXfc5JBbEVt3aRD8UpsC4Ym',
     pro_yearly:       'price_1TXfefJBbEVt3aRDhNEcUNQl',
     ultimate_monthly: 'price_1TXfiUJBbEVt3aRDXGVS7pAz',
-    ultimate_yearly:  'price_1TXfj3JBbEVt3aRDei6gdSy0',
   };
+
+  // Bloquer explicitement ultimate_yearly même si quelqu'un tente d'y accéder directement
+  if (plan === 'ultimate' && billing === 'yearly') {
+    return res.status(400).json({ error: 'L\'abonnement Ultimate annuel n\'est pas disponible.' });
+  }
 
   const key = `${plan}_${billing === 'yearly' ? 'yearly' : 'monthly'}`;
   const priceId = PRICE_IDS[key];
@@ -53,7 +57,6 @@ export default async function handler(req, res) {
   if (trialDays > 0) {
     params.append('subscription_data[trial_period_days]', trialDays.toString());
   }
-  // Pré-remplir l'email et empêcher de le changer
   params.append('customer_creation', 'always');
 
   const response = await fetch('https://api.stripe.com/v1/checkout/sessions', {
