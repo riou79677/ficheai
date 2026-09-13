@@ -192,7 +192,7 @@ font-weight:800;letter-spacing:-0.03em;margin-bottom:0.8rem;}
 .cta-btns{display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;}
 
 footer{border-top:1px solid var(--border);padding:2.5rem 2rem;position:relative;z-index:1;}
-.footer-inner{max-width:900px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:2rem;}
+.footer-inner{max-width:900px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr;gap:2rem;}
 .footer-brand-logo{font-family:var(--font-h);font-size:1.2rem;font-weight:800;
 background:linear-gradient(135deg,var(--purple2),var(--pink));
 -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
@@ -455,7 +455,7 @@ FicheAI
 <div style="position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--purple),var(--pink));color:white;font-size:0.72rem;font-weight:700;padding:0.28rem 1.1rem;border-radius:100px;white-space:nowrap">⭐ Le plus populaire</div>
 <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--purple2);margin-bottom:0.8rem">Pro</div>
 <div style="font-family:var(--font-h);font-size:2.5rem;font-weight:800;line-height:1;margin-bottom:0.3rem">7,99<span style="font-size:1.2rem;font-weight:500">€</span></div>
-<div style="font-size:0.78rem;color:var(--text2);margin-bottom:1.5rem">par mois · ou 59,99€/an</div>
+<div style="font-size:0.78rem;color:var(--text2);margin-bottom:1.5rem">par mois</div>
 <ul style="list-style:none;display:flex;flex-direction:column;gap:0.5rem;font-size:0.83rem;color:var(--text2);margin-bottom:1.5rem">
 <li>✓ 50 générations / mois</li>
 <li>✓ Import PDF 40 pages</li>
@@ -469,7 +469,7 @@ FicheAI
 <div style="background:linear-gradient(180deg,rgba(253,203,110,0.07) 0%,var(--bg2) 100%);border:1px solid rgba(253,203,110,0.3);border-radius:22px;padding:2rem" class="reveal">
 <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem">Ultimate</div>
 <div style="font-family:var(--font-h);font-size:2.5rem;font-weight:800;line-height:1;margin-bottom:0.3rem">14,99<span style="font-size:1.2rem;font-weight:500">€</span></div>
-<div style="font-size:0.78rem;color:var(--text2);margin-bottom:1.5rem">par mois · ou 99,99€/an</div>
+<div style="font-size:0.78rem;color:var(--text2);margin-bottom:1.5rem">par mois</div>
 <ul style="list-style:none;display:flex;flex-direction:column;gap:0.5rem;font-size:0.83rem;color:var(--text2);margin-bottom:1.5rem">
 <li>✓ Générations illimitées</li>
 <li>✓ Import PDF 50 pages</li>
@@ -494,7 +494,7 @@ FicheAI
 </div>
 <div class="faq-item reveal">
 <button class="faq-q" onclick="toggleFaq(this)">Comment importer mon cours ? <span>+</span></button>
-<div class="faq-a"><p>Tu peux coller du texte directement ou importer un fichier PDF (jusqu'à 15 pages en Starter, 40 en Pro, 100 en Ultimate) ou un fichier TXT.</p></div>
+<div class="faq-a"><p>Tu peux coller du texte directement ou importer un fichier PDF (jusqu'à 15 pages en Starter, 40 en Pro, 50 en Ultimate) ou un fichier TXT.</p></div>
 </div>
 <div class="faq-item reveal">
 <button class="faq-q" onclick="toggleFaq(this)">Puis-je annuler mon abonnement à tout moment ? <span>+</span></button>
@@ -506,7 +506,7 @@ FicheAI
 </div>
 <div class="faq-item reveal">
 <button class="faq-q" onclick="toggleFaq(this)">L'essai gratuit nécessite-t-il une carte bancaire ? <span>+</span></button>
-<div class="faq-a"><p>Non ! Le plan Starter est totalement gratuit. Tu t'inscris avec ton email et c'est parti. La CB n'est demandée que pour le plan Pro (essai 7 jours). Le plan Ultimate est facturé dès la souscription, sans période d'essai.</p></div>
+<div class="faq-a"><p>Non ! Le plan Starter est totalement gratuit. Tu t'inscris avec ton email et c'est parti. La CB n'est demandée que pour les plans payants. Le plan Pro inclut 7 jours d'essai gratuit. Le plan Ultimate est facturé dès la souscription, sans période d'essai.</p></div>
 </div>
 </div>
 </section>
@@ -545,8 +545,13 @@ FicheAI
 <a href="#faq">FAQ</a>
 <a href="/contact.html">Contact</a>
 </div>
+<div class="footer-col">
+<h4>Légal</h4>
+<a href="/cgu.html">CGU</a>
+<a href="/confidentialite.html">Confidentialité</a>
+<a href="/mentions-legales.html">Mentions légales</a>
 </div>
-<div class="footer-bottom">
+<div class="footer-col">
 <span>© 2025 FicheAI · Fait pour les étudiants 🎓</span>
 <span>Données sécurisées · Propulsé par l'IA</span>
 </div>
