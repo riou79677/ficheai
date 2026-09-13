@@ -22,7 +22,6 @@ export default async function handler(req, res) {
 
   const { secret, action, payload } = req.body || {};
 
-  // secret contient maintenant le token d'accès Supabase (access_token), pas un mot de passe fixe.
   if (!secret) {
     return res.status(403).json({ error: 'Accès refusé.' });
   }
@@ -57,7 +56,7 @@ export default async function handler(req, res) {
   try {
     // ── Statistiques générales ──
     if (action === 'get_stats') {
-      const usersR = await fetch(SUPABASE_URL + '/rest/v1/users?select=email,username,plan,generations_used,generations_limit,created_at,banned,banned_until', { headers: sb });
+      const usersR = await fetch(SUPABASE_URL + '/rest/v1/users?select=email,username,plan,generations_used,generations_limit,chat_messages_used,chat_messages_limit,flashcards_used,flashcards_limit,niveau_scolaire,created_at,banned,banned_until,banned_reason', { headers: sb });
       const users = await usersR.json();
       const fichesR = await fetch(SUPABASE_URL + '/rest/v1/fiches?select=id&limit=1', { headers: { ...sb, 'Prefer': 'count=exact' } });
       const fichesCount = fichesR.headers.get('content-range')?.split('/')[1] || '0';
@@ -74,15 +73,27 @@ export default async function handler(req, res) {
       });
     }
 
-    // ── Fiches générées récemment, avec l'email de l'utilisateur ──
+    // ── Fiches générées récemment — pseudo affiché à la place de l'email ──
     if (action === 'get_recent_fiches') {
       const limit = (payload && payload.limit) || 30;
+      // Jointure avec users pour récupérer le username via la foreign key user_email
       const fichesR = await fetch(
-        SUPABASE_URL + '/rest/v1/fiches?select=created_at,user_email,format,format_icon,titre&order=created_at.desc&limit=' + limit,
+        SUPABASE_URL + '/rest/v1/fiches?select=created_at,user_email,format,format_icon,titre,users!fiches_user_email_fkey(username)&order=created_at.desc&limit=' + limit,
         { headers: sb }
       );
       const fiches = await fichesR.json();
-      return res.status(200).json({ fiches: fiches });
+      // Aplatir : extraire username depuis l'objet imbriqué users
+      const fichesFlat = fiches.map(function(f) {
+        return {
+          created_at: f.created_at,
+          user_email: f.user_email,
+          user_username: (f.users && f.users.username) ? f.users.username : null,
+          format: f.format,
+          format_icon: f.format_icon,
+          titre: f.titre
+        };
+      });
+      return res.status(200).json({ fiches: fichesFlat });
     }
 
     // ── Bannir / débannir un compte, avec durée optionnelle ──
@@ -135,7 +146,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true, result });
     }
 
-    // ── Supprimer définitivement un compte (via la fonction déjà sécurisée existante) ──
+    // ── Supprimer définitivement un compte ──
     if (action === 'delete_account') {
       const { email } = payload || {};
       if (!email) return res.status(400).json({ error: 'Email manquant' });
