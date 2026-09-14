@@ -107,14 +107,13 @@ box-shadow:0 4px 20px rgba(108,92,231,0.35);}
     <div class="success" id="success-section">
       <div class="success-icon">✅</div>
       <h2>Message envoyé !</h2>
-      <p>On a bien reçu ton message et on te répondra dans les 24h à l'adresse que tu as indiquée.</p>
+      <p>On a bien reçu ton message et on te répondra dans les meilleurs délais à l'adresse que tu as indiquée.</p>
       <a href="/index.html" class="back-link">← Retour à l'accueil</a>
     </div>
   </div>
 </main>
 
 <script>
-// Pré-remplir l'email si l'utilisateur est connecté
 try {
   var u = JSON.parse(localStorage.getItem('ficheai_user'));
   if (u && u.email) document.getElementById('email').value = u.email;
@@ -145,7 +144,6 @@ async function sendContact() {
   btn.disabled = true;
   btn.textContent = 'Envoi en cours...';
 
-  // Envoi via l'API contact (endpoint à créer) ou fallback mailto
   try {
     var response = await fetch('/api/contact', {
       method: 'POST',
@@ -159,7 +157,6 @@ async function sendContact() {
       throw new Error('API error');
     }
   } catch(e) {
-    // Fallback : ouvrir mailto si l'API n'existe pas encore
     window.location.href = 'mailto:contact@ficheai.fr?subject=' + encodeURIComponent('[FicheAI] ' + subject) + '&body=' + encodeURIComponent('De : ' + email + '\n\n' + message);
     btn.disabled = false;
     btn.textContent = 'Envoyer le message';
