@@ -57,8 +57,6 @@ main{flex:1;display:flex;gap:0;max-width:900px;margin:0 auto;width:100%;padding:
 .msg{padding:0.7rem 1rem;border-radius:10px;font-size:0.82rem;margin-top:0.8rem;display:none;}
 .msg-success{background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);color:#4ade80;}
 .msg-error{background:rgba(244,114,182,0.08);border:1px solid rgba(244,114,182,0.2);color:#f09595;}
-
-/* PLAN CARD */
 .plan-card{border-radius:14px;padding:1.2rem 1.4rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;}
 .plan-card.starter{background:rgba(255,255,255,0.03);border:1px solid var(--border);}
 .plan-card.pro{background:rgba(34,211,238,0.06);border:1px solid rgba(34,211,238,0.2);}
@@ -74,7 +72,6 @@ main{flex:1;display:flex;gap:0;max-width:900px;margin:0 auto;width:100%;padding:
 .plan-feat{display:flex;align-items:center;gap:8px;font-size:0.82rem;color:var(--text2);}
 .plan-feat span{font-size:0.9rem;}
 .plan-feat.highlight{color:var(--text);font-weight:600;}
-
 .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:0.8rem 0;border-bottom:1px solid var(--border);}
 .toggle-row:last-child{border-bottom:none;}
 .toggle-info{flex:1;}
@@ -177,14 +174,10 @@ footer{padding:1.5rem;text-align:center;font-size:0.78rem;color:var(--text3);bor
       <div class="settings-section" id="section-abonnement">
         <div class="section-title">Abonnement</div>
         <div class="section-desc">Gère ton plan FicheAI.</div>
-
-        <!-- Plan actuel -->
         <div class="settings-card" id="plan-current-card">
           <h3>Ton plan actuel</h3>
           <div id="plan-display-zone"></div>
         </div>
-
-        <!-- Actions selon plan -->
         <div id="plan-actions-zone"></div>
       </div>
 
@@ -294,11 +287,11 @@ footer{padding:1.5rem;text-align:center;font-size:0.78rem;color:var(--text3);bor
 <script>
 var SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
 var SUPABASE_KEY = 'sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ';
+// Ultimate : mensuel uniquement — annuel volontairement supprimé
 var PRO_M = 'https://buy.stripe.com/00wfZibWR8Zl8o7eUK43S05';
 var PRO_A = 'https://buy.stripe.com/6oU9AU1idcbx6fZ6oe43S06';
 var ULT_M = 'https://buy.stripe.com/aFadRaaSN2AX33NeUK43S07';
-var ULT_A = 'https://buy.stripe.com/bJedRa5yt8ZlbAj8wm43S08';
-var STRIPE_PORTAL = 'https://billing.stripe.com/p/login/dRmcN68KF5N9bAj9Aq43S00'; // remplace par ton vrai lien portail Stripe
+var STRIPE_PORTAL = 'https://billing.stripe.com/p/login/dRmcN68KF5N9bAj9Aq43S00';
 var savedUser = null;
 
 document.addEventListener('click', function(e) {
@@ -356,7 +349,7 @@ function showUsernameModal(){
   overlay.innerHTML = '<div style="background:#13131f;border:1px solid rgba(124,109,250,0.4);border-radius:20px;padding:2rem;max-width:400px;width:100%;text-align:center">'
     + '<div style="font-size:2rem;margin-bottom:0.8rem">👋</div>'
     + '<h3 style="font-family:inherit;font-size:1.15rem;margin-bottom:0.6rem;color:#f1f0ff">Choisis ton pseudo</h3>'
-    + '<p style="font-size:0.83rem;color:#a0a0c0;line-height:1.6;margin-bottom:1.3rem">Pour continuer, il nous faut un pseudo pour t\'identifier facilement. Ce n\'est jamais affiché publiquement.</p>'
+    + '<p style="font-size:0.83rem;color:#a0a0c0;line-height:1.6;margin-bottom:1.3rem">Pour continuer, il nous faut un pseudo pour t\'identifier facilement.</p>'
     + '<input type="text" id="new-username-input" placeholder="lucas_reviseur" maxlength="30" style="width:100%;background:#0f0f1a;border:1.5px solid rgba(255,255,255,0.14);border-radius:10px;padding:0.75rem 1rem;font-size:0.9rem;color:#f1f0ff;font-family:inherit;outline:none;margin-bottom:0.6rem;text-align:center">'
     + '<div id="username-modal-err" style="color:#f472b6;font-size:0.78rem;margin-bottom:0.8rem;display:none"></div>'
     + '<button id="confirm-username-btn" style="width:100%;padding:0.75rem;border:none;border-radius:10px;background:linear-gradient(135deg,#7c6dfa,#f472b6);color:#fff;font-weight:700;cursor:pointer;font-family:inherit">Valider</button>'
@@ -404,16 +397,28 @@ function renderPlanSection(plan) {
   var actionsZone = document.getElementById('plan-actions-zone');
 
   if (plan === 'starter') {
-    displayZone.innerHTML = '<div class="plan-card starter"><div class="plan-card-left"><div class="plan-card-icon">🆓</div><div><div class="plan-card-name starter">Starter</div><div class="plan-card-desc">Gratuit · ' + remaining + ' générations restantes</div></div></div></div><div class="plan-feats"><div class="plan-feat"><span>✅</span> 5 générations IA / mois</div><div class="plan-feat"><span>✅</span> Tous les formats</div><div class="plan-feat"><span>✅</span> Import PDF jusqu\'à 15 pages</div><div class="plan-feat"><span>❌</span> Chat IA — Pro requis</div><div class="plan-feat"><span>❌</span> Export PDF — Pro requis</div><div class="plan-feat"><span>❌</span> Bibliothèque illimitée — Pro requis</div></div>';
-    actionsZone.innerHTML = '<div class="settings-card"><h3>Passe à la vitesse supérieure 🚀</h3><p>Débloque le Chat IA, l\'export PDF, 50 générations par mois et bien plus.</p><div style="display:flex;gap:0.8rem;flex-wrap:wrap;margin-bottom:0.8rem;"><a href="' + PRO_M + '" target="_blank" class="btn btn-primary">⚡ Pro — 7,99€/mois</a><a href="' + PRO_A + '" target="_blank" class="btn btn-secondary">⚡ Pro — 59,99€/an</a></div><div style="display:flex;gap:0.8rem;flex-wrap:wrap;"><a href="' + ULT_M + '" target="_blank" class="btn btn-gold">👑 Ultimate — 14,99€/mois</a><a href="' + ULT_A + '" target="_blank" class="btn btn-secondary">👑 Ultimate — 99,99€/an</a></div></div>';
+    displayZone.innerHTML = '<div class="plan-card starter"><div class="plan-card-left"><div class="plan-card-icon">🆓</div><div><div class="plan-card-name starter">Starter</div><div class="plan-card-desc">Gratuit · ' + remaining + ' générations restantes</div></div></div></div><div class="plan-feats"><div class="plan-feat"><span>✅</span> 5 générations IA / mois</div><div class="plan-feat"><span>✅</span> Tous les formats</div><div class="plan-feat"><span>✅</span> Import PDF jusqu\'à 15 pages</div><div class="plan-feat"><span>❌</span> Chat IA — Pro requis</div><div class="plan-feat"><span>❌</span> Bibliothèque illimitée — Pro requis</div></div>';
+    actionsZone.innerHTML = '<div class="settings-card"><h3>Passe à la vitesse supérieure 🚀</h3><p>Débloque le Chat IA, 50 générations par mois et bien plus.</p>'
+      + '<div style="display:flex;gap:0.8rem;flex-wrap:wrap;margin-bottom:0.8rem;">'
+      + '<a href="' + PRO_M + '" target="_blank" class="btn btn-primary">⚡ Pro — 7,99€/mois</a>'
+      + '<a href="' + PRO_A + '" target="_blank" class="btn btn-secondary">⚡ Pro — 59,99€/an</a>'
+      + '</div>'
+      + '<div style="display:flex;gap:0.8rem;flex-wrap:wrap;">'
+      + '<a href="' + ULT_M + '" target="_blank" class="btn btn-gold">👑 Ultimate — 14,99€/mois</a>'
+      + '</div></div>';
 
   } else if (plan === 'pro') {
-    displayZone.innerHTML = '<div class="plan-card pro"><div class="plan-card-left"><div class="plan-card-icon">⚡</div><div><div class="plan-card-name pro">Pro</div><div class="plan-card-desc">' + remaining + ' générations restantes ce mois</div></div></div></div><div class="plan-feats"><div class="plan-feat highlight"><span>✅</span> 50 générations IA / mois</div><div class="plan-feat highlight"><span>✅</span> Chat IA — 20 messages/mois</div><div class="plan-feat highlight"><span>✅</span> Export PDF soigné</div><div class="plan-feat highlight"><span>✅</span> Import PDF jusqu\'à 40 pages</div><div class="plan-feat highlight"><span>✅</span> Bibliothèque de fiches</div><div class="plan-feat"><span>❌</span> Chat illimité — Ultimate requis</div><div class="plan-feat"><span>❌</span> Générations illimitées — Ultimate requis</div></div>';
-    actionsZone.innerHTML = '<div class="settings-card"><h3>Passe à Ultimate 👑</h3><p>Générations illimitées, Chat IA sans limite, import PDF jusqu\'à 50 pages. La puissance maximale pour réviser sans contrainte.</p><div style="display:flex;gap:0.8rem;flex-wrap:wrap;margin-bottom:1rem;"><a href="' + ULT_M + '" target="_blank" class="btn btn-gold">👑 Ultimate — 14,99€/mois</a><a href="' + ULT_A + '" target="_blank" class="btn btn-secondary">👑 Ultimate — 99,99€/an</a></div></div><div class="settings-card"><h3>Gérer mon abonnement</h3><p>Modifie ou annule ton abonnement Pro via le portail Stripe sécurisé.</p><button onclick="openStripePortal()" class="btn btn-secondary">⚙️ Gérer mon abonnement Stripe →</button</div>';
+    displayZone.innerHTML = '<div class="plan-card pro"><div class="plan-card-left"><div class="plan-card-icon">⚡</div><div><div class="plan-card-name pro">Pro</div><div class="plan-card-desc">' + remaining + ' générations restantes ce mois</div></div></div></div><div class="plan-feats"><div class="plan-feat highlight"><span>✅</span> 50 générations IA / mois</div><div class="plan-feat highlight"><span>✅</span> Chat IA — 20 messages/mois</div><div class="plan-feat highlight"><span>✅</span> Import PDF jusqu\'à 40 pages</div><div class="plan-feat highlight"><span>✅</span> Bibliothèque de fiches</div><div class="plan-feat"><span>❌</span> Chat illimité — Ultimate requis</div><div class="plan-feat"><span>❌</span> Générations illimitées — Ultimate requis</div></div>';
+    actionsZone.innerHTML = '<div class="settings-card"><h3>Passe à Ultimate 👑</h3><p>Générations illimitées, Chat IA sans limite, import PDF jusqu\'à 50 pages.</p>'
+      + '<div style="display:flex;gap:0.8rem;flex-wrap:wrap;margin-bottom:1rem;">'
+      + '<a href="' + ULT_M + '" target="_blank" class="btn btn-gold">👑 Ultimate — 14,99€/mois</a>'
+      + '</div></div>'
+      + '<div class="settings-card"><h3>Gérer mon abonnement</h3><p>Modifie ou annule ton abonnement Pro via le portail Stripe sécurisé.</p><button onclick="openStripePortal()" class="btn btn-secondary">⚙️ Gérer mon abonnement Stripe →</button></div>';
 
   } else if (plan === 'ultimate') {
-    displayZone.innerHTML = '<div class="plan-card ultimate"><div class="plan-card-left"><div class="plan-card-icon">👑</div><div><div class="plan-card-name ultimate">Ultimate</div><div class="plan-card-desc">Le plan le plus puissant · Tout illimité</div></div></div></div><div class="plan-feats"><div class="plan-feat highlight"><span>✅</span> Générations illimitées</div><div class="plan-feat highlight"><span>✅</span> Chat IA illimité</div><div class="plan-feat highlight"><span>✅</span> Export PDF soigné</div><div class="plan-feat highlight"><span>✅</span> Import PDF jusqu\'à 50 pages</div><div class="plan-feat highlight"><span>✅</span> Bibliothèque illimitée</div><div class="plan-feat highlight"><span>✅</span> Accès anticipé aux nouvelles fonctionnalités</div></div>';
-    actionsZone.innerHTML = '<div class="settings-card"><h3>👑 Tu es au maximum !</h3><p>Tu profites de toutes les fonctionnalités de FicheAI sans aucune limite. Merci pour ta confiance !</p><div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:0.8rem 1rem;font-size:0.83rem;color:var(--gold);">✨ Toutes les fonctionnalités débloquées</div></div><div class="settings-card"><h3>Gérer mon abonnement</h3><p>Modifie ou annule ton abonnement Ultimate via le portail Stripe sécurisé.</p><button onclick="openStripePortal()" class="btn btn-secondary">⚙️ Gérer mon abonnement Stripe →</button</div>';
+    displayZone.innerHTML = '<div class="plan-card ultimate"><div class="plan-card-left"><div class="plan-card-icon">👑</div><div><div class="plan-card-name ultimate">Ultimate</div><div class="plan-card-desc">Le plan le plus puissant · Tout illimité</div></div></div></div><div class="plan-feats"><div class="plan-feat highlight"><span>✅</span> Générations illimitées</div><div class="plan-feat highlight"><span>✅</span> Chat IA illimité</div><div class="plan-feat highlight"><span>✅</span> Import PDF jusqu\'à 50 pages</div><div class="plan-feat highlight"><span>✅</span> Bibliothèque illimitée</div><div class="plan-feat highlight"><span>✅</span> Accès anticipé aux nouvelles fonctionnalités</div></div>';
+    actionsZone.innerHTML = '<div class="settings-card"><h3>👑 Tu es au maximum !</h3><p>Tu profites de toutes les fonctionnalités de FicheAI sans aucune limite. Merci pour ta confiance !</p><div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:0.8rem 1rem;font-size:0.83rem;color:var(--gold);">✨ Toutes les fonctionnalités débloquées</div></div>'
+      + '<div class="settings-card"><h3>Gérer mon abonnement</h3><p>Modifie ou annule ton abonnement Ultimate via le portail Stripe sécurisé.</p><button onclick="openStripePortal()" class="btn btn-secondary">⚙️ Gérer mon abonnement Stripe →</button></div>';
   }
 }
 
@@ -426,9 +431,7 @@ function showSection(name, btn) {
 
 async function saveNiveau(niveau){
   var msg = document.getElementById('niveau-msg');
-  msg.style.display = 'block';
-  msg.style.color = '#a0a0c0';
-  msg.textContent = 'Enregistrement...';
+  msg.style.display = 'block'; msg.style.color = '#a0a0c0'; msg.textContent = 'Enregistrement...';
   try {
     var r = await fetch(SUPABASE_URL + '/rest/v1/rpc/set_niveau_scolaire', {
       method: 'POST',
@@ -437,18 +440,11 @@ async function saveNiveau(niveau){
     });
     var res = await r.json();
     if (res && res.success) {
-      msg.style.color = '#4ade80';
-      msg.textContent = '✅ Niveau enregistré. Tes prochaines fiches seront adaptées.';
+      msg.style.color = '#4ade80'; msg.textContent = '✅ Niveau enregistré.';
       savedUser.niveau_scolaire = niveau;
       localStorage.setItem('ficheai_user', JSON.stringify(savedUser));
-    } else {
-      msg.style.color = '#f472b6';
-      msg.textContent = '⚠️ Impossible d\'enregistrer. Réessaie.';
-    }
-  } catch(e) {
-    msg.style.color = '#f472b6';
-    msg.textContent = '⚠️ Erreur réseau. Réessaie.';
-  }
+    } else { msg.style.color = '#f472b6'; msg.textContent = '⚠️ Impossible d\'enregistrer. Réessaie.'; }
+  } catch(e) { msg.style.color = '#f472b6'; msg.textContent = '⚠️ Erreur réseau. Réessaie.'; }
   setTimeout(function(){ msg.style.display = 'none'; }, 4000);
 }
 
@@ -460,9 +456,7 @@ async function loadNiveau(){
       body: JSON.stringify({ p_email: savedUser.email })
     });
     var niveau = await r.json();
-    if (typeof niveau === 'string' && niveau) {
-      document.getElementById('pref-niveau').value = niveau;
-    }
+    if (typeof niveau === 'string' && niveau) document.getElementById('pref-niveau').value = niveau;
   } catch(e) {}
 }
 loadNiveau();
@@ -536,29 +530,20 @@ document.getElementById('confirm-ok').addEventListener('click', async function()
   closeConfirm();
   if (actionEnCours === 'fiches') {
     try {
-      var authToken = savedUser.access_token || SUPABASE_KEY;
-      var r = await fetch(SUPABASE_URL + '/rest/v1/rpc/delete_all_my_fiches', { method: 'POST', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + authToken, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_email: savedUser.email }) });
+      var r = await fetch(SUPABASE_URL + '/rest/v1/rpc/delete_all_my_fiches', { method: 'POST', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + (savedUser.access_token || SUPABASE_KEY), 'Content-Type': 'application/json' }, body: JSON.stringify({ p_email: savedUser.email }) });
       var res = await r.json();
-      if (res && res.success) {
-        showMsg('msg-delete-fiches', '✅ Toutes tes fiches ont été supprimées (' + (res.deleted||0) + ').', false);
-      } else {
-        showMsg('msg-delete-fiches', '⚠️ Une erreur est survenue. Réessaie.', true);
-      }
+      if (res && res.success) { showMsg('msg-delete-fiches', '✅ Toutes tes fiches ont été supprimées (' + (res.deleted||0) + ').', false); }
+      else { showMsg('msg-delete-fiches', '⚠️ Une erreur est survenue. Réessaie.', true); }
     } catch(e) { showMsg('msg-delete-fiches', '⚠️ Erreur réseau. Réessaie.', true); }
   } else if (actionEnCours === 'compte') {
     try {
-      var authToken2 = savedUser.access_token || SUPABASE_KEY;
-      var r2 = await fetch(SUPABASE_URL + '/rest/v1/rpc/delete_account_by_email', { method: 'POST', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + authToken2, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_email: savedUser.email }) });
+      var r2 = await fetch(SUPABASE_URL + '/rest/v1/rpc/delete_account_by_email', { method: 'POST', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + (savedUser.access_token || SUPABASE_KEY), 'Content-Type': 'application/json' }, body: JSON.stringify({ p_email: savedUser.email }) });
       var res2 = await r2.json();
       if (res2 && res2.success) {
         localStorage.removeItem('ficheai_user');
         showMsg('msg-delete-account', '✅ Compte supprimé définitivement. Redirection...', false);
         setTimeout(function() { window.location.href = '/'; }, 2000);
-      } else if (r2.status === 401 || (res2 && res2.message && res2.message.includes('JWT'))) {
-        showMsg('msg-delete-account', '⚠️ Ta session a expiré. Déconnecte-toi puis reconnecte-toi, puis réessaie.', true);
-      } else {
-        showMsg('msg-delete-account', '⚠️ Une erreur est survenue. Réessaie ou contacte le support.', true);
-      }
+      } else { showMsg('msg-delete-account', '⚠️ Une erreur est survenue. Réessaie ou contacte le support.', true); }
     } catch(e) { showMsg('msg-delete-account', '⚠️ Erreur réseau. Réessaie.', true); }
   }
 });
@@ -568,37 +553,16 @@ async function openStripePortal() {
   var originalText = btn.textContent;
   btn.textContent = 'Chargement...';
   btn.disabled = true;
-
   var user = null;
   try { user = JSON.parse(localStorage.getItem('ficheai_user')); } catch(e) {}
   var token = user && user.access_token ? user.access_token : '';
-
   try {
-    var res = await fetch('/api/customer-portal', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + token
-      }
-    });
+    var res = await fetch('/api/customer-portal', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token } });
     var data = await res.json();
-
-    if (data.url) {
-      window.location.href = data.url;
-    } else if (data.code === 'NO_SUBSCRIPTION') {
-      alert('Aucun abonnement actif trouvé sur ce compte. Si tu viens de souscrire, attends quelques minutes et réessaie.');
-      btn.textContent = originalText;
-      btn.disabled = false;
-    } else {
-      alert('Erreur : ' + (data.error || 'inconnue'));
-      btn.textContent = originalText;
-      btn.disabled = false;
-    }
-  } catch(e) {
-    alert('Erreur réseau. Réessaie dans quelques instants.');
-    btn.textContent = originalText;
-    btn.disabled = false;
-  }
+    if (data.url) { window.location.href = data.url; }
+    else if (data.code === 'NO_SUBSCRIPTION') { alert('Aucun abonnement actif trouvé. Si tu viens de souscrire, attends quelques minutes et réessaie.'); btn.textContent = originalText; btn.disabled = false; }
+    else { alert('Erreur : ' + (data.error || 'inconnue')); btn.textContent = originalText; btn.disabled = false; }
+  } catch(e) { alert('Erreur réseau. Réessaie dans quelques instants.'); btn.textContent = originalText; btn.disabled = false; }
 }
 </script>
 </body>
