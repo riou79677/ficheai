@@ -59,8 +59,6 @@ td{padding:0.6rem;border-bottom:1px solid var(--border)}
 tr.clickable-row{cursor:pointer;transition:background 0.15s}
 tr.clickable-row:hover{background:rgba(108,92,231,0.08)}
 .mini-note{font-size:0.75rem;color:var(--text3);margin-top:0.5rem}
-
-/* ── Modals ── */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);z-index:1000;align-items:center;justify-content:center;padding:1rem}
 .modal-overlay.active{display:flex}
 .modal-box{background:#0d0d1a;border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:2rem;width:100%;max-width:520px;max-height:90vh;overflow-y:auto}
@@ -71,8 +69,6 @@ tr.clickable-row:hover{background:rgba(108,92,231,0.08)}
 .modal-field span{font-size:0.87rem;color:#f0efff}
 .modal-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:1rem}
 .modal-close-btn{margin-top:1rem;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:0.4rem 1rem;color:#9898b8;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%}
-
-/* Plan selector dans le modal */
 .plan-selector{display:grid;grid-template-columns:repeat(3,1fr);gap:0.6rem;margin:0.8rem 0}
 .plan-btn{padding:0.7rem 0.5rem;border-radius:10px;border:1.5px solid var(--border2);background:var(--bg3);color:var(--text2);font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;text-align:center;transition:all 0.18s}
 .plan-btn:hover{border-color:var(--purple2);color:var(--purple2)}
@@ -81,8 +77,6 @@ tr.clickable-row:hover{background:rgba(108,92,231,0.08)}
 .plan-btn.selected-ultimate{border-color:var(--gold);color:var(--gold);background:rgba(251,191,36,0.08)}
 .plan-confirm-btn{width:100%;padding:0.75rem;border:none;border-radius:10px;background:linear-gradient(135deg,var(--purple),var(--pink));color:white;font-weight:700;cursor:pointer;font-family:inherit;margin-top:0.5rem;font-size:0.9rem}
 .plan-confirm-btn:disabled{opacity:0.4;cursor:not-allowed}
-
-/* Ban modal */
 .ban-duration-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin:0.8rem 0}
 .ban-dur-btn{padding:0.65rem;border-radius:10px;border:1.5px solid var(--border2);background:var(--bg3);color:var(--text2);font-size:0.82rem;font-weight:600;cursor:pointer;font-family:inherit;text-align:center;transition:all 0.18s}
 .ban-dur-btn:hover{border-color:var(--red);color:var(--red)}
@@ -96,7 +90,6 @@ tr.clickable-row:hover{background:rgba(108,92,231,0.08)}
 </head>
 <body>
 
-<!-- ── Lock screen ── -->
 <div class="lock-screen" id="lock-screen">
 <div class="lock-box">
 <h1>🔒 Panneau Admin</h1>
@@ -108,7 +101,6 @@ tr.clickable-row:hover{background:rgba(108,92,231,0.08)}
 </div>
 </div>
 
-<!-- ── Dashboard ── -->
 <div class="dashboard" id="dashboard">
 <div class="top-bar">
 <h1>⚙️ Panneau Admin — FicheAI</h1>
@@ -169,7 +161,6 @@ tr.clickable-row:hover{background:rgba(108,92,231,0.08)}
 </div>
 </div>
 
-<!-- ── Modal profil utilisateur ── -->
 <div class="modal-overlay" id="user-modal-overlay" onclick="closeUserModal(event)">
   <div class="modal-box">
     <h2 id="modal-title">👤 Profil utilisateur</h2>
@@ -179,7 +170,6 @@ tr.clickable-row:hover{background:rgba(108,92,231,0.08)}
   </div>
 </div>
 
-<!-- ── Modal changement de plan ── -->
 <div class="modal-overlay" id="plan-modal-overlay">
   <div class="modal-box" style="max-width:400px">
     <h2>✏️ Changer le forfait</h2>
@@ -191,7 +181,6 @@ tr.clickable-row:hover{background:rgba(108,92,231,0.08)}
       <button class="plan-btn" id="plan-btn-pro" onclick="selectPlan('pro')">⚡ Pro</button>
       <button class="plan-btn" id="plan-btn-ultimate" onclick="selectPlan('ultimate')">👑 Ultimate</button>
     </div>
-    <!-- Code de confirmation à 6 chiffres -->
     <div id="plan-confirm-zone" style="display:none;margin-top:1rem">
       <p style="font-size:0.78rem;color:var(--text3);margin-bottom:0.4rem">Code de confirmation : <strong id="plan-code-display" style="color:var(--purple2);letter-spacing:0.15em;font-size:1rem"></strong></p>
       <input type="text" id="plan-code-input" placeholder="Entre le code ci-dessus" maxlength="6" style="width:100%;background:var(--bg3);border:1.5px solid var(--border2);border-radius:10px;padding:0.65rem 1rem;font-size:0.9rem;color:var(--text);font-family:inherit;outline:none;text-align:center;letter-spacing:0.15em">
@@ -204,17 +193,16 @@ tr.clickable-row:hover{background:rgba(108,92,231,0.08)}
   </div>
 </div>
 
-<!-- ── Modal bannissement ── -->
 <div class="modal-overlay" id="ban-modal-overlay">
   <div class="modal-box" style="max-width:400px">
     <h2 id="ban-modal-title">🚫 Bannir l'utilisateur</h2>
     <p style="font-size:0.83rem;color:var(--text2);margin-bottom:1rem">Utilisateur : <strong id="ban-modal-email" style="color:var(--red)"></strong></p>
     <p style="font-size:0.8rem;color:var(--text3);margin-bottom:0.3rem">Durée du bannissement :</p>
     <div class="ban-duration-grid">
-      <button class="ban-dur-btn" onclick="selectBanDuration(24,'btn-24h')">⏱ 24 heures</button>
-      <button class="ban-dur-btn" onclick="selectBanDuration(168,'btn-7j')">📅 7 jours</button>
-      <button class="ban-dur-btn" onclick="selectBanDuration(720,'btn-30j')">📅 30 jours</button>
-      <button class="ban-dur-btn" onclick="selectBanDuration(null,'btn-indef')">🔒 Indéfiniment</button>
+      <button class="ban-dur-btn" onclick="selectBanDuration(24)">⏱ 24 heures</button>
+      <button class="ban-dur-btn" onclick="selectBanDuration(168)">📅 7 jours</button>
+      <button class="ban-dur-btn" onclick="selectBanDuration(720)">📅 30 jours</button>
+      <button class="ban-dur-btn" onclick="selectBanDuration(null)">🔒 Indéfiniment</button>
     </div>
     <input type="text" class="ban-reason-input" id="ban-reason-input" placeholder="Raison (optionnel)">
     <button class="ban-confirm-btn" id="ban-confirm-btn" onclick="confirmBan()" disabled>Bannir cet utilisateur</button>
@@ -223,61 +211,60 @@ tr.clickable-row:hover{background:rgba(108,92,231,0.08)}
 </div>
 
 <script>
-var SECRET = null;
-var ADMIN_API = '/api/admin';
-var SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
-var SUPABASE_KEY = 'sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ';
-var SESSION_KEY = 'ficheai_admin_token';
-var allUsersData = [];
-var maintenanceOn = false;
-var currentModalUser = null;
-var selectedPlan = null;
-var planConfirmCode = null;
-var selectedBanDuration = undefined; // undefined = pas encore choisi, null = indéfini
+var SECRET=null;
+var ADMIN_API='/api/admin';
+var SUPABASE_URL='https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
+var SUPABASE_KEY='sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ';
+var SESSION_KEY='ficheai_admin_token';
+var allUsersData=[];
+var maintenanceOn=false;
+var currentModalUser=null;
+var selectedPlan=null;
+var planConfirmCode=null;
+var selectedBanDuration=undefined;
 
-// ── Restaurer session au chargement ──
-window.addEventListener('load', function() {
-  var saved = sessionStorage.getItem(SESSION_KEY);
-  if (saved) { SECRET = saved; showDashboard(); }
+window.addEventListener('load',function(){
+  var saved=sessionStorage.getItem(SESSION_KEY);
+  if(saved){SECRET=saved;showDashboard();}
 });
 
 async function unlock(){
-  var email = document.getElementById('admin-email').value.trim();
-  var password = document.getElementById('admin-password').value;
-  var errBox = document.getElementById('lock-err');
-  var btn = document.querySelector('#lock-screen button');
-  errBox.style.display = 'none';
-  if(!email || !password) return;
-  if(btn){ btn.textContent = 'Connexion...'; btn.disabled = true; }
+  var email=document.getElementById('admin-email').value.trim();
+  var password=document.getElementById('admin-password').value;
+  var errBox=document.getElementById('lock-err');
+  var btn=document.querySelector('#lock-screen button');
+  errBox.style.display='none';
+  if(!email||!password)return;
+  if(btn){btn.textContent='Connexion...';btn.disabled=true;}
   try{
-    var authRes = await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},body:JSON.stringify({email,password})});
-    var authData = await authRes.json();
-    if(!authRes.ok || !authData.access_token){ errBox.textContent='Email ou mot de passe incorrect.'; errBox.style.display='block'; if(btn){btn.textContent='Se connecter';btn.disabled=false;} return; }
-    var devRes = await fetch(SUPABASE_URL+'/rest/v1/rpc/get_is_dev',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+authData.access_token},body:JSON.stringify({p_email:email})});
-    var isDev = await devRes.json();
-    if(!isDev){ errBox.textContent='Ce compte n\'a pas accès au panneau admin.'; errBox.style.display='block'; if(btn){btn.textContent='Se connecter';btn.disabled=false;} return; }
-    SECRET = authData.access_token;
-    sessionStorage.setItem(SESSION_KEY, SECRET);
+    var authRes=await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},body:JSON.stringify({email,password})});
+    var authData=await authRes.json();
+    if(!authRes.ok||!authData.access_token){errBox.textContent='Email ou mot de passe incorrect.';errBox.style.display='block';if(btn){btn.textContent='Se connecter';btn.disabled=false;}return;}
+    var devRes=await fetch(SUPABASE_URL+'/rest/v1/rpc/get_is_dev',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+authData.access_token},body:JSON.stringify({p_email:email})});
+    var isDev=await devRes.json();
+    if(!isDev){errBox.textContent='Ce compte n\'a pas accès au panneau admin.';errBox.style.display='block';if(btn){btn.textContent='Se connecter';btn.disabled=false;}return;}
+    SECRET=authData.access_token;
+    sessionStorage.setItem(SESSION_KEY,SECRET);
     showDashboard();
-  }catch(e){ errBox.textContent='Erreur de connexion. Réessaie.'; errBox.style.display='block'; if(btn){btn.textContent='Se connecter';btn.disabled=false;} }
+  }catch(e){errBox.textContent='Erreur de connexion. Réessaie.';errBox.style.display='block';if(btn){btn.textContent='Se connecter';btn.disabled=false;}}
 }
 
 function showDashboard(){
   document.getElementById('lock-screen').style.display='none';
   document.getElementById('dashboard').style.display='block';
-  Promise.all([loadStats(), loadFiches()]).catch(function(){});
+  Promise.all([loadStats(),loadFiches()]).catch(function(){});
 }
 
-function refreshDashboard(){ Promise.all([loadStats(), loadFiches()]).catch(function(){}); }
+function refreshDashboard(){Promise.all([loadStats(),loadFiches()]).catch(function(){});}
 
 document.getElementById('admin-password').addEventListener('keydown',function(e){if(e.key==='Enter')unlock();});
 document.getElementById('admin-email').addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('admin-password').focus();});
 
-async function callAdmin(action, payload){
-  var r = await fetch(ADMIN_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({secret:SECRET,action,payload:payload||{}})});
-  var data = await r.json();
+async function callAdmin(action,payload){
+  var r=await fetch(ADMIN_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({secret:SECRET,action,payload:payload||{}})});
+  var data=await r.json();
   if(r.status===403){
-    sessionStorage.removeItem(SESSION_KEY); SECRET=null;
+    sessionStorage.removeItem(SESSION_KEY);SECRET=null;
     document.getElementById('lock-screen').style.display='flex';
     document.getElementById('dashboard').style.display='none';
     document.getElementById('lock-err').textContent='Session expirée, reconnecte-toi.';
@@ -287,11 +274,11 @@ async function callAdmin(action, payload){
   return data;
 }
 
-var currentDetailView = null;
+var currentDetailView=null;
 
 async function loadStats(){
   try{
-    var data = await callAdmin('get_stats');
+    var data=await callAdmin('get_stats');
     document.getElementById('dashboard').classList.add('visible');
     document.getElementById('header-badge').textContent=data.total_users+' utilisateur'+(data.total_users>1?'s':'');
     document.getElementById('stats-grid').innerHTML=
@@ -301,43 +288,43 @@ async function loadStats(){
       '<div class="stat-card" onclick="showDetail(\'ultimate\')"><div class="val">'+data.par_plan.ultimate+'</div><div class="lbl">Ultimate</div></div>'+
       '<div class="stat-card" onclick="scrollToFiches()"><div class="val">'+data.total_fiches+'</div><div class="lbl">Fiches générées</div></div>'+
       '<div class="stat-card" onclick="showDetail(\'bannis\')"><div class="val">'+data.bannis+'</div><div class="lbl">Comptes bannis</div></div>';
-    allUsersData=data.users; renderUsers(data.users); renderQuotaAlerts(data.users); loadMaintenanceStatus();
-  }catch(e){ if(e.message!=='WRONG_SECRET'){ document.getElementById('lock-err').textContent='Erreur : '+e.message; document.getElementById('lock-err').style.display='block'; } }
+    allUsersData=data.users;renderUsers(data.users);renderQuotaAlerts(data.users);loadMaintenanceStatus();
+  }catch(e){if(e.message!=='WRONG_SECRET'){document.getElementById('lock-err').textContent='Erreur : '+e.message;document.getElementById('lock-err').style.display='block';}}
 }
 
 function showDetail(filter){
   var section=document.getElementById('detail-section');
   document.querySelectorAll('.stat-card').forEach(function(c){c.classList.remove('active');});
-  if(currentDetailView===filter){ section.classList.remove('visible'); currentDetailView=null; return; }
-  currentDetailView=filter; section.classList.add('visible');
-  var filtered=allUsersData, titleText='Tous les utilisateurs';
+  if(currentDetailView===filter){section.classList.remove('visible');currentDetailView=null;return;}
+  currentDetailView=filter;section.classList.add('visible');
+  var filtered=allUsersData,titleText='Tous les utilisateurs';
   if(filter==='starter'){filtered=allUsersData.filter(function(u){return u.plan==='starter';});titleText='Utilisateurs Starter';}
   else if(filter==='pro'){filtered=allUsersData.filter(function(u){return u.plan==='pro';});titleText='Utilisateurs Pro';}
   else if(filter==='ultimate'){filtered=allUsersData.filter(function(u){return u.plan==='ultimate';});titleText='Utilisateurs Ultimate';}
   else if(filter==='bannis'){filtered=allUsersData.filter(function(u){return u.banned;});titleText='Comptes bannis';}
   document.getElementById('detail-title').textContent=titleText+' ('+filtered.length+')';
   var html='<table><thead><tr><th>Email</th><th>Pseudo</th><th>Inscrit le</th></tr></thead><tbody>';
-  filtered.forEach(function(u){ html+='<tr><td>'+u.email+'</td><td>'+(u.username?'@'+u.username:'—')+'</td><td>'+new Date(u.created_at).toLocaleDateString('fr-FR')+'</td></tr>'; });
+  filtered.forEach(function(u){html+='<tr><td>'+u.email+'</td><td>'+(u.username?'@'+u.username:'—')+'</td><td>'+new Date(u.created_at).toLocaleDateString('fr-FR')+'</td></tr>';});
   html+='</tbody></table>';
   document.getElementById('detail-content').innerHTML=html;
-  document.querySelectorAll('.stat-card').forEach(function(c,i){ var labels=['all','starter','pro','ultimate',null,'bannis']; if(labels[i]===filter)c.classList.add('active'); });
+  document.querySelectorAll('.stat-card').forEach(function(c,i){var labels=['all','starter','pro','ultimate',null,'bannis'];if(labels[i]===filter)c.classList.add('active');});
 }
 
-function scrollToFiches(){ document.getElementById('fiches-table').scrollIntoView({behavior:'smooth',block:'center'}); }
+function scrollToFiches(){document.getElementById('fiches-table').scrollIntoView({behavior:'smooth',block:'center'});}
 
 function renderQuotaAlerts(users){
-  var alerts=users.filter(function(u){ if(u.plan==='starter')return false; var pct=(u.generations_used/(u.generations_limit||1))*100; return pct>=80; });
+  var alerts=users.filter(function(u){if(u.plan==='starter')return false;var pct=((u.generations_used??0)/(u.generations_limit||1))*100;return pct>=80;});
   var el=document.getElementById('quota-alerts');
-  if(alerts.length===0){ el.innerHTML='<p class="mini-note">Aucun compte proche de son quota actuellement.</p>'; return; }
+  if(alerts.length===0){el.innerHTML='<p class="mini-note">Aucun compte proche de son quota actuellement.</p>';return;}
   var html='<table><thead><tr><th>Email</th><th>Plan</th><th>Usage</th></tr></thead><tbody>';
-  alerts.forEach(function(u){ var pct=Math.round((u.generations_used/(u.generations_limit||1))*100); var cls=pct>=95?'quota-danger':'quota-warning'; html+='<tr><td>'+u.email+'</td><td><span class="plan-tag plan-'+u.plan+'">'+u.plan+'</span></td><td class="'+cls+'">'+u.generations_used+' / '+u.generations_limit+' ('+pct+'%)</td></tr>'; });
-  html+='</tbody></table>'; el.innerHTML=html;
+  alerts.forEach(function(u){var pct=Math.round(((u.generations_used??0)/(u.generations_limit||1))*100);var cls=pct>=95?'quota-danger':'quota-warning';html+='<tr><td>'+u.email+'</td><td><span class="plan-tag plan-'+u.plan+'">'+u.plan+'</span></td><td class="'+cls+'">'+(u.generations_used??0)+' / '+u.generations_limit+' ('+pct+'%)</td></tr>';});
+  html+='</tbody></table>';el.innerHTML=html;
 }
 
 function filterUsers(query){
   query=query.trim().toLowerCase();
   if(!query){renderUsers(allUsersData);return;}
-  renderUsers(allUsersData.filter(function(u){ return (u.username&&u.username.toLowerCase().indexOf(query)!==-1)||u.email.toLowerCase().indexOf(query)!==-1; }));
+  renderUsers(allUsersData.filter(function(u){return(u.username&&u.username.toLowerCase().indexOf(query)!==-1)||u.email.toLowerCase().indexOf(query)!==-1;}));
 }
 
 function renderUsers(users){
@@ -346,31 +333,27 @@ function renderUsers(users){
   var adminUser=users.find(function(u){return u.email===DEV_EMAIL;});
   if(adminUser){
     var s=document.getElementById('admin-account-section');
-    if(s) s.innerHTML='<div style="background:linear-gradient(135deg,rgba(253,203,110,0.08),rgba(225,112,85,0.05));border:1px solid rgba(253,203,110,0.25);border-radius:12px;padding:1rem 1.2rem;display:flex;align-items:center;gap:12px"><span style="font-size:1.5rem">👑</span><div><div style="font-weight:700;color:#fdcb6e;font-size:0.95rem">'+(adminUser.username?'@'+adminUser.username:adminUser.email)+'</div><div style="font-size:0.78rem;color:#9898b8;margin-top:2px">'+adminUser.email+' — Compte administrateur</div></div></div>';
+    if(s)s.innerHTML='<div style="background:linear-gradient(135deg,rgba(253,203,110,0.08),rgba(225,112,85,0.05));border:1px solid rgba(253,203,110,0.25);border-radius:12px;padding:1rem 1.2rem;display:flex;align-items:center;gap:12px"><span style="font-size:1.5rem">👑</span><div><div style="font-weight:700;color:#fdcb6e;font-size:0.95rem">'+(adminUser.username?'@'+adminUser.username:adminUser.email)+'</div><div style="font-size:0.78rem;color:#9898b8;margin-top:2px">'+adminUser.email+' — Compte administrateur</div></div></div>';
   }
   var html='';
   users.filter(function(u){return u.email!==DEV_EMAIL;}).forEach(function(u){
     var banInfo='';
-    if(u.banned){ banInfo=' 🚫'; if(u.banned_until)banInfo+=' (jusqu\'au '+new Date(u.banned_until).toLocaleDateString('fr-FR')+')'; else banInfo+=' (indéfini)'; }
+    if(u.banned){banInfo=' 🚫';if(u.banned_until)banInfo+=' (jusqu\'au '+new Date(u.banned_until).toLocaleDateString('fr-FR')+')';else banInfo+=' (indéfini)';}
     var displayName=u.username?('<b>@'+u.username+'</b> <span style="color:var(--text3);font-size:0.75rem">('+u.email+')</span>'):'<span style="color:var(--text3)">Sans pseudo — '+u.email+'</span>';
     html+='<tr class="clickable-row'+(u.banned?' banned-row':'')+'" onclick="openUserModal(\''+u.email+'\')">';
     html+='<td>'+displayName+banInfo+'</td>';
     html+='<td><span class="plan-tag plan-'+u.plan+'">'+u.plan+'</span></td>';
-    html+='<td>'+u.generations_used+'</td>';
+    html+='<td>'+(u.generations_used??0)+'</td>';
     html+='<td>'+new Date(u.created_at).toLocaleDateString('fr-FR')+'</td>';
     html+='<td>';
-    if(u.banned){
-      html+='<button class="btn-sm" onclick="event.stopPropagation();debanUser(\''+u.email+'\')">Débannir</button>';
-    } else {
-      html+='<button class="btn-sm danger" onclick="event.stopPropagation();openBanModal(\''+u.email+'\')">Bannir</button>';
-    }
+    if(u.banned){html+='<button class="btn-sm" onclick="event.stopPropagation();debanUser(\''+u.email+'\')">Débannir</button>';}
+    else{html+='<button class="btn-sm danger" onclick="event.stopPropagation();openBanModal(\''+u.email+'\')">Bannir</button>';}
     html+='<button class="btn-sm warn" onclick="event.stopPropagation();deleteUser(\''+u.email+'\')">Supprimer</button>';
     html+='</td></tr>';
   });
   document.getElementById('users-table').innerHTML=html;
 }
 
-// ── Modal profil ──
 function openUserModal(email){
   var user=allUsersData.find(function(u){return u.email===email;});
   if(!user)return;
@@ -380,7 +363,8 @@ function openUserModal(email){
   var niveaux={college:'Collège',lycee:'Lycée',prepa:'Prépa',superieur:'Supérieur'};
   var planColors={starter:'#9898b8',pro:'#a29bfe',ultimate:'#fdcb6e'};
   document.getElementById('modal-grid').innerHTML=[
-    ['Email',user.email],['Pseudo',user.username?'@'+user.username:'Non défini'],
+    ['Email',user.email],
+    ['Pseudo',user.username?'@'+user.username:'Non défini'],
     ['Forfait','<span style="color:'+(planColors[user.plan]||'#fff')+';font-weight:700">'+(user.plan||'starter').toUpperCase()+'</span>'],
     ['Niveau',niveaux[user.niveau_scolaire]||'Non renseigné'],
     ['Inscrit le',new Date(user.created_at).toLocaleDateString('fr-FR')],
@@ -392,53 +376,34 @@ function openUserModal(email){
   actions.innerHTML='';
   if(!isMe){
     actions.innerHTML+='<button class="btn-sm" onclick="openPlanModalFromProfile()">✏️ Changer le forfait</button>';
-    if(user.banned){
-      actions.innerHTML+='<button class="btn-sm" onclick="debanUser(\''+user.email+'\');closeUserModalDirect()">✅ Débannir</button>';
-    } else {
-      actions.innerHTML+='<button class="btn-sm danger" onclick="closeUserModalDirect();openBanModal(\''+user.email+'\')">🚫 Bannir</button>';
-    }
+    if(user.banned){actions.innerHTML+='<button class="btn-sm" onclick="debanUser(\''+user.email+'\');closeUserModalDirect()">✅ Débannir</button>';}
+    else{actions.innerHTML+='<button class="btn-sm danger" onclick="closeUserModalDirect();openBanModal(\''+user.email+'\')">🚫 Bannir</button>';}
     actions.innerHTML+='<button class="btn-sm warn" onclick="deleteUser(\''+user.email+'\');closeUserModalDirect()">🗑️ Supprimer</button>';
   }
   document.getElementById('user-modal-overlay').classList.add('active');
   document.body.style.overflow='hidden';
 }
 
-function closeUserModal(event){
-  if(event&&event.target!==document.getElementById('user-modal-overlay'))return;
-  closeUserModalDirect();
-}
-function closeUserModalDirect(){
-  document.getElementById('user-modal-overlay').classList.remove('active');
-  document.body.style.overflow='';
-}
+function closeUserModal(event){if(event&&event.target!==document.getElementById('user-modal-overlay'))return;closeUserModalDirect();}
+function closeUserModalDirect(){document.getElementById('user-modal-overlay').classList.remove('active');document.body.style.overflow='';}
 
-// ── Modal changement de plan ──
-function openPlanModalFromProfile(){
-  if(!currentModalUser)return;
-  closeUserModalDirect();
-  openPlanModal(currentModalUser.email, currentModalUser.plan);
-}
+function openPlanModalFromProfile(){if(!currentModalUser)return;closeUserModalDirect();openPlanModal(currentModalUser.email,currentModalUser.plan);}
 
-function openPlanModal(email, currentPlan){
-  selectedPlan=null; planConfirmCode=null;
+function openPlanModal(email,currentPlan){
+  selectedPlan=null;planConfirmCode=null;
   document.getElementById('plan-modal-email').textContent=email;
   document.getElementById('plan-modal-current').textContent=(currentPlan||'starter').toUpperCase();
   document.getElementById('plan-confirm-zone').style.display='none';
   document.getElementById('plan-code-input').value='';
   document.getElementById('plan-code-err').style.display='none';
-  ['starter','pro','ultimate'].forEach(function(p){
-    document.getElementById('plan-btn-'+p).className='plan-btn';
-  });
+  ['starter','pro','ultimate'].forEach(function(p){document.getElementById('plan-btn-'+p).className='plan-btn';});
   document.getElementById('plan-modal-overlay').classList.add('active');
   document.body.style.overflow='hidden';
 }
 
 function selectPlan(plan){
   selectedPlan=plan;
-  ['starter','pro','ultimate'].forEach(function(p){
-    document.getElementById('plan-btn-'+p).className='plan-btn'+(p===plan?' selected-'+p:'');
-  });
-  // Générer le code de confirmation
+  ['starter','pro','ultimate'].forEach(function(p){document.getElementById('plan-btn-'+p).className='plan-btn'+(p===plan?' selected-'+p:'');});
   planConfirmCode=Math.floor(100000+Math.random()*900000).toString();
   document.getElementById('plan-code-display').textContent=planConfirmCode;
   document.getElementById('plan-confirm-zone').style.display='block';
@@ -450,43 +415,35 @@ async function confirmPlanChange(){
   var input=document.getElementById('plan-code-input').value.trim();
   var errEl=document.getElementById('plan-code-err');
   errEl.style.display='none';
-  if(input!==planConfirmCode){ errEl.textContent='Code incorrect. Réessaie.'; errEl.style.display='block'; return; }
-  if(!selectedPlan||!currentModalUser){ closePlanModal(); return; }
+  if(input!==planConfirmCode){errEl.textContent='Code incorrect. Réessaie.';errEl.style.display='block';return;}
+  if(!selectedPlan||!currentModalUser){closePlanModal();return;}
   var btn=document.getElementById('plan-confirm-btn');
-  btn.textContent='Enregistrement...'; btn.disabled=true;
+  btn.textContent='Enregistrement...';btn.disabled=true;
   try{
     await callAdmin('set_plan',{email:currentModalUser.email,plan:selectedPlan});
     closePlanModal();
     showMsg('users-msg','✅ Forfait de '+currentModalUser.email+' changé en '+selectedPlan.toUpperCase()+'.','ok');
     await loadStats();
-  }catch(e){ btn.textContent='Confirmer le changement'; btn.disabled=false; errEl.textContent='Erreur : '+e.message; errEl.style.display='block'; }
+  }catch(e){btn.textContent='Confirmer le changement';btn.disabled=false;errEl.textContent='Erreur : '+e.message;errEl.style.display='block';}
 }
 
-function closePlanModal(){
-  document.getElementById('plan-modal-overlay').classList.remove('active');
-  document.body.style.overflow='';
-  selectedPlan=null; planConfirmCode=null;
-}
+function closePlanModal(){document.getElementById('plan-modal-overlay').classList.remove('active');document.body.style.overflow='';selectedPlan=null;planConfirmCode=null;}
 
-// ── Modal bannissement ──
 function openBanModal(email){
   selectedBanDuration=undefined;
   document.getElementById('ban-modal-email').textContent=email;
   document.getElementById('ban-reason-input').value='';
   document.getElementById('ban-confirm-btn').disabled=true;
   document.querySelectorAll('.ban-dur-btn').forEach(function(b){b.classList.remove('selected');});
-  // Stocker l'email cible dans un attribut data
   document.getElementById('ban-modal-overlay').dataset.targetEmail=email;
   document.getElementById('ban-modal-overlay').classList.add('active');
   document.body.style.overflow='hidden';
 }
 
-function selectBanDuration(hours, btnId){
-  selectedBanDuration=hours; // null = indéfini, nombre = heures
+function selectBanDuration(hours){
+  selectedBanDuration=hours;
   document.querySelectorAll('.ban-dur-btn').forEach(function(b){b.classList.remove('selected');});
-  // Trouver le bouton cliqué par sa position dans la grille
   var btns=document.querySelectorAll('.ban-dur-btn');
-  var map={24:0,168:1,720:2,null:3};
   var idx=(hours===null)?3:[24,168,720].indexOf(hours);
   if(idx>=0&&btns[idx])btns[idx].classList.add('selected');
   document.getElementById('ban-confirm-btn').disabled=false;
@@ -497,50 +454,43 @@ async function confirmBan(){
   var reason=document.getElementById('ban-reason-input').value.trim()||null;
   if(selectedBanDuration===undefined)return;
   var btn=document.getElementById('ban-confirm-btn');
-  btn.textContent='Bannissement...'; btn.disabled=true;
+  btn.textContent='Bannissement...';btn.disabled=true;
   try{
     await callAdmin('set_ban',{email,banned:true,reason,durationHours:selectedBanDuration});
     closeBanModal();
     showMsg('users-msg','✅ Compte banni.','ok');
     await loadStats();
-  }catch(e){ btn.textContent='Bannir cet utilisateur'; btn.disabled=false; }
+  }catch(e){btn.textContent='Bannir cet utilisateur';btn.disabled=false;}
 }
 
 async function debanUser(email){
-  try{
-    await callAdmin('set_ban',{email,banned:false});
-    showMsg('users-msg','✅ Compte débanni.','ok');
-    await loadStats();
-  }catch(e){ showMsg('users-msg','⚠️ Erreur : '+e.message,'error'); }
+  try{await callAdmin('set_ban',{email,banned:false});showMsg('users-msg','✅ Compte débanni.','ok');await loadStats();}
+  catch(e){showMsg('users-msg','⚠️ Erreur : '+e.message,'error');}
 }
 
-function closeBanModal(){
-  document.getElementById('ban-modal-overlay').classList.remove('active');
-  document.body.style.overflow='';
-  selectedBanDuration=undefined;
-}
+function closeBanModal(){document.getElementById('ban-modal-overlay').classList.remove('active');document.body.style.overflow='';selectedBanDuration=undefined;}
 
 async function deleteUser(email){
   if(!confirm('SUPPRIMER DÉFINITIVEMENT le compte '+email+' ? Action irréversible.'))return;
   if(!confirm('Es-tu vraiment sûr ? Toutes ses fiches seront perdues.'))return;
-  try{ await callAdmin('delete_account',{email}); showMsg('users-msg','✅ Compte supprimé.','ok'); await loadStats(); }
-  catch(e){ showMsg('users-msg','⚠️ Erreur : '+e.message,'error'); }
+  try{await callAdmin('delete_account',{email});showMsg('users-msg','✅ Compte supprimé.','ok');await loadStats();}
+  catch(e){showMsg('users-msg','⚠️ Erreur : '+e.message,'error');}
 }
 
 function exportCSV(){
   var rows=[['Email','Pseudo','Plan','Générations utilisées','Générations limite','Inscrit le','Banni']];
-  allUsersData.forEach(function(u){ rows.push([u.email,u.username||'',u.plan,u.generations_used,u.generations_limit,new Date(u.created_at).toLocaleDateString('fr-FR'),u.banned?'oui':'non']); });
+  allUsersData.forEach(function(u){rows.push([u.email,u.username||'',u.plan,(u.generations_used??0),u.generations_limit,new Date(u.created_at).toLocaleDateString('fr-FR'),u.banned?'oui':'non']);});
   var csv=rows.map(function(r){return r.map(function(v){return '"'+String(v).replace(/"/g,'""')+'"';}).join(',');}).join('\n');
-  var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'})); a.download='ficheai_utilisateurs_'+new Date().toISOString().split('T')[0]+'.csv'; a.click();
+  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));a.download='ficheai_utilisateurs_'+new Date().toISOString().split('T')[0]+'.csv';a.click();
 }
 
 async function loadFiches(){
   try{
     var data=await callAdmin('get_recent_fiches',{limit:30});
     var tbody=document.getElementById('fiches-table');
-    if(!data.fiches||data.fiches.length===0){ tbody.innerHTML='<tr><td colspan="4" style="color:var(--text3)">Aucune fiche générée pour l\'instant.</td></tr>'; return; }
-    tbody.innerHTML=data.fiches.map(function(f){ return '<tr><td>'+new Date(f.created_at).toLocaleString('fr-FR')+'</td><td>'+(f.user_username?'@'+f.user_username:f.user_email)+'</td><td>'+(f.format_icon||'')+' '+f.format+'</td><td>'+(f.titre||'—')+'</td></tr>'; }).join('');
-  }catch(e){ if(e.message!=='WRONG_SECRET'){ document.getElementById('fiches-msg').textContent='⚠️ Impossible de charger les fiches : '+e.message; document.getElementById('fiches-msg').className='msg error'; } }
+    if(!data.fiches||data.fiches.length===0){tbody.innerHTML='<tr><td colspan="4" style="color:var(--text3)">Aucune fiche générée pour l\'instant.</td></tr>';return;}
+    tbody.innerHTML=data.fiches.map(function(f){return '<tr><td>'+new Date(f.created_at).toLocaleString('fr-FR')+'</td><td>'+(f.user_username?'@'+f.user_username:f.user_email)+'</td><td>'+(f.format_icon||'')+' '+f.format+'</td><td>'+(f.titre||'—')+'</td></tr>';}).join('');
+  }catch(e){if(e.message!=='WRONG_SECRET'){document.getElementById('fiches-msg').textContent='⚠️ Impossible de charger les fiches : '+e.message;document.getElementById('fiches-msg').className='msg error';}}
 }
 
 async function loadMaintenanceStatus(){
@@ -562,18 +512,12 @@ async function toggleMaintenance(){
     document.getElementById('maint-toggle').classList.toggle('on',maintenanceOn);
     document.getElementById('maint-status').textContent=maintenanceOn?'🔴 Site en maintenance':'🟢 Site en ligne normalement';
     showMsg('maint-msg','✅ Mode maintenance '+(maintenanceOn?'activé':'désactivé')+'.','ok');
-  }catch(e){ showMsg('maint-msg','⚠️ Erreur : '+e.message,'error'); }
+  }catch(e){showMsg('maint-msg','⚠️ Erreur : '+e.message,'error');}
 }
 
-function showMsg(id,text,type){
-  var el=document.getElementById(id);
-  el.textContent=text; el.className='msg '+type;
-  setTimeout(function(){el.style.display='none';},4000);
-}
+function showMsg(id,text,type){var el=document.getElementById(id);el.textContent=text;el.className='msg '+type;setTimeout(function(){el.style.display='none';},4000);}
 
-document.addEventListener('keydown',function(e){
-  if(e.key==='Escape'){ closeUserModalDirect(); closePlanModal(); closeBanModal(); }
-});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeUserModalDirect();closePlanModal();closeBanModal();}});
 </script>
 </body>
 </html>
