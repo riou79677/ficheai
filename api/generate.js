@@ -1,8 +1,6 @@
 const SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
 
 export default async function handler(req, res) {
-  // Pas de CORS ouvert au monde entier : l'app appelle cet endpoint en same-origin,
-  // qui n'a pas besoin d'en-tête CORS. On bloque ainsi l'abus depuis d'autres sites.
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Méthode non autorisée' });
 
@@ -18,7 +16,6 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Paramètres manquants' });
   }
 
-  // ── Vérification du token Supabase : on récupère l'email depuis le serveur ──
   const authHeader = req.headers['authorization'] || '';
   const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
   if (!token) {
@@ -38,7 +35,6 @@ export default async function handler(req, res) {
     return res.status(503).json({ error: 'Service momentanément indisponible' });
   }
 
-  // ── Mode maintenance : bloque tout le monde pendant que le site est en pause ──
   try {
     const maintRes = await fetch(SUPABASE_URL + '/rest/v1/rpc/get_maintenance_status', {
       method: 'POST', headers: { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY, 'Content-Type': 'application/json' }, body: '{}'
@@ -47,13 +43,12 @@ export default async function handler(req, res) {
     if (maint && maint.hard_blocked) {
       return res.status(503).json({ error: maint.message || 'FicheAI est en maintenance. On revient très vite !' });
     }
-  } catch (e) { /* si la vérification échoue, on laisse passer plutôt que de bloquer tout le monde */ }
+  } catch (e) { /* si la vérification échoue, on laisse passer */ }
 
-  // Récupération du niveau scolaire + statut de bannissement, puis vérification/décompte via la fonction unifiée
   let user;
   try {
     const userRes = await fetch(
-      SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=plan,niveau_scolaire,banned',
+      SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=plan,niveau_scolaire,banned,generations_used',
       { headers: { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY } }
     );
     const users = await userRes.json();
@@ -77,7 +72,6 @@ export default async function handler(req, res) {
     return res.status(403).json({ error: 'Compte introuvable. Déconnecte-toi puis reconnecte-toi.' });
   }
 
-  // Le format "Sujet d'examen" est réservé aux plans payants (fonctionnalité premium)
   if (format === 'examen' && user.plan === 'starter') {
     return res.status(403).json({ error: 'Le générateur de sujets d\'examen est disponible à partir du plan Pro. Passe à Pro pour t\'entraîner avec des sujets sur mesure !' });
   }
@@ -235,12 +229,12 @@ Format OBLIGATOIRE :
 - Classe préparatoire → dans le style d'un DEVOIR SURVEILLÉ / KHÔLLE de prépa, ou d'un CONCOURS (Mines, X, Centrale selon la matière)
 - Supérieur (université/école) → dans le style d'un EXAMEN PARTIEL ou d'un DEVOIR de fin de semestre
 
-RÈGLE ABSOLUE, NON NÉGOCIABLE : tu dois créer un sujet 100% ORIGINAL et INÉDIT. Tu peux t'inspirer du STYLE, du FORMAT, du NIVEAU DE DIFFICULTÉ et du TYPE DE QUESTIONS des épreuves officielles que tu connais pour ce niveau, mais tu ne dois JAMAIS reproduire, recopier ou paraphraser de près un énoncé, un exercice ou une question qui existe réellement (annales de bac, brevet, sujets labolycee.org, APMEP, concours, ou autre). Invente des contextes, des données chiffrées, des scénarios et des formulations entièrement nouveaux. Si tu ne peux pas garantir l'originalité totale d'un exercice, remplace-le par un exercice différent que tu es sûr d'avoir inventé.
+RÈGLE ABSOLUE, NON NÉGOCIABLE : tu dois créer un sujet 100% ORIGINAL et INÉDIT. Tu peux t'inspirer du STYLE, du FORMAT, du NIVEAU DE DIFFICULTÉ et du TYPE DE QUESTIONS des épreuves officielles que tu connais pour ce niveau, mais tu ne dois JAMAIS reproduire, recopier ou paraphraser de près un énoncé, un exercice ou une question qui existe réellement. Invente des contextes, des données chiffrées, des scénarios et des formulations entièrement nouveaux.
 
 Format OBLIGATOIRE, à adapter selon la matière du cours fourni :
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📝 [NOM DE L'ÉPREUVE ADAPTÉ AU NIVEAU : ex "BREVET BLANC", "BAC BLANC", "DEVOIR SURVEILLÉ", "EXAMEN PARTIEL"] — [MATIÈRE]
+📝 [NOM DE L'ÉPREUVE ADAPTÉ AU NIVEAU] — [MATIÈRE]
 Durée conseillée : [X]h · Total : 20 points
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -289,7 +283,6 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
     ? 'Réponds dans la même langue que le cours fourni.'
     : 'Réponds obligatoirement en ' + (langMap[language] || 'français') + '.';
 
-  // Adaptation au niveau scolaire de l'utilisateur
   const niveauMap = {
     college: "L'utilisateur est au COLLÈGE (11-15 ans). Utilise un vocabulaire simple et accessible, des phrases courtes, et beaucoup d'exemples concrets du quotidien. Explique chaque terme technique. Évite les formulations abstraites.",
     lycee: "L'utilisateur est au LYCÉE (15-18 ans), il prépare le baccalauréat. Utilise le vocabulaire attendu au bac, structure comme un cours de lycée, et anticipe les questions type bac. Reste rigoureux sans être universitaire.",
@@ -320,7 +313,8 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
     const data = await response.json();
     if (data.error) throw new Error(data.error.message);
 
-    // Incrément du quota APRÈS génération réussie (l'utilisateur ne perd rien en cas d'échec).
+    // ── CORRECTION BUG : (user.generations_used ?? 0) + 1 au lieu de user.generations_used + 1 ──
+    // null + 1 = null en JS, donc le compteur ne s'incrémentait jamais quand la valeur était null en base.
     fetch(
       SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email),
       {
@@ -331,7 +325,7 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
           'Content-Type': 'application/json',
           'Prefer': 'return=minimal'
         },
-        body: JSON.stringify({ generations_used: user.generations_used + 1 })
+        body: JSON.stringify({ generations_used: (user.generations_used ?? 0) + 1 })
       }
     ).catch(e => console.error('Échec incrément quota:', e));
 
