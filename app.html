@@ -97,7 +97,8 @@ textarea::placeholder{color:var(--text3)}
 .spinner{width:36px;height:36px;border:3px solid var(--border2);border-top-color:var(--purple);border-radius:50%;animation:spin 0.7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .result-spinner p{font-size:0.83rem;color:var(--text3)}
-.result-content{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:1.2rem;font-size:0.86rem;line-height:1.85;color:var(--text2);white-space:pre-wrap;word-break:break-word;font-family:var(--font-b);max-height:500px;overflow-y:auto}
+.result-content{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:1.2rem;font-size:0.86rem;line-height:1.85;color:var(--text2);word-break:break-word;font-family:var(--font-b);max-height:500px;overflow-y:auto}
+.result-content strong{color:var(--purple2);font-weight:700}
 .history-section{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:1.2rem;display:none}
 .history-title{font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:0.8rem}
 .hist-item{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:0.65rem 1rem;margin-bottom:6px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:all 0.18s}
@@ -289,7 +290,7 @@ textarea::placeholder{color:var(--text3)}
           </div>
         </div>
         <div id="result-spinner" class="result-spinner"><div class="spinner"></div><p>L'IA analyse ton cours…</p></div>
-        <pre id="result-content" class="result-content" style="display:none"></pre>
+        <div id="result-content" class="result-content" style="display:none"></div>
       </div>
       <div class="history-section" id="history-section">
         <div class="history-title">📂 Historique de session</div>
@@ -341,7 +342,6 @@ textarea::placeholder{color:var(--text3)}
       </div>
     </div>
 
-    <!-- Overlay plein écran chat -->
     <div class="chat-fullscreen-overlay" id="chat-fullscreen-overlay">
       <div class="chat-fullscreen-inner">
         <div class="chat-fullscreen-header">
@@ -366,6 +366,9 @@ textarea::placeholder{color:var(--text3)}
         </div>
       </div>
     </div>
+  </div>
+</div>
+
 <div class="signup-popup-overlay" id="signup-popup-overlay">
   <div class="signup-popup">
     <div style="font-size:3rem;margin-bottom:1rem">🚀</div>
@@ -378,6 +381,7 @@ textarea::placeholder{color:var(--text3)}
     </div>
   </div>
 </div>
+
 <button class="dev-toggle" id="dev-toggle" onclick="toggleDevPanel()">🛠️ Dev</button>
 <div id="dev-panel" style="display:none;position:fixed;bottom:3.5rem;right:1rem;z-index:9999;">
   <div style="background:#0d0d1a;border:1px solid rgba(108,92,231,0.4);border-radius:12px;padding:1rem;min-width:220px;box-shadow:0 8px 32px rgba(0,0,0,0.5);">
@@ -393,727 +397,494 @@ textarea::placeholder{color:var(--text3)}
 </div>
 
 <script>
-var SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
-var SUPABASE_KEY = 'sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ';
-var PRO_M = 'https://buy.stripe.com/00wfZibWR8Zl8o7eUK43S05';
-var ULT_M = 'https://buy.stripe.com/aFadRaaSN2AX33NeUK43S07';
-var currentFormat = 'fiche', currentFormatName = 'Fiche de révision', currentFormatIcon = '📄';
-var tokensLeft = 5, lastResult = '', sessionHistory = [], currentUserEmail = null, currentUserToken = null, savedUser = null;
-var devPanelOpen = false, currentMode = 'express';
-var courseContent = '', chatHistory = [], chatMsgCount = 0;
+var SUPABASE_URL='https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
+var SUPABASE_KEY='sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ';
+var PRO_M='https://buy.stripe.com/00wfZibWR8Zl8o7eUK43S05';
+var ULT_M='https://buy.stripe.com/aFadRaaSN2AX33NeUK43S07';
+var currentFormat='fiche',currentFormatName='Fiche de révision',currentFormatIcon='📄';
+var tokensLeft=5,lastResult='',sessionHistory=[],currentUserEmail=null,currentUserToken=null,savedUser=null;
+var devPanelOpen=false,currentMode='express';
+var courseContent='',chatHistory=[],chatMsgCount=0;
 
-function showToast(msg) {
-  var t = document.createElement('div');
-  t.textContent = msg;
-  t.style.cssText = 'position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:#0d0d1a;border:1px solid rgba(108,92,231,0.4);color:#f0efff;padding:0.7rem 1.5rem;border-radius:100px;font-size:0.85rem;font-weight:600;z-index:10000;box-shadow:0 4px 20px rgba(0,0,0,0.4);white-space:nowrap;';
+function showToast(msg){
+  var t=document.createElement('div');
+  t.textContent=msg;
+  t.style.cssText='position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:#0d0d1a;border:1px solid rgba(108,92,231,0.4);color:#f0efff;padding:0.7rem 1.5rem;border-radius:100px;font-size:0.85rem;font-weight:600;z-index:10000;box-shadow:0 4px 20px rgba(0,0,0,0.4);white-space:nowrap;';
   document.body.appendChild(t);
-  setTimeout(function() { t.remove(); }, 2500);
+  setTimeout(function(){t.remove();},2500);
 }
 
-function toggleMenu() {
-  var m = document.getElementById('user-menu');
-  m.style.display = m.style.display === 'block' ? 'none' : 'block';
-}
+function toggleMenu(){var m=document.getElementById('user-menu');m.style.display=m.style.display==='block'?'none':'block';}
+function deconnexion(){localStorage.removeItem('ficheai_user');window.location.href='/';}
 
-function deconnexion() {
-  localStorage.removeItem('ficheai_user');
-  window.location.href = '/';
-}
-
-document.addEventListener('click', function(e) {
-  var menu = document.getElementById('user-menu'), display = document.getElementById('user-display');
-  if (menu && display && !display.contains(e.target) && !menu.contains(e.target)) menu.style.display = 'none';
+document.addEventListener('click',function(e){
+  var menu=document.getElementById('user-menu'),display=document.getElementById('user-display');
+  if(menu&&display&&!display.contains(e.target)&&!menu.contains(e.target))menu.style.display='none';
 });
 
-function toggleDevPanel() {
-  devPanelOpen = !devPanelOpen;
-  document.getElementById('dev-panel').style.display = devPanelOpen ? 'block' : 'none';
-  document.getElementById('dev-toggle').textContent = devPanelOpen ? '✕ Dev' : '🛠️ Dev';
-}
+function toggleDevPanel(){devPanelOpen=!devPanelOpen;document.getElementById('dev-panel').style.display=devPanelOpen?'block':'none';document.getElementById('dev-toggle').textContent=devPanelOpen?'✕ Dev':'🛠️ Dev';}
 
-function simulatePlan(plan) {
-  if (!savedUser) return;
-  if (plan === 'reset') { window.location.reload(); return; }
-  var limits = { starter: 5, pro: 50, ultimate: 999999 };
-  savedUser.plan = plan;
-  savedUser.remaining = limits[plan];
-  localStorage.setItem('ficheai_user', JSON.stringify(savedUser));
-  document.getElementById('plan-name').textContent = plan.charAt(0).toUpperCase() + plan.slice(1);
-  document.getElementById('tok-nav').textContent = limits[plan] === 999999 ? '∞' : limits[plan];
-  tokensLeft = limits[plan];
-  showToast('✅ Plan simulé : ' + plan);
+function simulatePlan(plan){
+  if(!savedUser)return;
+  if(plan==='reset'){window.location.reload();return;}
+  var limits={starter:5,pro:50,ultimate:999999};
+  savedUser.plan=plan;savedUser.remaining=limits[plan];
+  localStorage.setItem('ficheai_user',JSON.stringify(savedUser));
+  document.getElementById('plan-name').textContent=plan.charAt(0).toUpperCase()+plan.slice(1);
+  document.getElementById('tok-nav').textContent=limits[plan]===999999?'∞':limits[plan];
+  tokensLeft=limits[plan];
+  showToast('✅ Plan simulé : '+plan);
   updateNavUpgradeBtn();
-  if (currentMode === 'chat') renderChatMode();
+  if(currentMode==='chat')renderChatMode();
 }
 
-function resetGenerations() {
-  if (!savedUser) return;
-  tokensLeft = 0;
-  savedUser.remaining = 0;
-  localStorage.setItem('ficheai_user', JSON.stringify(savedUser));
-  document.getElementById('tok-nav').textContent = '0';
+function resetGenerations(){
+  if(!savedUser)return;
+  tokensLeft=0;savedUser.remaining=0;
+  localStorage.setItem('ficheai_user',JSON.stringify(savedUser));
+  document.getElementById('tok-nav').textContent='0';
   showToast('🔢 Générations à 0 !');
 }
 
-function updateNavUpgradeBtn() {
-  var btn = document.getElementById('nav-upgrade-btn');
-  if (!btn) return;
-  var plan = savedUser ? (savedUser.plan || 'starter') : 'starter';
-  if (plan === 'starter') {
-    btn.textContent = 'Passer à Pro →';
-    btn.href = PRO_M;
-    btn.target = '_blank';
-    btn.style.cssText = 'background:linear-gradient(135deg,#6c5ce7,#fd79a8);box-shadow:0 2px 12px rgba(108,92,231,0.3);display:inline-block;color:white;padding:0.38rem 1rem;border-radius:100px;font-size:0.82rem;font-weight:700;text-decoration:none;';
-  } else if (plan === 'pro') {
-    btn.textContent = '✨ Passer à Ultimate →';
-    btn.href = ULT_M;
-    btn.target = '_blank';
-    btn.style.cssText = 'background:linear-gradient(135deg,#f6d365,#fda085);box-shadow:0 2px 12px rgba(253,163,133,0.4);display:inline-block;color:white;padding:0.38rem 1rem;border-radius:100px;font-size:0.82rem;font-weight:700;text-decoration:none;';
-  } else {
-    btn.textContent = '👑 Ultimate';
-    btn.href = '#';
-    btn.target = '_self';
-    btn.style.cssText = 'background:linear-gradient(135deg,#fdcb6e,#e17055);display:inline-block;color:white;padding:0.38rem 1rem;border-radius:100px;font-size:0.82rem;font-weight:700;text-decoration:none;cursor:default;pointer-events:none;opacity:0.85;';
-  }
+function updateNavUpgradeBtn(){
+  var btn=document.getElementById('nav-upgrade-btn');
+  if(!btn)return;
+  var plan=savedUser?(savedUser.plan||'starter'):'starter';
+  if(plan==='starter'){btn.textContent='Passer à Pro →';btn.href=PRO_M;btn.target='_blank';btn.style.cssText='background:linear-gradient(135deg,#6c5ce7,#fd79a8);box-shadow:0 2px 12px rgba(108,92,231,0.3);display:inline-block;color:white;padding:0.38rem 1rem;border-radius:100px;font-size:0.82rem;font-weight:700;text-decoration:none;';}
+  else if(plan==='pro'){btn.textContent='✨ Passer à Ultimate →';btn.href=ULT_M;btn.target='_blank';btn.style.cssText='background:linear-gradient(135deg,#f6d365,#fda085);box-shadow:0 2px 12px rgba(253,163,133,0.4);display:inline-block;color:white;padding:0.38rem 1rem;border-radius:100px;font-size:0.82rem;font-weight:700;text-decoration:none;';}
+  else{btn.textContent='👑 Ultimate';btn.href='#';btn.target='_self';btn.style.cssText='background:linear-gradient(135deg,#fdcb6e,#e17055);display:inline-block;color:white;padding:0.38rem 1rem;border-radius:100px;font-size:0.82rem;font-weight:700;text-decoration:none;cursor:default;pointer-events:none;opacity:0.85;';}
 }
 
-try { savedUser = JSON.parse(localStorage.getItem('ficheai_user')); } catch(e) {}
+try{savedUser=JSON.parse(localStorage.getItem('ficheai_user'));}catch(e){}
 
-if (savedUser && savedUser.email) {
-  currentUserEmail = savedUser.email;
-  currentUserToken = savedUser.access_token || null;
-  document.getElementById('user-display').style.display = 'inline-block';
+if(savedUser&&savedUser.email){
+  currentUserEmail=savedUser.email;
+  currentUserToken=savedUser.access_token||null;
+  document.getElementById('user-display').style.display='inline-block';
   ensureUsername();
-  document.getElementById('nav-login-link').style.display = 'none';
-  if (savedUser.remaining !== undefined) {
-    tokensLeft = savedUser.remaining;
-    document.getElementById('tok-nav').textContent = tokensLeft === 999999 ? '∞' : tokensLeft;
-  }
-  if (savedUser.plan) document.getElementById('plan-name').textContent = savedUser.plan.charAt(0).toUpperCase() + savedUser.plan.slice(1);
+  document.getElementById('nav-login-link').style.display='none';
+  if(savedUser.remaining!==undefined){tokensLeft=savedUser.remaining;document.getElementById('tok-nav').textContent=tokensLeft===999999?'∞':tokensLeft;}
+  if(savedUser.plan)document.getElementById('plan-name').textContent=savedUser.plan.charAt(0).toUpperCase()+savedUser.plan.slice(1);
   fetch(SUPABASE_URL+'/rest/v1/rpc/get_is_dev',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({p_email:savedUser.email})}).then(function(r){return r.json();}).then(function(isDev){if(isDev)document.getElementById('dev-toggle').style.display='block';}).catch(function(){});
-  document.getElementById('stats-card').style.display = 'block';
-  document.getElementById('stat-gen').textContent = tokensLeft === 999999 ? '∞' : tokensLeft;
+  document.getElementById('stats-card').style.display='block';
+  document.getElementById('stat-gen').textContent=tokensLeft===999999?'∞':tokensLeft;
   loadFichesCount();
 }
 updateNavUpgradeBtn();
 
-if (/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)) {
-  document.getElementById('camera-btn').style.display = 'flex';
-}
+if(/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)){document.getElementById('camera-btn').style.display='flex';}
 
-async function loadFichesCount() {
-  if (!currentUserEmail) return;
-  try {
-    var r = await fetch('/api/fiches?email=' + encodeURIComponent(currentUserEmail));
-    var data = await r.json();
-    if (Array.isArray(data)) document.getElementById('stat-fiches').textContent = data.length;
-  } catch(e) {}
+async function loadFichesCount(){
+  if(!currentUserEmail)return;
+  try{var r=await fetch('/api/fiches?email='+encodeURIComponent(currentUserEmail));var data=await r.json();if(Array.isArray(data))document.getElementById('stat-fiches').textContent=data.length;}catch(e){}
 }
 
 var inactivityTimer;
-function resetTimer() {
-  clearTimeout(inactivityTimer);
-  inactivityTimer = setTimeout(function() { localStorage.removeItem('ficheai_user'); window.location.href = '/login.html'; }, 30 * 60 * 1000);
-}
-document.addEventListener('mousemove', resetTimer);
-document.addEventListener('keypress', resetTimer);
-document.addEventListener('click', resetTimer);
-resetTimer();
+function resetTimer(){clearTimeout(inactivityTimer);inactivityTimer=setTimeout(function(){localStorage.removeItem('ficheai_user');window.location.href='/login.html';},30*60*1000);}
+document.addEventListener('mousemove',resetTimer);document.addEventListener('keypress',resetTimer);document.addEventListener('click',resetTimer);resetTimer();
 
-function switchMode(mode) {
-  currentMode = mode;
-  document.getElementById('mode-express-btn').classList.toggle('active', mode === 'express');
-  document.getElementById('mode-chat-btn').classList.toggle('active', mode === 'chat');
-  document.getElementById('express-area').style.display = mode === 'express' ? 'flex' : 'none';
-  document.getElementById('chat-area').style.display = mode === 'chat' ? 'flex' : 'none';
-  if (mode === 'chat') renderChatMode();
+function switchMode(mode){
+  currentMode=mode;
+  document.getElementById('mode-express-btn').classList.toggle('active',mode==='express');
+  document.getElementById('mode-chat-btn').classList.toggle('active',mode==='chat');
+  document.getElementById('express-area').style.display=mode==='express'?'flex':'none';
+  document.getElementById('chat-area').style.display=mode==='chat'?'flex':'none';
+  if(mode==='chat')renderChatMode();
 }
 
-function renderChatMode() {
-  var plan = savedUser ? (savedUser.plan || 'starter') : 'starter';
-  if (plan === 'starter') {
-    document.getElementById('chat-area').innerHTML = '<div class="plan-lock"><div class="plan-lock-icon">💬</div><h3>Chat IA — Plan Pro requis</h3><p>Discute librement avec l\'IA sur ton cours, demande des explications personnalisées et génère du contenu sur mesure.</p><div class="plan-lock-features"><span class="plan-lock-feat">💬 20 messages/mois</span><span class="plan-lock-feat">🧠 Contexte de cours</span><span class="plan-lock-feat">💾 Sauvegarde des réponses</span><span class="plan-lock-feat">🎯 Questions d\'exam</span></div><a href="' + PRO_M + '" target="_blank">Passer à Pro — 7,99€/mois</a></div>';
-  }
+function renderChatMode(){
+  var plan=savedUser?(savedUser.plan||'starter'):'starter';
+  if(plan==='starter'){document.getElementById('chat-area').innerHTML='<div class="plan-lock"><div class="plan-lock-icon">💬</div><h3>Chat IA — Plan Pro requis</h3><p>Discute librement avec l\'IA sur ton cours, demande des explications personnalisées et génère du contenu sur mesure.</p><div class="plan-lock-features"><span class="plan-lock-feat">💬 20 messages/mois</span><span class="plan-lock-feat">🧠 Contexte de cours</span><span class="plan-lock-feat">💾 Sauvegarde des réponses</span><span class="plan-lock-feat">🎯 Questions d\'exam</span></div><a href="'+PRO_M+'" target="_blank">Passer à Pro — 7,99€/mois</a></div>';}
 }
 
-function selectFormat(el) {
-  var plan = savedUser ? (savedUser.plan || 'starter') : 'starter';
-  if (el.dataset.premium === '1' && plan === 'starter') {
-    showToast ? showToast('🔒 Sujet d\'examen disponible à partir du plan Pro') : null;
-    var modal = document.createElement('div');
-    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:999;display:flex;align-items:center;justify-content:center;padding:1.5rem';
-    modal.innerHTML = '<div style="background:#0f0f1a;border:1px solid rgba(108,92,231,0.35);border-radius:20px;padding:2rem;max-width:420px;text-align:center"><div style="font-size:2.2rem;margin-bottom:0.8rem">📝</div><h3 style="font-family:var(--font-h,inherit);font-size:1.15rem;margin-bottom:0.6rem">Sujet d\'examen — Plan Pro requis</h3><p style="font-size:0.85rem;color:#a0a0c0;line-height:1.6;margin-bottom:1.5rem">Génère un entraînement noté sur 20, avec exercices et corrigé détaillé, à partir de ton cours. Disponible dès le plan Pro.</p><a href="/#tarifs" style="background:linear-gradient(135deg,#6c5ce7,#fd79a8);color:#fff;padding:0.75rem 2rem;border-radius:100px;font-weight:700;text-decoration:none;display:inline-block;margin-right:8px">Voir les plans</a><button onclick="this.closest(\'div[style*=fixed]\').remove()" style="background:none;border:1px solid rgba(255,255,255,0.15);color:#a0a0c0;padding:0.75rem 1.3rem;border-radius:100px;cursor:pointer">Fermer</button></div>';
+function selectFormat(el){
+  var plan=savedUser?(savedUser.plan||'starter'):'starter';
+  if(el.dataset.premium==='1'&&plan==='starter'){
+    var modal=document.createElement('div');
+    modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:999;display:flex;align-items:center;justify-content:center;padding:1.5rem';
+    modal.innerHTML='<div style="background:#0f0f1a;border:1px solid rgba(108,92,231,0.35);border-radius:20px;padding:2rem;max-width:420px;text-align:center"><div style="font-size:2.2rem;margin-bottom:0.8rem">📝</div><h3 style="font-family:var(--font-h,inherit);font-size:1.15rem;margin-bottom:0.6rem">Sujet d\'examen — Plan Pro requis</h3><p style="font-size:0.85rem;color:#a0a0c0;line-height:1.6;margin-bottom:1.5rem">Génère un entraînement noté sur 20, avec exercices et corrigé détaillé, à partir de ton cours. Disponible dès le plan Pro.</p><a href="/#tarifs" style="background:linear-gradient(135deg,#6c5ce7,#fd79a8);color:#fff;padding:0.75rem 2rem;border-radius:100px;font-weight:700;text-decoration:none;display:inline-block;margin-right:8px">Voir les plans</a><button onclick="this.closest(\'div[style*=fixed]\').remove()" style="background:none;border:1px solid rgba(255,255,255,0.15);color:#a0a0c0;padding:0.75rem 1.3rem;border-radius:100px;cursor:pointer">Fermer</button></div>';
     document.body.appendChild(modal);
-    modal.addEventListener('click', function(e){ if(e.target === modal) modal.remove(); });
+    modal.addEventListener('click',function(e){if(e.target===modal)modal.remove();});
     return;
   }
-  document.querySelectorAll('.fmt').forEach(function(f) { f.classList.remove('active'); });
+  document.querySelectorAll('.fmt').forEach(function(f){f.classList.remove('active');});
   el.classList.add('active');
-  currentFormat = el.dataset.fmt;
-  currentFormatName = el.dataset.name;
-  currentFormatIcon = el.dataset.icon;
+  currentFormat=el.dataset.fmt;currentFormatName=el.dataset.name;currentFormatIcon=el.dataset.icon;
 }
 
-async function readResponseSafely(response, contexte) {
-  var raw = await response.text();
-  try {
-    return JSON.parse(raw);
-  } catch (e) {
-    if (response.status === 504 || raw.indexOf('TIMEOUT') !== -1) {
-      return { error: 'Ton cours est trop long pour être traité en une seule fois. Essaie de le découper en parties plus courtes (une leçon ou un chapitre à la fois), ça marchera mieux !' };
-    }
-    if (response.status === 413 || raw.indexOf('PAYLOAD_TOO_LARGE') !== -1) {
-      return { error: 'Ton cours dépasse la taille maximale acceptée. Découpe-le en plusieurs parties et réessaie.' };
-    }
-    if (response.status >= 500) {
-      return { error: 'Le service a rencontré un problème temporaire. Réessaie dans quelques instants, et si ça persiste avec un cours long, essaie de le découper en parties plus courtes.' };
-    }
-    return { error: 'Une erreur inattendue est survenue. Réessaie, et si le problème persiste, essaie avec un cours plus court.' };
+async function readResponseSafely(response,contexte){
+  var raw=await response.text();
+  try{return JSON.parse(raw);}
+  catch(e){
+    if(response.status===504||raw.indexOf('TIMEOUT')!==-1)return{error:'Ton cours est trop long pour être traité en une seule fois. Essaie de le découper en parties plus courtes (une leçon ou un chapitre à la fois), ça marchera mieux !'};
+    if(response.status===413||raw.indexOf('PAYLOAD_TOO_LARGE')!==-1)return{error:'Ton cours dépasse la taille maximale acceptée. Découpe-le en plusieurs parties et réessaie.'};
+    if(response.status>=500)return{error:'Le service a rencontré un problème temporaire. Réessaie dans quelques instants, et si ça persiste avec un cours long, essaie de le découper en parties plus courtes.'};
+    return{error:'Une erreur inattendue est survenue. Réessaie, et si le problème persiste, essaie avec un cours plus court.'};
   }
 }
 
-function updateBadgeDisplay(){
-  document.getElementById('user-display').textContent = '👤 ' + (savedUser.username || savedUser.email.split('@')[0]);
-}
+function updateBadgeDisplay(){document.getElementById('user-display').textContent='👤 '+(savedUser.username||savedUser.email.split('@')[0]);}
 
 async function ensureUsername(){
   updateBadgeDisplay();
-  if(savedUser.username) return;
+  if(savedUser.username)return;
   try{
-    var r = await fetch(SUPABASE_URL+'/rest/v1/rpc/get_username',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({p_email:savedUser.email})});
-    var uname = await r.json();
-    if(uname){
-      savedUser.username = uname;
-      localStorage.setItem('ficheai_user', JSON.stringify(savedUser));
-      updateBadgeDisplay();
-      return;
-    }
+    var r=await fetch(SUPABASE_URL+'/rest/v1/rpc/get_username',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({p_email:savedUser.email})});
+    var uname=await r.json();
+    if(uname){savedUser.username=uname;localStorage.setItem('ficheai_user',JSON.stringify(savedUser));updateBadgeDisplay();return;}
   }catch(e){}
   showUsernameModal();
 }
 
 function showUsernameModal(){
-  var overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1.5rem';
-  overlay.innerHTML = '<div style="background:#13131f;border:1px solid rgba(124,109,250,0.4);border-radius:20px;padding:2rem;max-width:400px;width:100%;text-align:center">'
-    + '<div style="font-size:2rem;margin-bottom:0.8rem">👋</div>'
-    + '<h3 style="font-family:inherit;font-size:1.15rem;margin-bottom:0.6rem;color:#f1f0ff">Choisis ton pseudo</h3>'
-    + '<p style="font-size:0.83rem;color:#a0a0c0;line-height:1.6;margin-bottom:1.3rem">Pour continuer, il nous faut un pseudo pour t\'identifier facilement. Ce n\'est jamais affiché publiquement.</p>'
-    + '<input type="text" id="new-username-input" placeholder="lucas_reviseur" maxlength="30" style="width:100%;background:#0f0f1a;border:1.5px solid rgba(255,255,255,0.14);border-radius:10px;padding:0.75rem 1rem;font-size:0.9rem;color:#f1f0ff;font-family:inherit;outline:none;margin-bottom:0.6rem;text-align:center">'
-    + '<div id="username-modal-err" style="color:#f472b6;font-size:0.78rem;margin-bottom:0.8rem;display:none"></div>'
-    + '<button id="confirm-username-btn" style="width:100%;padding:0.75rem;border:none;border-radius:10px;background:linear-gradient(135deg,#7c6dfa,#f472b6);color:#fff;font-weight:700;cursor:pointer;font-family:inherit">Valider</button>'
-    + '</div>';
+  var overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1.5rem';
+  overlay.innerHTML='<div style="background:#13131f;border:1px solid rgba(124,109,250,0.4);border-radius:20px;padding:2rem;max-width:400px;width:100%;text-align:center"><div style="font-size:2rem;margin-bottom:0.8rem">👋</div><h3 style="font-family:inherit;font-size:1.15rem;margin-bottom:0.6rem;color:#f1f0ff">Choisis ton pseudo</h3><p style="font-size:0.83rem;color:#a0a0c0;line-height:1.6;margin-bottom:1.3rem">Pour continuer, il nous faut un pseudo pour t\'identifier facilement. Ce n\'est jamais affiché publiquement.</p><input type="text" id="new-username-input" placeholder="lucas_reviseur" maxlength="30" style="width:100%;background:#0f0f1a;border:1.5px solid rgba(255,255,255,0.14);border-radius:10px;padding:0.75rem 1rem;font-size:0.9rem;color:#f1f0ff;font-family:inherit;outline:none;margin-bottom:0.6rem;text-align:center"><div id="username-modal-err" style="color:#f472b6;font-size:0.78rem;margin-bottom:0.8rem;display:none"></div><button id="confirm-username-btn" style="width:100%;padding:0.75rem;border:none;border-radius:10px;background:linear-gradient(135deg,#7c6dfa,#f472b6);color:#fff;font-weight:700;cursor:pointer;font-family:inherit">Valider</button></div>';
   document.body.appendChild(overlay);
-
   async function submitUsername(){
-    var val = document.getElementById('new-username-input').value.trim();
-    var err = document.getElementById('username-modal-err');
-    err.style.display = 'none';
-    if(val.length < 3){ err.textContent = 'Le pseudo doit contenir au moins 3 caractères.'; err.style.display = 'block'; return; }
-    if(!/^[a-zA-Z0-9_]+$/.test(val)){ err.textContent = 'Lettres, chiffres et underscores (_) uniquement.'; err.style.display = 'block'; return; }
+    var val=document.getElementById('new-username-input').value.trim();
+    var err=document.getElementById('username-modal-err');
+    err.style.display='none';
+    if(val.length<3){err.textContent='Le pseudo doit contenir au moins 3 caractères.';err.style.display='block';return;}
+    if(!/^[a-zA-Z0-9_]+$/.test(val)){err.textContent='Lettres, chiffres et underscores (_) uniquement.';err.style.display='block';return;}
     try{
-      var r = await fetch(SUPABASE_URL+'/rest/v1/rpc/set_username',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({p_email:savedUser.email,p_username:val})});
-      var res = await r.json();
-      if(res && res.success){
-        savedUser.username = val;
-        localStorage.setItem('ficheai_user', JSON.stringify(savedUser));
-        updateBadgeDisplay();
-        overlay.remove();
-      } else {
-        var messages = {deja_pris:'Ce pseudo est déjà pris, essaie-en un autre.', trop_court:'Le pseudo doit contenir au moins 3 caractères.', caracteres_invalides:'Lettres, chiffres et underscores (_) uniquement.'};
-        err.textContent = messages[res && res.reason] || 'Une erreur est survenue, réessaie.';
-        err.style.display = 'block';
-      }
-    }catch(e){ err.textContent = 'Erreur réseau, réessaie.'; err.style.display = 'block'; }
+      var r=await fetch(SUPABASE_URL+'/rest/v1/rpc/set_username',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({p_email:savedUser.email,p_username:val})});
+      var res=await r.json();
+      if(res&&res.success){savedUser.username=val;localStorage.setItem('ficheai_user',JSON.stringify(savedUser));updateBadgeDisplay();overlay.remove();}
+      else{var messages={deja_pris:'Ce pseudo est déjà pris, essaie-en un autre.',trop_court:'Le pseudo doit contenir au moins 3 caractères.',caracteres_invalides:'Lettres, chiffres et underscores (_) uniquement.'};err.textContent=messages[res&&res.reason]||'Une erreur est survenue, réessaie.';err.style.display='block';}
+    }catch(e){err.textContent='Erreur réseau, réessaie.';err.style.display='block';}
   }
-
-  document.getElementById('confirm-username-btn').addEventListener('click', submitUsername);
-  document.getElementById('new-username-input').addEventListener('keydown', function(e){ if(e.key==='Enter') submitUsername(); });
+  document.getElementById('confirm-username-btn').addEventListener('click',submitUsername);
+  document.getElementById('new-username-input').addEventListener('keydown',function(e){if(e.key==='Enter')submitUsername();});
 }
 
-function showRechargeModal(message) {
-  var modal = document.createElement('div');
-  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:999;display:flex;align-items:center;justify-content:center;padding:1.5rem';
-  modal.innerHTML = '<div style="background:#0f0f1a;border:1px solid rgba(108,92,231,0.35);border-radius:20px;padding:2rem;max-width:440px;text-align:center">'
-    + '<div style="font-size:2.2rem;margin-bottom:0.8rem">🎉</div>'
-    + '<h3 style="font-size:1.15rem;margin-bottom:0.6rem">Tu es sacrément assidu ce mois-ci !</h3>'
-    + '<p style="font-size:0.85rem;color:#a0a0c0;line-height:1.6;margin-bottom:1.5rem">' + message + ' En attendant la remise à zéro du mois prochain, tu peux débloquer plus de générations dès maintenant :</p>'
-    + '<div style="display:flex;flex-direction:column;gap:0.6rem;margin-bottom:1rem">'
-    + '<a href="https://buy.stripe.com/28E14o9OJdfBgUD4g643S09" target="_blank" style="background:#181830;border:1px solid rgba(255,255,255,0.13);color:#fff;padding:0.7rem 1rem;border-radius:12px;text-decoration:none;font-weight:600;display:flex;justify-content:space-between"><span>+50 générations</span><span>6,99€</span></a>'
-    + '<a href="https://buy.stripe.com/7sY8wQbWRgrN6fZ6oe43S0a" target="_blank" style="background:linear-gradient(135deg,#6c5ce7,#fd79a8);color:#fff;padding:0.7rem 1rem;border-radius:12px;text-decoration:none;font-weight:700;display:flex;justify-content:space-between"><span>+150 générations</span><span>19,99€</span></a>'
-    + '<a href="https://buy.stripe.com/14A14o2mhdfB7k3bIy43S0b" target="_blank" style="background:#181830;border:1px solid rgba(255,255,255,0.13);color:#fff;padding:0.7rem 1rem;border-radius:12px;text-decoration:none;font-weight:600;display:flex;justify-content:space-between"><span>+400 générations</span><span>49,99€</span></a>'
-    + '</div>'
-    + '<button onclick="this.closest(\'div[style*=fixed]\').remove()" style="background:none;border:1px solid rgba(255,255,255,0.15);color:#a0a0c0;padding:0.6rem 1.3rem;border-radius:100px;cursor:pointer;font-size:0.85rem">Plus tard</button>'
-    + '</div>';
+function showRechargeModal(message){
+  var modal=document.createElement('div');
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:999;display:flex;align-items:center;justify-content:center;padding:1.5rem';
+  modal.innerHTML='<div style="background:#0f0f1a;border:1px solid rgba(108,92,231,0.35);border-radius:20px;padding:2rem;max-width:440px;text-align:center"><div style="font-size:2.2rem;margin-bottom:0.8rem">🎉</div><h3 style="font-size:1.15rem;margin-bottom:0.6rem">Tu es sacrément assidu ce mois-ci !</h3><p style="font-size:0.85rem;color:#a0a0c0;line-height:1.6;margin-bottom:1.5rem">'+message+' En attendant la remise à zéro du mois prochain, tu peux débloquer plus de générations dès maintenant :</p><div style="display:flex;flex-direction:column;gap:0.6rem;margin-bottom:1rem"><a href="https://buy.stripe.com/28E14o9OJdfBgUD4g643S09" target="_blank" style="background:#181830;border:1px solid rgba(255,255,255,0.13);color:#fff;padding:0.7rem 1rem;border-radius:12px;text-decoration:none;font-weight:600;display:flex;justify-content:space-between"><span>+50 générations</span><span>6,99€</span></a><a href="https://buy.stripe.com/7sY8wQbWRgrN6fZ6oe43S0a" target="_blank" style="background:linear-gradient(135deg,#6c5ce7,#fd79a8);color:#fff;padding:0.7rem 1rem;border-radius:12px;text-decoration:none;font-weight:700;display:flex;justify-content:space-between"><span>+150 générations</span><span>19,99€</span></a><a href="https://buy.stripe.com/14A14o2mhdfB7k3bIy43S0b" target="_blank" style="background:#181830;border:1px solid rgba(255,255,255,0.13);color:#fff;padding:0.7rem 1rem;border-radius:12px;text-decoration:none;font-weight:600;display:flex;justify-content:space-between"><span>+400 générations</span><span>49,99€</span></a></div><button onclick="this.closest(\'div[style*=fixed]\').remove()" style="background:none;border:1px solid rgba(255,255,255,0.15);color:#a0a0c0;padding:0.6rem 1.3rem;border-radius:100px;cursor:pointer;font-size:0.85rem">Plus tard</button></div>';
   document.body.appendChild(modal);
-  modal.addEventListener('click', function(e){ if(e.target === modal) modal.remove(); });
+  modal.addEventListener('click',function(e){if(e.target===modal)modal.remove();});
 }
-function showSignupPopup() {
+
+function showSignupPopup(){
   document.getElementById('signup-popup-overlay').classList.add('active');
-  document.getElementById('signup-popup-overlay').addEventListener('click', function(e) {
-    if (e.target === this) this.classList.remove('active');
-  }, { once: true });
-}
-function genererDirectement() { document.getElementById('gen-btn').click(); }
-
-function setFileBadge(msg, kind) {
-  var badge = document.getElementById('file-badge');
-  badge.style.display = 'block';
-  badge.textContent = msg;
-  if (kind === 'error') {
-    badge.style.background = 'rgba(244,114,182,0.08)';
-    badge.style.borderColor = 'rgba(244,114,182,0.3)';
-    badge.style.color = '#f472b6';
-  } else if (kind === 'warn') {
-    badge.style.background = 'rgba(251,191,36,0.08)';
-    badge.style.borderColor = 'rgba(251,191,36,0.3)';
-    badge.style.color = '#fbbf24';
-  } else {
-    badge.style.background = 'rgba(0,206,201,0.08)';
-    badge.style.borderColor = 'rgba(0,206,201,0.2)';
-    badge.style.color = '#00cec9';
-  }
+  document.getElementById('signup-popup-overlay').addEventListener('click',function(e){if(e.target===this)this.classList.remove('active');},{once:true});
 }
 
-function handleFileLoad(file) {
-  if (file.type === 'text/plain' || (file.name && file.name.toLowerCase().endsWith('.txt'))) {
-    var reader = new FileReader();
-    reader.onload = function(ev) {
-      var txt = ev.target.result || '';
-      if (txt.replace(/\s/g, '').length < 30) {
-        setFileBadge('⚠️ Ce fichier semble vide. Vérifie ton fichier ou copie-colle ton cours directement.', 'error');
-        return;
-      }
-      courseContent = txt;
-      document.getElementById('course-input').value = txt;
-      document.getElementById('char-count').textContent = txt.length + ' caractères';
-      setFileBadge('✅ ' + file.name, 'ok');
-      updateChatContext(file.name);
+function genererDirectement(){document.getElementById('gen-btn').click();}
+
+function setFileBadge(msg,kind){
+  var badge=document.getElementById('file-badge');
+  badge.style.display='block';badge.textContent=msg;
+  if(kind==='error'){badge.style.background='rgba(244,114,182,0.08)';badge.style.borderColor='rgba(244,114,182,0.3)';badge.style.color='#f472b6';}
+  else if(kind==='warn'){badge.style.background='rgba(251,191,36,0.08)';badge.style.borderColor='rgba(251,191,36,0.3)';badge.style.color='#fbbf24';}
+  else{badge.style.background='rgba(0,206,201,0.08)';badge.style.borderColor='rgba(0,206,201,0.2)';badge.style.color='#00cec9';}
+}
+
+function handleFileLoad(file){
+  if(file.type==='text/plain'||(file.name&&file.name.toLowerCase().endsWith('.txt'))){
+    var reader=new FileReader();
+    reader.onload=function(ev){
+      var txt=ev.target.result||'';
+      if(txt.replace(/\s/g,'').length<30){setFileBadge('⚠️ Ce fichier semble vide. Vérifie ton fichier ou copie-colle ton cours directement.','error');return;}
+      courseContent=txt;document.getElementById('course-input').value=txt;document.getElementById('char-count').textContent=txt.length+' caractères';setFileBadge('✅ '+file.name,'ok');updateChatContext(file.name);
     };
-    reader.onerror = function() { setFileBadge('⚠️ Impossible de lire ce fichier. Réessaie ou copie-colle ton cours.', 'error'); };
+    reader.onerror=function(){setFileBadge('⚠️ Impossible de lire ce fichier. Réessaie ou copie-colle ton cours.','error');};
     reader.readAsText(file);
-  } else if (file.type === 'application/pdf' || (file.name && file.name.toLowerCase().endsWith('.pdf'))) {
-    setFileBadge('⏳ Lecture du PDF...', 'ok');
-    var reader = new FileReader();
-    reader.onload = async function(ev) {
-      try {
-        var pdfjsLib = window['pdfjs-dist/build/pdf'];
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-        var pdf = await pdfjsLib.getDocument({ data: ev.target.result }).promise;
-        var plan = savedUser ? (savedUser.plan || 'starter') : 'starter';
-        var pageLimit = plan === 'ultimate' ? 100 : plan === 'pro' ? 40 : 15;
-        var maxPages = Math.min(pdf.numPages, pageLimit);
-        var text = '';
-        for (var i = 1; i <= maxPages; i++) {
-          var page = await pdf.getPage(i);
-          var content = await page.getTextContent();
-          text += content.items.map(function(item) { return item.str; }).join(' ') + '\n';
-        }
-        var usefulChars = text.replace(/\s/g, '').length;
-        if (usefulChars < 100) {
-          setFileBadge('⚠️ Ce PDF semble être un document scanné ou une photo : aucun texte lisible dedans. Copie-colle ton cours en texte à la place (la lecture des scans arrive bientôt !).', 'error');
-          return;
-        }
-        courseContent = text;
-        document.getElementById('course-input').value = text;
-        document.getElementById('char-count').textContent = text.length + ' caractères';
-        if (pdf.numPages > pageLimit) {
-          setFileBadge('⚠️ ' + file.name + ' : ' + pdf.numPages + ' pages au total, seules les ' + pageLimit + ' premières ont été lues (limite de ton plan ' + plan.charAt(0).toUpperCase() + plan.slice(1) + ').', 'warn');
-        } else {
-          setFileBadge('✅ ' + file.name + ' — ' + maxPages + ' page' + (maxPages > 1 ? 's' : '') + ' lue' + (maxPages > 1 ? 's' : ''), 'ok');
-        }
+  } else if(file.type==='application/pdf'||(file.name&&file.name.toLowerCase().endsWith('.pdf'))){
+    setFileBadge('⏳ Lecture du PDF...','ok');
+    var reader=new FileReader();
+    reader.onload=async function(ev){
+      try{
+        var pdfjsLib=window['pdfjs-dist/build/pdf'];
+        pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        var pdf=await pdfjsLib.getDocument({data:ev.target.result}).promise;
+        var plan=savedUser?(savedUser.plan||'starter'):'starter';
+        var pageLimit=plan==='ultimate'?100:plan==='pro'?40:15;
+        var maxPages=Math.min(pdf.numPages,pageLimit);
+        var text='';
+        for(var i=1;i<=maxPages;i++){var page=await pdf.getPage(i);var content=await page.getTextContent();text+=content.items.map(function(item){return item.str;}).join(' ')+'\n';}
+        var usefulChars=text.replace(/\s/g,'').length;
+        if(usefulChars<100){setFileBadge('⚠️ Ce PDF semble être un document scanné ou une photo : aucun texte lisible dedans. Copie-colle ton cours en texte à la place (la lecture des scans arrive bientôt !).','error');return;}
+        courseContent=text;document.getElementById('course-input').value=text;document.getElementById('char-count').textContent=text.length+' caractères';
+        if(pdf.numPages>pageLimit){setFileBadge('⚠️ '+file.name+' : '+pdf.numPages+' pages au total, seules les '+pageLimit+' premières ont été lues (limite de ton plan '+plan.charAt(0).toUpperCase()+plan.slice(1)+').','warn');}
+        else{setFileBadge('✅ '+file.name+' — '+maxPages+' page'+(maxPages>1?'s':'')+' lue'+(maxPages>1?'s':''),'ok');}
         updateChatContext(file.name);
-      } catch(err) {
-        var name = (err && err.name) || '';
-        if (name === 'PasswordException') {
-          setFileBadge('🔒 Ce PDF est protégé par un mot de passe. Déverrouille-le ou copie-colle ton cours en texte.', 'error');
-        } else if (name === 'InvalidPDFException') {
-          setFileBadge('⚠️ Ce fichier PDF est corrompu ou illisible. Réessaie avec un autre fichier ou copie-colle ton cours.', 'error');
-        } else {
-          setFileBadge('⚠️ Impossible de lire ce PDF. Copie-colle ton cours en texte à la place.', 'error');
-        }
+      }catch(err){
+        var name=(err&&err.name)||'';
+        if(name==='PasswordException'){setFileBadge('🔒 Ce PDF est protégé par un mot de passe. Déverrouille-le ou copie-colle ton cours en texte.','error');}
+        else if(name==='InvalidPDFException'){setFileBadge('⚠️ Ce fichier PDF est corrompu ou illisible. Réessaie avec un autre fichier ou copie-colle ton cours.','error');}
+        else{setFileBadge('⚠️ Impossible de lire ce PDF. Copie-colle ton cours en texte à la place.','error');}
       }
     };
-    reader.onerror = function() { setFileBadge('⚠️ Impossible de lire ce fichier. Réessaie.', 'error'); };
+    reader.onerror=function(){setFileBadge('⚠️ Impossible de lire ce fichier. Réessaie.','error');};
     reader.readAsArrayBuffer(file);
-  } else if (file.type.startsWith('image/')) {
-    setFileBadge('📷 L\'analyse de photos arrive bientôt ! En attendant, copie-colle ton cours en texte.', 'warn');
+  } else if(file.type.startsWith('image/')){
+    setFileBadge('📷 L\'analyse de photos arrive bientôt ! En attendant, copie-colle ton cours en texte.','warn');
   } else {
-    setFileBadge('⚠️ Format non pris en charge (' + (file.type || 'inconnu') + '). Utilise un PDF ou un fichier TXT, ou copie-colle ton cours.', 'error');
+    setFileBadge('⚠️ Format non pris en charge ('+( file.type||'inconnu')+'). Utilise un PDF ou un fichier TXT, ou copie-colle ton cours.','error');
   }
 }
 
-document.getElementById('file-input').addEventListener('change', function(e) { if (e.target.files[0]) handleFileLoad(e.target.files[0]); });
-document.getElementById('camera-input').addEventListener('change', function(e) { if (e.target.files[0]) handleFileLoad(e.target.files[0]); });
-document.getElementById('course-input').addEventListener('input', function() {
-  document.getElementById('char-count').textContent = this.value.length + ' caractères';
-  courseContent = this.value;
-});
+document.getElementById('file-input').addEventListener('change',function(e){if(e.target.files[0])handleFileLoad(e.target.files[0]);});
+document.getElementById('camera-input').addEventListener('change',function(e){if(e.target.files[0])handleFileLoad(e.target.files[0]);});
+document.getElementById('course-input').addEventListener('input',function(){document.getElementById('char-count').textContent=this.value.length+' caractères';courseContent=this.value;});
 
-function updateChatContext(filename) {
-  var el = document.getElementById('chat-context-text');
-  if (el) el.innerHTML = 'Cours chargé : <span>' + filename + '</span>';
-}
+function updateChatContext(filename){var el=document.getElementById('chat-context-text');if(el)el.innerHTML='Cours chargé : <span>'+filename+'</span>';}
 
-document.getElementById('gen-btn').addEventListener('click', async function() {
-  var input = document.getElementById('course-input').value.trim();
-  var errBox = document.getElementById('error-box');
-  errBox.style.display = 'none';
-  if (!savedUser || !savedUser.email) { showSignupPopup(); return; }
-  if (!input) { errBox.textContent = '⚠️ Colle ou importe ton cours !'; errBox.style.display = 'block'; return; }
-  if (input.length < 30) { errBox.textContent = '⚠️ Le cours est trop court.'; errBox.style.display = 'block'; return; }
-  if (tokensLeft <= 0) { errBox.textContent = '⚠️ Tu as utilisé toutes tes générations. Passe à Pro !'; errBox.style.display = 'block'; return; }
-  var btn = this;
-  btn.disabled = true;
-  btn.textContent = 'Génération en cours…';
-  var resultCard = document.getElementById('result-card'), spinner = document.getElementById('result-spinner'), content = document.getElementById('result-content');
-  resultCard.style.display = 'block';
-  spinner.style.display = 'flex';
-  content.style.display = 'none';
-  resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  try {
-    var response = await fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (currentUserToken || '') }, body: JSON.stringify({ course: input, format: currentFormat, language: document.getElementById('lang-sel').value }) });
-    var data = await readResponseSafely(response, 'génération');
-    if (data.error) {
-      if (response.status === 403 && savedUser && savedUser.plan === 'ultimate') {
-        spinner.style.display = 'none';
-        resultCard.style.display = 'none';
-        showRechargeModal(data.error);
-        btn.disabled = false;
-        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Générer avec l\'IA';
-        return;
-      }
+// ── CORRECTION BUG ** : utilise innerHTML + formatChatText au lieu de textContent ──
+document.getElementById('gen-btn').addEventListener('click',async function(){
+  var input=document.getElementById('course-input').value.trim();
+  var errBox=document.getElementById('error-box');
+  errBox.style.display='none';
+  if(!savedUser||!savedUser.email){showSignupPopup();return;}
+  if(!input){errBox.textContent='⚠️ Colle ou importe ton cours !';errBox.style.display='block';return;}
+  if(input.length<30){errBox.textContent='⚠️ Le cours est trop court.';errBox.style.display='block';return;}
+  if(tokensLeft<=0){errBox.textContent='⚠️ Tu as utilisé toutes tes générations. Passe à Pro !';errBox.style.display='block';return;}
+  var btn=this;
+  btn.disabled=true;btn.textContent='Génération en cours…';
+  var resultCard=document.getElementById('result-card'),spinner=document.getElementById('result-spinner'),content=document.getElementById('result-content');
+  resultCard.style.display='block';spinner.style.display='flex';content.style.display='none';
+  resultCard.scrollIntoView({behavior:'smooth',block:'nearest'});
+  try{
+    var response=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(currentUserToken||'')},body:JSON.stringify({course:input,format:currentFormat,language:document.getElementById('lang-sel').value})});
+    var data=await readResponseSafely(response,'génération');
+    if(data.error){
+      if(response.status===403&&savedUser&&savedUser.plan==='ultimate'){spinner.style.display='none';resultCard.style.display='none';showRechargeModal(data.error);btn.disabled=false;btn.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Générer avec l\'IA';return;}
       throw new Error(data.error);
     }
-    lastResult = data.result;
-    content.textContent = data.result;
-    document.getElementById('result-title').textContent = currentFormatIcon + ' ' + currentFormatName;
-    spinner.style.display = 'none';
-    content.style.display = 'block';
-    if (tokensLeft !== 999999) {
-      tokensLeft--;
-      document.getElementById('tok-nav').textContent = tokensLeft;
-      document.getElementById('stat-gen').textContent = tokensLeft;
-      if (savedUser) { savedUser.remaining = tokensLeft; localStorage.setItem('ficheai_user', JSON.stringify(savedUser)); }
+    lastResult=data.result;
+    // CORRECTION : innerHTML + formatChatText pour rendu correct du markdown (gras, séparateurs, etc.)
+    content.innerHTML=formatChatText(data.result);
+    document.getElementById('result-title').textContent=currentFormatIcon+' '+currentFormatName;
+    spinner.style.display='none';content.style.display='block';
+    if(tokensLeft!==999999){tokensLeft--;document.getElementById('tok-nav').textContent=tokensLeft;document.getElementById('stat-gen').textContent=tokensLeft;if(savedUser){savedUser.remaining=tokensLeft;localStorage.setItem('ficheai_user',JSON.stringify(savedUser));}}
+    if(currentUserEmail){
+      var lignes=data.result.split('\n').filter(function(l){return l.trim().length>3;});
+      var titre=(lignes[1]||lignes[0]||currentFormatName).replace(/[📚🎯📖⚡❓🔗━▸✦]/g,'').trim().substring(0,80);
+      fetch('/api/fiches',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_email:currentUserEmail,format:currentFormat,format_icon:currentFormatIcon,titre:titre,contenu:data.result})}).then(function(){loadFichesCount();}).catch(function(){});
     }
-    if (currentUserEmail) {
-      var lignes = data.result.split('\n').filter(function(l) { return l.trim().length > 3; });
-      var titre = (lignes[1] || lignes[0] || currentFormatName).replace(/[📚🎯📖⚡❓🔗━▸✦]/g, '').trim().substring(0, 80);
-      fetch('/api/fiches', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_email: currentUserEmail, format: currentFormat, format_icon: currentFormatIcon, titre: titre, contenu: data.result }) }).then(function() { loadFichesCount(); }).catch(function() {});
-    }
-    sessionHistory.unshift({ icon: currentFormatIcon, name: currentFormatName, preview: input.substring(0, 55) + '…', result: data.result });
-    if (sessionHistory.length > 6) sessionHistory.pop();
+    sessionHistory.unshift({icon:currentFormatIcon,name:currentFormatName,preview:input.substring(0,55)+'…',result:data.result});
+    if(sessionHistory.length>6)sessionHistory.pop();
     renderHistory();
-  } catch(e) {
-    spinner.style.display = 'none';
-    content.textContent = '⚠️ Erreur : ' + e.message;
-    content.style.display = 'block';
-  }
-  btn.disabled = false;
-  btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Générer avec l\'IA';
+  }catch(e){spinner.style.display='none';content.innerHTML='⚠️ Erreur : '+e.message;content.style.display='block';}
+  btn.disabled=false;
+  btn.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Générer avec l\'IA';
 });
 
-document.getElementById('copy-btn').addEventListener('click', function() {
-  navigator.clipboard.writeText(lastResult).then(function() {
-    document.getElementById('copy-btn').textContent = '✅ Copié !';
-    setTimeout(function() { document.getElementById('copy-btn').textContent = '📋 Copier'; }, 2000);
-  });
+document.getElementById('copy-btn').addEventListener('click',function(){
+  navigator.clipboard.writeText(lastResult).then(function(){document.getElementById('copy-btn').textContent='✅ Copié !';setTimeout(function(){document.getElementById('copy-btn').textContent='📋 Copier';},2000);});
 });
-document.getElementById('download-btn').addEventListener('click', function() {
-  var blob = new Blob([lastResult], { type: 'text/plain;charset=utf-8' });
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'FicheAI_' + currentFormatName + '.txt';
-  a.click();
+document.getElementById('download-btn').addEventListener('click',function(){
+  var blob=new Blob([lastResult],{type:'text/plain;charset=utf-8'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='FicheAI_'+currentFormatName+'.txt';a.click();
 });
-document.getElementById('reset-btn').addEventListener('click', function() {
-  document.getElementById('result-card').style.display = 'none';
-  document.getElementById('course-input').value = '';
-  document.getElementById('char-count').textContent = '0 caractères';
-  document.getElementById('file-badge').style.display = 'none';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+document.getElementById('reset-btn').addEventListener('click',function(){
+  document.getElementById('result-card').style.display='none';
+  document.getElementById('course-input').value='';
+  document.getElementById('char-count').textContent='0 caractères';
+  document.getElementById('file-badge').style.display='none';
+  window.scrollTo({top:0,behavior:'smooth'});
 });
 
-function renderHistory() {
-  var section = document.getElementById('history-section'), list = document.getElementById('history-list');
-  if (!section) return;
-  if (sessionHistory.length === 0) { section.style.display = 'none'; return; }
-  section.style.display = 'block';
-  list.innerHTML = sessionHistory.map(function(h, i) {
-    return '<div class="hist-item" onclick="loadHistory(' + i + ')"><span class="hist-fmt">' + h.icon + '</span><span class="hist-preview">' + h.name + ' — ' + h.preview + '</span></div>';
-  }).join('');
+function renderHistory(){
+  var section=document.getElementById('history-section'),list=document.getElementById('history-list');
+  if(!section)return;
+  if(sessionHistory.length===0){section.style.display='none';return;}
+  section.style.display='block';
+  list.innerHTML=sessionHistory.map(function(h,i){return '<div class="hist-item" onclick="loadHistory('+i+')"><span class="hist-fmt">'+h.icon+'</span><span class="hist-preview">'+h.name+' — '+h.preview+'</span></div>';}).join('');
 }
 
-function loadHistory(i) {
-  var h = sessionHistory[i];
-  document.getElementById('result-content').textContent = h.result;
-  document.getElementById('result-title').textContent = h.icon + ' ' + h.name;
-  document.getElementById('result-card').style.display = 'block';
-  document.getElementById('result-spinner').style.display = 'none';
-  document.getElementById('result-content').style.display = 'block';
-  lastResult = h.result;
+function loadHistory(i){
+  var h=sessionHistory[i];
+  // CORRECTION : innerHTML + formatChatText pour cohérence avec le rendu principal
+  document.getElementById('result-content').innerHTML=formatChatText(h.result);
+  document.getElementById('result-title').textContent=h.icon+' '+h.name;
+  document.getElementById('result-card').style.display='block';
+  document.getElementById('result-spinner').style.display='none';
+  document.getElementById('result-content').style.display='block';
+  lastResult=h.result;
 }
 
-function getPlan() { return savedUser ? (savedUser.plan || 'starter') : 'starter'; }
+function getPlan(){return savedUser?(savedUser.plan||'starter'):'starter';}
 
-function useCourseInChat() {
-  var course = document.getElementById('course-input').value.trim();
-  if (!course) { showToast('⚠️ Colle ou importe un cours d\'abord !'); return; }
-  courseContent = course;
-  var el = document.getElementById('chat-context-text');
-  if (el) el.innerHTML = 'Cours chargé : <span>' + course.substring(0, 50) + '...</span>';
+function useCourseInChat(){
+  var course=document.getElementById('course-input').value.trim();
+  if(!course){showToast('⚠️ Colle ou importe un cours d\'abord !');return;}
+  courseContent=course;
+  var el=document.getElementById('chat-context-text');
+  if(el)el.innerHTML='Cours chargé : <span>'+course.substring(0,50)+'...</span>';
   showToast('✅ Cours chargé dans le chat !');
 }
 
-function formatChatText(text) {
+function formatChatText(text){
   return text
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/━+/g, '<hr style="border:none;border-top:1px solid rgba(255,255,255,0.1);margin:0.6rem 0">')
-    .replace(/\n/g, '<br>');
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+    .replace(/━+/g,'<hr style="border:none;border-top:1px solid rgba(255,255,255,0.1);margin:0.6rem 0">')
+    .replace(/\n/g,'<br>');
 }
 
-function addMessage(role, text, isFullscreen) {
-  var welcome = document.getElementById('chat-welcome');
-  if (welcome) welcome.style.display = 'none';
-  var messages = document.getElementById(isFullscreen ? 'chat-fullscreen-messages' : 'chat-messages');
-  var div = document.createElement('div');
-  div.className = 'msg ' + (role === 'user' ? 'user' : 'ai');
-  var now = new Date();
-  var time = now.getHours() + ':' + String(now.getMinutes()).padStart(2, '0');
-  var contentHtml = role === 'ai' ? formatChatText(text) : text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  var actionsHtml = role === 'ai' ? '<div class="msg-actions-row"><button class="msg-act" onclick="copyMsg(this)">📋 Copier</button><button class="msg-act" onclick="saveMsg(this)">💾 Sauvegarder</button><button class="msg-act" onclick="exportMsgToPDF(this)">📄 PDF</button></div>' : '';
-  div.innerHTML = '<div class="msg-avatar">' + (role === 'user' ? '👤' : '✨') + '</div><div class="msg-bubble"><div class="msg-content">' + contentHtml + '</div>' + actionsHtml + '<span class="msg-time">' + time + '</span></div>';
+function addMessage(role,text,isFullscreen){
+  var welcome=document.getElementById('chat-welcome');
+  if(welcome)welcome.style.display='none';
+  var messages=document.getElementById(isFullscreen?'chat-fullscreen-messages':'chat-messages');
+  var div=document.createElement('div');
+  div.className='msg '+(role==='user'?'user':'ai');
+  var now=new Date();
+  var time=now.getHours()+':'+String(now.getMinutes()).padStart(2,'0');
+  var contentHtml=role==='ai'?formatChatText(text):text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  var actionsHtml=role==='ai'?'<div class="msg-actions-row"><button class="msg-act" onclick="copyMsg(this)">📋 Copier</button><button class="msg-act" onclick="saveMsg(this)">💾 Sauvegarder</button><button class="msg-act" onclick="exportMsgToPDF(this)">📄 PDF</button></div>':'';
+  div.innerHTML='<div class="msg-avatar">'+(role==='user'?'👤':'✨')+'</div><div class="msg-bubble"><div class="msg-content">'+contentHtml+'</div>'+actionsHtml+'<span class="msg-time">'+time+'</span></div>';
   messages.appendChild(div);
-  setTimeout(function() { div.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
+  setTimeout(function(){div.scrollIntoView({behavior:'smooth',block:'start'});},50);
 }
 
-function copyMsg(btn) {
-  var content = btn.closest('.msg').querySelector('.msg-content').innerText;
-  navigator.clipboard.writeText(content).then(function() { showToast('✅ Copié !'); });
+function copyMsg(btn){var content=btn.closest('.msg').querySelector('.msg-content').innerText;navigator.clipboard.writeText(content).then(function(){showToast('✅ Copié !');});}
+
+function saveMsg(btn){
+  if(!currentUserEmail){showToast('⚠️ Connecte-toi pour sauvegarder');return;}
+  var content=btn.closest('.msg').querySelector('.msg-content').innerText;
+  fetch('/api/fiches',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_email:currentUserEmail,format:currentFormat,format_icon:currentFormatIcon,titre:'Chat — '+new Date().toLocaleDateString('fr-FR'),contenu:content})}).then(function(){showToast('✅ Sauvegardé !');loadFichesCount();}).catch(function(){showToast('⚠️ Erreur sauvegarde');});
 }
 
-function saveMsg(btn) {
-  if (!currentUserEmail) { showToast('⚠️ Connecte-toi pour sauvegarder'); return; }
-  var content = btn.closest('.msg').querySelector('.msg-content').innerText;
-  fetch('/api/fiches', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_email: currentUserEmail, format: currentFormat, format_icon: currentFormatIcon, titre: 'Chat — ' + new Date().toLocaleDateString('fr-FR'), contenu: content }) })
-  .then(function() { showToast('✅ Sauvegardé !'); loadFichesCount(); })
-  .catch(function() { showToast('⚠️ Erreur sauvegarde'); });
+function addTyping(isFullscreen){
+  var messages=document.getElementById(isFullscreen?'chat-fullscreen-messages':'chat-messages');
+  var div=document.createElement('div');div.className='msg ai';div.id='typing-msg';
+  div.innerHTML='<div class="msg-avatar">✨</div><div class="msg-bubble"><div class="typing-bubble"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>';
+  messages.appendChild(div);div.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-function addTyping(isFullscreen) {
-  var messages = document.getElementById(isFullscreen ? 'chat-fullscreen-messages' : 'chat-messages');
-  var div = document.createElement('div');
-  div.className = 'msg ai';
-  div.id = 'typing-msg';
-  div.innerHTML = '<div class="msg-avatar">✨</div><div class="msg-bubble"><div class="typing-bubble"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>';
-  messages.appendChild(div);
-  div.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
+function removeTyping(){var t=document.getElementById('typing-msg');if(t)t.remove();}
 
-function removeTyping() { var t = document.getElementById('typing-msg'); if (t) t.remove(); }
-
-function openChatFullscreen() {
-  var overlay = document.getElementById('chat-fullscreen-overlay');
-  var fsMessages = document.getElementById('chat-fullscreen-messages');
-  // Copier les messages existants dans le plein écran
-  var mainMessages = document.getElementById('chat-messages');
-  fsMessages.innerHTML = mainMessages.innerHTML;
-  overlay.classList.add('active');
-  document.body.style.overflow = 'hidden';
-  fsMessages.scrollTop = fsMessages.scrollHeight;
+function openChatFullscreen(){
+  var overlay=document.getElementById('chat-fullscreen-overlay');
+  var fsMessages=document.getElementById('chat-fullscreen-messages');
+  var mainMessages=document.getElementById('chat-messages');
+  fsMessages.innerHTML=mainMessages.innerHTML;
+  overlay.classList.add('active');document.body.style.overflow='hidden';
+  fsMessages.scrollTop=fsMessages.scrollHeight;
   document.getElementById('chat-fullscreen-input').focus();
-  // Synchroniser les événements keyboard sur l'input plein écran
-  var fsInput = document.getElementById('chat-fullscreen-input');
-  fsInput.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 150) + 'px'; });
-  fsInput.addEventListener('keydown', function(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage(true); } });
-  // Sync compteur
-  var countEl = document.getElementById('chat-count');
-  var fsCount = document.getElementById('chat-fullscreen-count');
-  if (countEl && fsCount) fsCount.textContent = countEl.textContent;
+  var fsInput=document.getElementById('chat-fullscreen-input');
+  fsInput.addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,150)+'px';});
+  fsInput.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChatMessage(true);}});
+  var countEl=document.getElementById('chat-count');
+  var fsCount=document.getElementById('chat-fullscreen-count');
+  if(countEl&&fsCount)fsCount.textContent=countEl.textContent;
 }
 
-function closeChatFullscreen() {
-  var overlay = document.getElementById('chat-fullscreen-overlay');
-  overlay.classList.remove('active');
-  document.body.style.overflow = '';
-  // Synchroniser les messages du plein écran vers la vue normale
-  var fsMessages = document.getElementById('chat-fullscreen-messages');
-  var mainMessages = document.getElementById('chat-messages');
-  mainMessages.innerHTML = fsMessages.innerHTML;
-  mainMessages.scrollTop = mainMessages.scrollHeight;
+function closeChatFullscreen(){
+  var overlay=document.getElementById('chat-fullscreen-overlay');
+  overlay.classList.remove('active');document.body.style.overflow='';
+  var fsMessages=document.getElementById('chat-fullscreen-messages');
+  var mainMessages=document.getElementById('chat-messages');
+  mainMessages.innerHTML=fsMessages.innerHTML;mainMessages.scrollTop=mainMessages.scrollHeight;
 }
 
-function clearChat() {
-  chatHistory = [];
-  chatMsgCount = 0;
-  var mainMessages = document.getElementById('chat-messages');
-  mainMessages.innerHTML = '<div class="chat-welcome" id="chat-welcome"><div class="chat-welcome-icon">✨</div><h3>Bonjour ! Je suis ton assistant FicheAI</h3><p>Charge ton cours puis parle-moi librement.<br>Je génère, explique, résume et t\'aide à réviser.</p><div class="chat-suggestions"><div class="chat-sug" onclick="sendSuggestion(\'Génère une fiche de révision complète sur mon cours\')">📄 Faire une fiche</div><div class="chat-sug" onclick="sendSuggestion(\'Crée un quiz de 5 questions sur mon cours\')">✅ Créer un quiz</div><div class="chat-sug" onclick="sendSuggestion(\'Explique-moi les points les plus importants\')">💡 Points clés</div><div class="chat-sug" onclick="sendSuggestion(\'Quelles questions risquent de tomber à l\'examen ?\')" >🎯 Questions d\'exam</div><div class="chat-sug" onclick="sendSuggestion(\'Fais-moi 10 flashcards sur ce cours\')">🃏 Flashcards</div></div></div>';
-  updateChatCount();
-  showToast('💬 Conversation effacée');
+function clearChat(){
+  chatHistory=[];chatMsgCount=0;
+  var mainMessages=document.getElementById('chat-messages');
+  mainMessages.innerHTML='<div class="chat-welcome" id="chat-welcome"><div class="chat-welcome-icon">✨</div><h3>Bonjour ! Je suis ton assistant FicheAI</h3><p>Charge ton cours puis parle-moi librement.<br>Je génère, explique, résume et t\'aide à réviser.</p><div class="chat-suggestions"><div class="chat-sug" onclick="sendSuggestion(\'Génère une fiche de révision complète sur mon cours\')">📄 Faire une fiche</div><div class="chat-sug" onclick="sendSuggestion(\'Crée un quiz de 5 questions sur mon cours\')">✅ Créer un quiz</div><div class="chat-sug" onclick="sendSuggestion(\'Explique-moi les points les plus importants\')">💡 Points clés</div><div class="chat-sug" onclick="sendSuggestion(\'Quelles questions risquent de tomber à l\'examen ?\')">🎯 Questions d\'exam</div><div class="chat-sug" onclick="sendSuggestion(\'Fais-moi 10 flashcards sur ce cours\')">🃏 Flashcards</div></div></div>';
+  updateChatCount();showToast('💬 Conversation effacée');
 }
 
-// Fermer plein écran avec Échap
-document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { var overlay = document.getElementById('chat-fullscreen-overlay'); if (overlay && overlay.classList.contains('active')) closeChatFullscreen(); } });
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){var overlay=document.getElementById('chat-fullscreen-overlay');if(overlay&&overlay.classList.contains('active'))closeChatFullscreen();}});
 
-async function sendChatMessage(isFullscreen) {
-  var plan = getPlan();
-  if (plan === 'starter') { showToast('💬 Chat IA disponible à partir du plan Pro !'); return; }
-  var limit = plan === 'ultimate' ? 999999 : 20;
-  if (chatMsgCount >= limit && limit !== 999999) { showToast('⚠️ Limite de ' + limit + ' messages atteinte !'); return; }
-  var inputId = isFullscreen ? 'chat-fullscreen-input' : 'chat-input';
-  var input = document.getElementById(inputId);
-  var text = input ? input.value.trim() : '';
-  if (!text) return;
-  input.value = '';
-  input.style.height = 'auto';
-  addMessage('user', text, isFullscreen);
-  chatHistory.push({ role: 'user', content: text });
-  chatMsgCount++;
-  updateChatCount();
+async function sendChatMessage(isFullscreen){
+  var plan=getPlan();
+  if(plan==='starter'){showToast('💬 Chat IA disponible à partir du plan Pro !');return;}
+  var limit=plan==='ultimate'?999999:20;
+  if(chatMsgCount>=limit&&limit!==999999){showToast('⚠️ Limite de '+limit+' messages atteinte !');return;}
+  var inputId=isFullscreen?'chat-fullscreen-input':'chat-input';
+  var input=document.getElementById(inputId);
+  var text=input?input.value.trim():'';
+  if(!text)return;
+  input.value='';input.style.height='auto';
+  addMessage('user',text,isFullscreen);
+  chatHistory.push({role:'user',content:text});chatMsgCount++;updateChatCount();
   addTyping(isFullscreen);
-  document.getElementById(isFullscreen ? 'chat-fullscreen-send-btn' : 'chat-send-btn').disabled = true;
-  try {
-    var response = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (currentUserToken || '') }, body: JSON.stringify({ messages: chatHistory.slice(-12), courseContent: courseContent.substring(0, 6000), language: document.getElementById('lang-sel').value }) });
-    var data = await readResponseSafely(response, 'chat');
+  document.getElementById(isFullscreen?'chat-fullscreen-send-btn':'chat-send-btn').disabled=true;
+  try{
+    var response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(currentUserToken||'')},body:JSON.stringify({messages:chatHistory.slice(-12),courseContent:courseContent.substring(0,6000),language:document.getElementById('lang-sel').value})});
+    var data=await readResponseSafely(response,'chat');
     removeTyping();
-    if (data.error) {
-      if (response.status === 403 && savedUser && savedUser.plan === 'ultimate') {
-        showRechargeModal(data.error);
-      } else {
-        addMessage('ai', '⚠️ ' + data.error, isFullscreen);
-      }
-      return;
-    }
-    chatHistory.push({ role: 'assistant', content: data.result });
-    addMessage('ai', data.result, isFullscreen);
-  } catch(e) { removeTyping(); addMessage('ai', '⚠️ Erreur réseau. Réessaie.', isFullscreen); }
-  document.getElementById(isFullscreen ? 'chat-fullscreen-send-btn' : 'chat-send-btn').disabled = false;
+    if(data.error){if(response.status===403&&savedUser&&savedUser.plan==='ultimate'){showRechargeModal(data.error);}else{addMessage('ai','⚠️ '+data.error,isFullscreen);}return;}
+    chatHistory.push({role:'assistant',content:data.result});
+    addMessage('ai',data.result,isFullscreen);
+  }catch(e){removeTyping();addMessage('ai','⚠️ Erreur réseau. Réessaie.',isFullscreen);}
+  document.getElementById(isFullscreen?'chat-fullscreen-send-btn':'chat-send-btn').disabled=false;
 }
 
-function updateChatCount() {
-  var plan = getPlan();
-  var limit = plan === 'ultimate' ? '∞' : 20;
-  var el = document.getElementById('chat-count');
-  if (el) el.textContent = chatMsgCount + ' / ' + limit + ' messages ce mois';
-  var elFs = document.getElementById('chat-fullscreen-count');
-  if (elFs) elFs.textContent = chatMsgCount + ' / ' + limit + ' messages ce mois';
+function updateChatCount(){
+  var plan=getPlan();var limit=plan==='ultimate'?'∞':20;
+  var el=document.getElementById('chat-count');if(el)el.textContent=chatMsgCount+' / '+limit+' messages ce mois';
+  var elFs=document.getElementById('chat-fullscreen-count');if(elFs)elFs.textContent=chatMsgCount+' / '+limit+' messages ce mois';
 }
 
-function sendSuggestion(text) { document.getElementById('chat-input').value = text; sendChatMessage(); }
+function sendSuggestion(text){document.getElementById('chat-input').value=text;sendChatMessage();}
 
-document.getElementById('chat-input').addEventListener('input', function() { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 120) + 'px'; });
-document.getElementById('chat-input').addEventListener('keydown', function(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage(); } });
+document.getElementById('chat-input').addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px';});
+document.getElementById('chat-input').addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChatMessage();}});
 
-// ── EXPORT PDF ──
-function escapePdf(t) { return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
-function boldify(t) { return t.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); }
+function escapePdf(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function boldify(t){return t.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');}
 
-function formatContentForPDF(text) {
-  var lines = text.split('\n'), html = '', inList = false;
-  lines.forEach(function(line) {
-    var t = line.trim();
-    if (!t) { if (inList) { html += '</ul>'; inList = false; } return; }
-    if (/^[━─=]{3,}$/.test(t)) { if (inList) { html += '</ul>'; inList = false; } html += '<div class="pdf-sep"></div>'; return; }
-    var sm = t.match(/^([📚🎯📖⚡❓🔗🃏🧠💬📅✅])\s*(.+)/u);
-    if (sm && sm[2].length < 70) { if (inList) { html += '</ul>'; inList = false; } html += '<div class="pdf-section">' + escapePdf(sm[2]) + '</div>'; return; }
-    var bm = t.match(/^[▸→✦•\-]\s*(.+)/);
-    if (bm) { if (!inList) { html += '<ul class="pdf-list">'; inList = true; } html += '<li>' + boldify(escapePdf(bm[1])) + '</li>'; return; }
-    if (inList) { html += '</ul>'; inList = false; }
-    html += '<p class="pdf-p">' + boldify(escapePdf(t)) + '</p>';
+function formatContentForPDF(text){
+  var lines=text.split('\n'),html='',inList=false;
+  lines.forEach(function(line){
+    var t=line.trim();
+    if(!t){if(inList){html+='</ul>';inList=false;}return;}
+    if(/^[━─=]{3,}$/.test(t)){if(inList){html+='</ul>';inList=false;}html+='<div class="pdf-sep"></div>';return;}
+    var sm=t.match(/^([📚🎯📖⚡❓🔗🃏🧠💬📅✅])\s*(.+)/u);
+    if(sm&&sm[2].length<70){if(inList){html+='</ul>';inList=false;}html+='<div class="pdf-section">'+escapePdf(sm[2])+'</div>';return;}
+    var bm=t.match(/^[▸→✦•\-]\s*(.+)/);
+    if(bm){if(!inList){html+='<ul class="pdf-list">';inList=true;}html+='<li>'+boldify(escapePdf(bm[1]))+'</li>';return;}
+    if(inList){html+='</ul>';inList=false;}
+    html+='<p class="pdf-p">'+boldify(escapePdf(t))+'</p>';
   });
-  if (inList) html += '</ul>';
+  if(inList)html+='</ul>';
   return html;
 }
 
-function exportToPDF(content, title, format) {
-  var plan = savedUser ? (savedUser.plan || 'starter') : 'starter';
-  if (plan === 'starter') { showToast('⚠️ Export PDF disponible à partir du plan Pro !'); return; }
-  if (!content) { showToast('⚠️ Rien à exporter.'); return; }
-
-  var cleanTitle = title.replace(/[^\x00-\x7F\u00C0-\u017F\s]/g, '').trim();
-  var bodyHtml = formatContentForPDF(content);
-
-  var css = [
-    '*{box-sizing:border-box;margin:0;padding:0}',
-    'body{font-family:Georgia,Times,serif;color:#1a1a2e;font-size:13px;line-height:1.7;padding:48px 56px;max-width:800px;margin:0 auto;}',
-    '.header{display:flex;align-items:center;justify-content:space-between;border-bottom:2.5px solid #6c5ce7;padding-bottom:12px;margin-bottom:20px;}',
-    '.logo-box{display:flex;align-items:center;gap:10px;}',
-    '.logo-sq{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#6c5ce7,#fd79a8);}',
-    '.logo-txt{font-family:Helvetica,Arial,sans-serif;font-size:18px;font-weight:800;color:#6c5ce7;}',
-    '.logo-url{font-family:Helvetica,Arial,sans-serif;font-size:10px;color:#aaa;}',
-    'h1{font-family:Helvetica,Arial,sans-serif;font-size:22px;font-weight:800;color:#1a1a2e;margin:0 0 6px;line-height:1.2;}',
-    '.badge{display:inline-block;background:#f0edff;color:#6c5ce7;font-family:Helvetica,Arial,sans-serif;font-size:10px;font-weight:700;padding:4px 12px;border-radius:100px;margin-bottom:20px;letter-spacing:0.5px;}',
-    '.pdf-section{font-family:Helvetica,Arial,sans-serif;font-size:14px;font-weight:700;color:#6c5ce7;margin:18px 0 8px;padding-left:10px;border-left:3px solid #fd79a8;page-break-after:avoid;}',
-    '.pdf-p{font-size:13px;line-height:1.7;margin:0 0 8px;color:#222;page-break-inside:avoid;}',
-    '.pdf-list{margin:0 0 10px;padding-left:0;list-style:none;}',
-    '.pdf-list li{font-size:13px;line-height:1.65;margin-bottom:6px;padding-left:16px;position:relative;color:#222;page-break-inside:avoid;}',
-    '.pdf-list li::before{content:"•";color:#fd79a8;position:absolute;left:0;}',
-    '.pdf-sep{border-top:1px solid #e8e4f5;margin:14px 0;}',
-    'strong{color:#111;font-weight:700;}',
-    '.footer{margin-top:32px;padding-top:12px;border-top:1px solid #eee;font-family:Helvetica,Arial,sans-serif;font-size:9px;color:#ccc;text-align:center;}',
-    '@media print{body{padding:0;}@page{margin:15mm;}}'
-  ].join('');
-
-  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + escapePdf(cleanTitle) + '</title><style>' + css + '</style></head><body>';
-  html += '<div class="header"><div class="logo-box"><div class="logo-sq"></div><span class="logo-txt">FicheAI</span></div><span class="logo-url">ficheai.fr</span></div>';
-  html += '<h1>' + escapePdf(cleanTitle) + '</h1>';
-  html += '<div class="badge">' + (format || 'FICHE').toUpperCase() + '</div>';
-  html += '<div>' + bodyHtml + '</div>';
-  html += '<div class="footer">FicheAI · Fait pour les etudiants</div>';
-  html += '</body></html>';
-
-  var w = window.open('', '_blank', 'width=900,height=700');
-  if (!w) { showToast('⚠️ Autorise les popups pour exporter en PDF'); return; }
-  w.document.write(html);
-  w.document.close();
-  w.focus();
-  setTimeout(function() {
-    w.print();
-    setTimeout(function() { w.close(); }, 1000);
-  }, 600);
+function exportToPDF(content,title,format){
+  var plan=savedUser?(savedUser.plan||'starter'):'starter';
+  if(plan==='starter'){showToast('⚠️ Export PDF disponible à partir du plan Pro !');return;}
+  if(!content){showToast('⚠️ Rien à exporter.');return;}
+  var cleanTitle=title.replace(/[^\x00-\x7F\u00C0-\u017F\s]/g,'').trim();
+  var bodyHtml=formatContentForPDF(content);
+  var css=['*{box-sizing:border-box;margin:0;padding:0}','body{font-family:Georgia,Times,serif;color:#1a1a2e;font-size:13px;line-height:1.7;padding:48px 56px;max-width:800px;margin:0 auto;}','.header{display:flex;align-items:center;justify-content:space-between;border-bottom:2.5px solid #6c5ce7;padding-bottom:12px;margin-bottom:20px;}','.logo-box{display:flex;align-items:center;gap:10px;}','.logo-sq{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#6c5ce7,#fd79a8);}','.logo-txt{font-family:Helvetica,Arial,sans-serif;font-size:18px;font-weight:800;color:#6c5ce7;}','.logo-url{font-family:Helvetica,Arial,sans-serif;font-size:10px;color:#aaa;}','h1{font-family:Helvetica,Arial,sans-serif;font-size:22px;font-weight:800;color:#1a1a2e;margin:0 0 6px;line-height:1.2;}','.badge{display:inline-block;background:#f0edff;color:#6c5ce7;font-family:Helvetica,Arial,sans-serif;font-size:10px;font-weight:700;padding:4px 12px;border-radius:100px;margin-bottom:20px;letter-spacing:0.5px;}','.pdf-section{font-family:Helvetica,Arial,sans-serif;font-size:14px;font-weight:700;color:#6c5ce7;margin:18px 0 8px;padding-left:10px;border-left:3px solid #fd79a8;page-break-after:avoid;}','.pdf-p{font-size:13px;line-height:1.7;margin:0 0 8px;color:#222;page-break-inside:avoid;}','.pdf-list{margin:0 0 10px;padding-left:0;list-style:none;}','.pdf-list li{font-size:13px;line-height:1.65;margin-bottom:6px;padding-left:16px;position:relative;color:#222;page-break-inside:avoid;}','.pdf-list li::before{content:"•";color:#fd79a8;position:absolute;left:0;}','.pdf-sep{border-top:1px solid #e8e4f5;margin:14px 0;}','strong{color:#111;font-weight:700;}','.footer{margin-top:32px;padding-top:12px;border-top:1px solid #eee;font-family:Helvetica,Arial,sans-serif;font-size:9px;color:#ccc;text-align:center;}','@media print{body{padding:0;}@page{margin:15mm;}}'].join('');
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+escapePdf(cleanTitle)+'</title><style>'+css+'</style></head><body>';
+  html+='<div class="header"><div class="logo-box"><div class="logo-sq"></div><span class="logo-txt">FicheAI</span></div><span class="logo-url">ficheai.fr</span></div>';
+  html+='<h1>'+escapePdf(cleanTitle)+'</h1>';
+  html+='<div class="badge">'+(format||'FICHE').toUpperCase()+'</div>';
+  html+='<div>'+bodyHtml+'</div>';
+  html+='<div class="footer">FicheAI · Fait pour les etudiants</div>';
+  html+='</body></html>';
+  var w=window.open('','_blank','width=900,height=700');
+  if(!w){showToast('⚠️ Autorise les popups pour exporter en PDF');return;}
+  w.document.write(html);w.document.close();w.focus();
+  setTimeout(function(){w.print();setTimeout(function(){w.close();},1000);},600);
 }
 
-function exportMsgToPDF(btn) {
-  var content = btn.closest('.msg').querySelector('.msg-content').innerText;
-  exportToPDF(content, currentFormatIcon + ' ' + currentFormatName, currentFormatName);
-}
+function exportMsgToPDF(btn){var content=btn.closest('.msg').querySelector('.msg-content').innerText;exportToPDF(content,currentFormatIcon+' '+currentFormatName,currentFormatName);}
 </script>
 <script>
 (function(){
-  var SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
-  var SUPABASE_KEY = 'sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ';
-  var banner = document.getElementById('maintenance-banner');
-
-  function formatCompteARebours(secondes){
-    if (secondes <= 0) return 'imminente';
-    var m = Math.floor(secondes / 60), s = secondes % 60;
-    return m > 0 ? (m + ' min ' + s + ' s') : (s + ' s');
-  }
-
+  var SUPABASE_URL='https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
+  var SUPABASE_KEY='sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ';
+  var banner=document.getElementById('maintenance-banner');
+  function formatCompteARebours(secondes){if(secondes<=0)return'imminente';var m=Math.floor(secondes/60),s=secondes%60;return m>0?(m+' min '+s+' s'):(s+' s');}
   async function checkMaintenance(){
     try{
-      var r = await fetch(SUPABASE_URL + '/rest/v1/rpc/get_maintenance_status', {
-        method: 'POST', headers: {'apikey': SUPABASE_KEY, 'Content-Type': 'application/json'}, body: '{}'
-      });
-      var d = await r.json();
-      if(d && d.maintenance_mode){
-        if(d.hard_blocked){
-          banner.textContent = '🚧 ' + (d.message || 'FicheAI est en maintenance.');
-          banner.style.display = 'block';
-        } else if(d.starts_at) {
-          var secondesRestantes = Math.max(0, Math.round((new Date(d.starts_at) - new Date()) / 1000));
-          banner.textContent = '🚧 Maintenance prévue dans ' + formatCompteARebours(secondesRestantes) + '. Termine ce que tu es en train de faire !';
-          banner.style.display = 'block';
-        }
-      } else {
-        banner.style.display = 'none';
-      }
+      var r=await fetch(SUPABASE_URL+'/rest/v1/rpc/get_maintenance_status',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Content-Type':'application/json'},body:'{}'});
+      var d=await r.json();
+      if(d&&d.maintenance_mode){
+        if(d.hard_blocked){banner.textContent='🚧 '+(d.message||'FicheAI est en maintenance.');banner.style.display='block';}
+        else if(d.starts_at){var secondesRestantes=Math.max(0,Math.round((new Date(d.starts_at)-new Date())/1000));banner.textContent='🚧 Maintenance prévue dans '+formatCompteARebours(secondesRestantes)+'. Termine ce que tu es en train de faire !';banner.style.display='block';}
+      }else{banner.style.display='none';}
     }catch(e){}
   }
-
-  checkMaintenance();
-  setInterval(checkMaintenance, 10000);
+  checkMaintenance();setInterval(checkMaintenance,10000);
 })();
 </script>
 </body>
