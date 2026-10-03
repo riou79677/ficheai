@@ -234,6 +234,12 @@ textarea::placeholder{color:var(--text3)}
 </style>
 </head>
 <body>
+<div id="maintenance-lock" style="display:none;position:fixed;inset:0;z-index:99999;background:#07070f;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:2rem;font-family:'DM Sans',sans-serif">
+  <div style="font-size:3.5rem;margin-bottom:1.2rem">🚧</div>
+  <h2 style="font-family:'Syne',sans-serif;font-size:1.6rem;margin-bottom:0.8rem;color:#f0efff">FicheAI est en maintenance</h2>
+  <p id="maintenance-lock-msg" style="font-size:0.95rem;color:#9898b8;line-height:1.7;max-width:420px;margin-bottom:2rem">On revient très vite !</p>
+  <button onclick="deconnexion()" style="background:transparent;border:1px solid rgba(255,255,255,0.18);color:#f0efff;padding:0.75rem 1.8rem;border-radius:100px;font-size:0.9rem;font-weight:600;cursor:pointer;font-family:inherit">🚪 Se déconnecter</button>
+</div>
 <div id="maintenance-banner" style="display:none;position:sticky;top:0;left:0;right:0;background:linear-gradient(135deg,#f59e0b,#f97316);color:#1a1200;padding:0.7rem 1rem;text-align:center;font-size:0.85rem;font-weight:700;z-index:2000"></div>
 <nav>
   <a href="/" class="logo">
@@ -489,7 +495,7 @@ var onboardingStep=0;
 var onboardingSteps=[
   {icon:'🎯',title:'Choisis ton format',text:'Fiche, quiz, flashcards, mind map… Sélectionne dans la colonne de gauche le type de contenu que tu veux générer.'},
   {icon:'📝',title:'Colle ou importe ton cours',text:'Colle directement ton cours dans la zone de texte, ou importe un fichier PDF / TXT depuis tes documents.'},
-  {icon:'⚡',title:'Génère en un clic',text:'Clique sur "Générer avec l\\'IA" et récupère ta fiche en quelques secondes. Tu peux ensuite la copier, l\\'exporter en PDF ou la sauvegarder.'}
+  {icon:'⚡',title:'Génère en un clic',text:'Clique sur « Générer avec l’IA » et récupère ta fiche en quelques secondes. Tu peux ensuite la copier, l’exporter en PDF ou la sauvegarder.'}
 ];
 
 function showToast(msg){
@@ -617,7 +623,7 @@ if(savedUser&&savedUser.email){
   if(savedUser.limit!==undefined){tokensLimit=savedUser.limit;}
   document.getElementById('tok-nav').textContent=tokensLeft;
   if(savedUser.plan)document.getElementById('plan-name').textContent=savedUser.plan.charAt(0).toUpperCase()+savedUser.plan.slice(1);
-  fetch(SUPABASE_URL+'/rest/v1/rpc/get_is_dev',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({p_email:savedUser.email})}).then(function(r){return r.json();}).then(function(isDev){if(isDev)document.getElementById('dev-toggle').style.display='block';}).catch(function(){});
+  fetch(SUPABASE_URL+'/rest/v1/rpc/get_is_dev',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({p_email:savedUser.email})}).then(function(r){return r.json();}).then(function(isDev){if(isDev){window.isDevUser=true;document.getElementById('dev-toggle').style.display='block';}}).catch(function(){});
   document.getElementById('stats-card').style.display='block';
   document.getElementById('stat-gen').textContent=tokensLeft;
   loadFichesCount();
@@ -1069,18 +1075,42 @@ function exportMsgToPDF(btn){var content=btn.closest('.msg').querySelector('.msg
   var SUPABASE_URL='https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
   var SUPABASE_KEY='sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ';
   var banner=document.getElementById('maintenance-banner');
-  function formatCompteARebours(secondes){if(secondes<=0)return'imminente';var m=Math.floor(secondes/60),s=secondes%60;return m>0?(m+' min '+s+' s'):(s+' s');}
+  var lock=document.getElementById('maintenance-lock');
+  var lockMsg=document.getElementById('maintenance-lock-msg');
+  var state=null; // dernier statut reçu du serveur
+  function formatCompteARebours(secondes){if(secondes<=0)return'0 s';var m=Math.floor(secondes/60),s=secondes%60;return m>0?(m+' min '+(s<10?'0':'')+s+' s'):(s+' s');}
+
+  // Affichage recalculé chaque seconde à partir de l'heure de début (pas besoin de re-interroger le serveur)
+  function render(){
+    if(!state||!state.maintenance_mode){banner.style.display='none';lock.style.display='none';document.body.style.overflow='';return;}
+    var startsAt=state.starts_at?new Date(state.starts_at).getTime():null;
+    var blocked=state.hard_blocked||(startsAt!==null&&Date.now()>=startsAt);
+    if(blocked){
+      if(window.isDevUser){
+        banner.textContent='🚧 Mode maintenance actif (tu restes connecté en tant qu\'administrateur).';
+        banner.style.display='block';lock.style.display='none';
+      } else {
+        lockMsg.textContent=state.message||'On revient très vite !';
+        lock.style.display='flex';banner.style.display='none';document.body.style.overflow='hidden';
+      }
+    } else if(startsAt!==null){
+      var restant=Math.max(0,Math.round((startsAt-Date.now())/1000));
+      banner.textContent='🚧 Maintenance prévue dans '+formatCompteARebours(restant)+'. Termine ce que tu es en train de faire !';
+      banner.style.display='block';lock.style.display='none';
+    }
+  }
+
   async function checkMaintenance(){
     try{
       var r=await fetch(SUPABASE_URL+'/rest/v1/rpc/get_maintenance_status',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Content-Type':'application/json'},body:'{}'});
-      var d=await r.json();
-      if(d&&d.maintenance_mode){
-        if(d.hard_blocked){banner.textContent='🚧 '+(d.message||'FicheAI est en maintenance.');banner.style.display='block';}
-        else if(d.starts_at){var secondesRestantes=Math.max(0,Math.round((new Date(d.starts_at)-new Date())/1000));banner.textContent='🚧 Maintenance prévue dans '+formatCompteARebours(secondesRestantes)+'. Termine ce que tu es en train de faire !';banner.style.display='block';}
-      }else{banner.style.display='none';}
+      state=await r.json();
+      render();
     }catch(e){}
   }
-  checkMaintenance();setInterval(checkMaintenance,10000);
+
+  checkMaintenance();
+  setInterval(checkMaintenance,10000); // vérifie le serveur toutes les 10 s
+  setInterval(render,1000);            // met à jour l'affichage chaque seconde
 })();
 </script>
 </body>
