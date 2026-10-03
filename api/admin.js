@@ -1,5 +1,15 @@
 // API réservée à l'administrateur du site. Toute action nécessite un token Supabase valide
 // appartenant à un compte ayant is_dev = true en base (vérifié à chaque appel).
+
+// ── Limites par défaut selon le plan ──
+// Utilisées automatiquement quand on change le plan d'un utilisateur depuis le panneau admin,
+// pour éviter que la limite reste figée sur l'ancien plan (bug corrigé le 03/10/2026).
+const PLAN_LIMITS = {
+  starter: { generations_limit: 5, chat_messages_limit: 0, flashcards_limit: 0 },
+  pro: { generations_limit: 50, chat_messages_limit: 20, flashcards_limit: 100 },
+  ultimate: { generations_limit: 300, chat_messages_limit: 300, flashcards_limit: 500 }
+};
+
 export default async function handler(req, res) {
   const allowedOrigins = ['https://studyai-kappa-swart.vercel.app', 'https://ficheai.fr'];
   const origin = req.headers.origin;
@@ -76,13 +86,11 @@ export default async function handler(req, res) {
     // ── Fiches générées récemment — pseudo affiché à la place de l'email ──
     if (action === 'get_recent_fiches') {
       const limit = (payload && payload.limit) || 30;
-      // Jointure avec users pour récupérer le username via la foreign key user_email
       const fichesR = await fetch(
         SUPABASE_URL + '/rest/v1/fiches?select=created_at,user_email,format,format_icon,titre,users!fiches_user_email_fkey(username)&order=created_at.desc&limit=' + limit,
         { headers: sb }
       );
       const fiches = await fichesR.json();
-      // Aplatir : extraire username depuis l'objet imbriqué users
       const fichesFlat = fiches.map(function(f) {
         return {
           created_at: f.created_at,
@@ -130,11 +138,26 @@ export default async function handler(req, res) {
     }
 
     // ── Modifier manuellement le plan/quota d'un utilisateur ──
+    // CORRECTION (03/10/2026) : quand on change le plan sans préciser de limite explicite,
+    // on applique automatiquement les limites par défaut du nouveau plan (PLAN_LIMITS).
+    // Avant ce fix, changer le plan ne touchait jamais generations_limit/chat_messages_limit/
+    // flashcards_limit, qui restaient donc figées sur les valeurs de l'ancien plan
+    // (ex: un Starter upgradé en Ultimate restait plafonné à 5 générations).
     if (action === 'set_plan') {
       const { email, plan, generations_limit, chat_messages_limit, flashcards_limit } = payload || {};
       if (!email) return res.status(400).json({ error: 'Email manquant' });
       const body = {};
-      if (plan) body.plan = plan;
+      if (plan) {
+        body.plan = plan;
+        const defaults = PLAN_LIMITS[plan];
+        if (defaults) {
+          body.generations_limit = defaults.generations_limit;
+          body.chat_messages_limit = defaults.chat_messages_limit;
+          body.flashcards_limit = defaults.flashcards_limit;
+        }
+      }
+      // Les valeurs explicitement passées dans le payload écrasent toujours les valeurs par défaut
+      // (permet un ajustement manuel ponctuel, ex: recharge gratuite de générations).
       if (generations_limit !== undefined) body.generations_limit = generations_limit;
       if (chat_messages_limit !== undefined) body.chat_messages_limit = chat_messages_limit;
       if (flashcards_limit !== undefined) body.flashcards_limit = flashcards_limit;
@@ -144,6 +167,24 @@ export default async function handler(req, res) {
       });
       const result = await r.json();
       return res.status(200).json({ success: true, result });
+    }
+
+    // ── Ajouter des générations gratuites ponctuelles à un utilisateur ──
+    // Augmente generations_limit de X sans toucher generations_used, donc débloque
+    // immédiatement X générations supplémentaires pour l'utilisateur. Utilisé depuis
+    // la nouvelle section "Comptes proches de leur quota" du panneau admin.
+    if (action === 'grant_bonus_generations') {
+      const { email, amount } = payload || {};
+      if (!email || !amount || amount <= 0) return res.status(400).json({ error: 'Email ou quantité invalide' });
+      const currentR = await fetch(SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=generations_limit', { headers: sb });
+      const currentData = await currentR.json();
+      const current = (currentData && currentData[0]) ? (currentData[0].generations_limit || 0) : 0;
+      const r = await fetch(SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email), {
+        method: 'PATCH', headers: { ...sb, 'Prefer': 'return=representation' },
+        body: JSON.stringify({ generations_limit: current + amount })
+      });
+      const result = await r.json();
+      return res.status(200).json({ success: true, new_limit: current + amount, result });
     }
 
     // ── Supprimer définitivement un compte ──
