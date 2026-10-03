@@ -118,18 +118,20 @@ async function handleLogin(){
     var planData=await planResponse.json();
     var userInfo=(planData&&planData[0])?planData[0]:null;
     var plan='starter';
+    var limit=5;
     var remaining=5;
     if(userInfo){
       plan=userInfo.plan||'starter';
-      var limit=userInfo.generations_limit||5;
+      limit=userInfo.generations_limit||5;
       var used=userInfo.generations_used||0;
-      if(plan==='ultimate'){remaining=999999;}
-      else{remaining=Math.max(0,limit-used);}
+      remaining=Math.max(0,limit-used);
     }
+    // limit est stocké pour que app.html affiche la barre de quota et le pourcentage exact.
     localStorage.setItem('ficheai_user',JSON.stringify({
       email:data.user.email,
       plan:plan,
       remaining:remaining,
+      limit:limit,
       access_token:data.access_token
     }));
     successBox.textContent='Connecté ! Redirection...';
