@@ -20,7 +20,9 @@ nav{position:sticky;top:0;z-index:100;background:rgba(7,7,15,0.85);backdrop-filt
 .logo:hover .logo-icon{transform:rotate(-8deg) scale(1.1)}
 .logo-icon svg{width:16px;height:16px}
 .nav-right{display:flex;align-items:center;gap:0.8rem}
-.plan-badge{font-size:0.76rem;color:var(--text3);background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:100px;padding:0.3rem 0.8rem}
+.plan-badge{font-size:0.76rem;color:var(--text3);background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:100px;padding:0.3rem 0.8rem;cursor:default}
+.plan-badge.low{color:var(--gold);border-color:rgba(253,203,110,0.3);background:rgba(253,203,110,0.08)}
+.plan-badge.critical{color:#fd79a8;border-color:rgba(253,121,168,0.35);background:rgba(253,121,168,0.1)}
 .user-badge{font-size:0.82rem;font-weight:600;color:var(--purple2);background:rgba(108,92,231,0.1);border:1px solid rgba(108,92,231,0.2);padding:0.35rem 0.8rem;border-radius:100px;cursor:pointer;user-select:none;transition:all 0.2s}
 .user-badge:hover{background:rgba(108,92,231,0.18)}
 .user-menu{display:none;position:absolute;right:0;top:120%;background:#0d0d1a;border:1px solid var(--border2);border-radius:14px;padding:0.5rem;min-width:210px;z-index:200;box-shadow:0 12px 40px rgba(0,0,0,0.5)}
@@ -35,7 +37,8 @@ nav{position:sticky;top:0;z-index:100;background:rgba(7,7,15,0.85);backdrop-filt
 .app-layout{flex:1;display:flex;max-width:1100px;margin:0 auto;width:100%;padding:1.5rem;gap:1.5rem;position:relative;z-index:1}
 .sidebar{width:260px;flex-shrink:0;display:flex;flex-direction:column;gap:1rem}
 .sidebar-card{background:var(--bg2);border:1px solid var(--border);border-radius:18px;padding:1.2rem}
-.sidebar-label{font-size:0.68rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:0.8rem}
+.sidebar-label{font-size:0.68rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:0.8rem;display:flex;align-items:center;gap:6px}
+.step-num{width:18px;height:18px;border-radius:50%;background:var(--purple);color:#fff;font-size:0.62rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:800}
 .mode-switcher{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:3px;display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-bottom:1.2rem}
 .mode-btn{padding:0.55rem;border:none;background:none;color:var(--text3);font-size:0.82rem;font-weight:600;cursor:pointer;font-family:var(--font-b);border-radius:9px;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:5px}
 .mode-btn.active{background:var(--surface);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,0.2)}
@@ -60,8 +63,36 @@ nav{position:sticky;top:0;z-index:100;background:rgba(7,7,15,0.85);backdrop-filt
 .stat-mini{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:0.7rem;text-align:center}
 .stat-mini-val{font-family:var(--font-h);font-size:1.2rem;font-weight:800;background:linear-gradient(135deg,var(--purple2),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .stat-mini-label{font-size:0.65rem;color:var(--text3);margin-top:2px}
+.quota-bar-wrap{margin-top:0.8rem}
+.quota-bar-track{width:100%;height:6px;background:var(--bg3);border-radius:100px;overflow:hidden}
+.quota-bar-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--purple),var(--pink));transition:width 0.4s var(--ease)}
+.quota-bar-fill.low{background:linear-gradient(90deg,var(--gold),#e17055)}
+.quota-bar-fill.critical{background:linear-gradient(90deg,#fd79a8,#e84393)}
+.quota-bar-label{font-size:0.68rem;color:var(--text3);margin-top:5px;display:flex;justify-content:space-between}
 .main-area{flex:1;display:flex;flex-direction:column;gap:1rem;min-width:0}
+.quota-banner{display:none;background:linear-gradient(135deg,rgba(253,203,110,0.1),rgba(225,112,85,0.06));border:1px solid rgba(253,203,110,0.3);border-radius:16px;padding:1rem 1.2rem;gap:12px;align-items:flex-start}
+.quota-banner.critical{background:linear-gradient(135deg,rgba(253,121,168,0.1),rgba(232,67,147,0.06));border-color:rgba(253,121,168,0.35)}
+.quota-banner-icon{font-size:1.4rem;flex-shrink:0}
+.quota-banner-text{flex:1;font-size:0.84rem;color:var(--text2);line-height:1.6}
+.quota-banner-text b{color:var(--gold)}
+.quota-banner.critical .quota-banner-text b{color:#fd79a8}
+.quota-banner-links{display:flex;gap:6px;margin-top:0.6rem;flex-wrap:wrap}
+.quota-banner-links a{background:var(--bg3);border:1px solid var(--border2);color:var(--text2);text-decoration:none;font-size:0.74rem;font-weight:600;padding:0.35rem 0.8rem;border-radius:100px;transition:all 0.18s}
+.quota-banner-links a:hover{border-color:var(--purple2);color:var(--purple2)}
+.quota-banner-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:1rem;flex-shrink:0;padding:0}
 .express-area{display:flex;flex-direction:column;gap:1rem}
+.onboarding-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.78);backdrop-filter:blur(6px);z-index:8000;align-items:center;justify-content:center;padding:1.5rem}
+.onboarding-overlay.active{display:flex}
+.onboarding-box{background:#0d0d1a;border:1px solid rgba(108,92,231,0.4);border-radius:22px;padding:2.2rem;max-width:420px;width:100%;text-align:center}
+.onboarding-step-icon{font-size:2.6rem;margin-bottom:1rem}
+.onboarding-box h3{font-family:var(--font-h);font-size:1.2rem;margin-bottom:0.6rem}
+.onboarding-box p{font-size:0.86rem;color:var(--text2);line-height:1.6;margin-bottom:1.5rem}
+.onboarding-dots{display:flex;gap:6px;justify-content:center;margin-bottom:1.3rem}
+.onboarding-dot{width:7px;height:7px;border-radius:50%;background:var(--border2);transition:all 0.2s}
+.onboarding-dot.active{background:var(--purple2);width:18px;border-radius:100px}
+.onboarding-actions{display:flex;gap:8px}
+.onboarding-skip{flex:0 0 auto;background:none;border:none;color:var(--text3);font-size:0.82rem;cursor:pointer;font-family:var(--font-b);padding:0.7rem 0.5rem}
+.onboarding-next{flex:1;background:linear-gradient(135deg,var(--purple),var(--pink));border:none;color:#fff;padding:0.75rem;border-radius:100px;font-weight:700;font-size:0.88rem;cursor:pointer;font-family:var(--font-b)}
 .course-zone{background:var(--bg2);border:1.5px solid var(--border2);border-radius:16px;overflow:hidden;transition:border 0.2s,box-shadow 0.2s}
 .course-zone:focus-within{border-color:var(--purple);box-shadow:0 0 0 4px rgba(108,92,231,0.1)}
 .course-zone-header{display:flex;align-items:center;justify-content:space-between;padding:0.8rem 1.1rem;border-bottom:1px solid var(--border)}
@@ -93,12 +124,23 @@ textarea::placeholder{color:var(--text3)}
 .result-actions{display:flex;gap:6px}
 .result-actions button{background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:0.35rem 0.8rem;font-size:0.75rem;font-weight:600;color:var(--text2);cursor:pointer;font-family:var(--font-b);transition:all 0.18s}
 .result-actions button:hover{border-color:var(--purple2);color:var(--purple2)}
-.result-spinner{display:flex;flex-direction:column;align-items:center;gap:12px;padding:2.5rem}
-.spinner{width:36px;height:36px;border:3px solid var(--border2);border-top-color:var(--purple);border-radius:50%;animation:spin 0.7s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.result-spinner p{font-size:0.83rem;color:var(--text3)}
-.result-content{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:1.2rem;font-size:0.86rem;line-height:1.85;color:var(--text2);word-break:break-word;font-family:var(--font-b);max-height:500px;overflow-y:auto}
-.result-content strong{color:var(--purple2);font-weight:700}
+.skeleton-wrap{display:flex;flex-direction:column;gap:10px;padding:0.3rem 0}
+.skeleton-line{height:14px;border-radius:7px;background:linear-gradient(90deg,var(--bg3) 25%,rgba(255,255,255,0.06) 50%,var(--bg3) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.skeleton-line.w-60{width:60%}
+.skeleton-line.w-80{width:80%}
+.skeleton-line.w-40{width:40%}
+.skeleton-line.w-full{width:100%}
+.skeleton-title{height:20px;border-radius:7px;width:50%;margin-bottom:6px;background:linear-gradient(90deg,var(--bg3) 25%,rgba(108,92,231,0.15) 50%,var(--bg3) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite}
+.result-content{display:none;max-height:560px;overflow-y:auto}
+.rc-section{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:1.1rem 1.2rem;margin-bottom:10px}
+.rc-section-title{font-family:var(--font-h);font-size:0.92rem;font-weight:700;color:var(--purple2);margin-bottom:0.7rem;padding-bottom:0.6rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.rc-item{font-size:0.86rem;line-height:1.75;color:var(--text2);padding:0.3rem 0 0.3rem 1rem;position:relative}
+.rc-item::before{content:'';position:absolute;left:0;top:0.95rem;width:5px;height:5px;border-radius:50%;background:var(--pink)}
+.rc-item strong{color:var(--text);font-weight:700}
+.rc-p{font-size:0.86rem;line-height:1.8;color:var(--text2);margin-bottom:0.5rem}
+.rc-p strong{color:var(--purple2);font-weight:700}
+.rc-plain{font-size:0.86rem;line-height:1.85;color:var(--text2);padding:1rem 0}
 .history-section{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:1.2rem;display:none}
 .history-title{font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:0.8rem}
 .hist-item{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:0.65rem 1rem;margin-bottom:6px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:all 0.18s}
@@ -199,7 +241,7 @@ textarea::placeholder{color:var(--text3)}
     FicheAI
   </a>
   <div class="nav-right">
-    <span class="plan-badge">Plan <span id="plan-name">Starter</span> · <span id="tok-nav">5</span> gen.</span>
+    <span class="plan-badge" id="plan-badge-nav">Plan <span id="plan-name">Starter</span> · <span id="tok-nav">5</span> gen.</span>
     <div style="position:relative;display:inline-block">
       <span id="user-display" style="display:none" class="user-badge" onclick="toggleMenu()"></span>
       <div id="user-menu" class="user-menu">
@@ -222,8 +264,8 @@ textarea::placeholder{color:var(--text3)}
         <button class="mode-btn active" id="mode-express-btn" onclick="switchMode('express')">⚡ Express</button>
         <button class="mode-btn" id="mode-chat-btn" onclick="switchMode('chat')">💬 Chat IA</button>
       </div>
-      <div class="sidebar-label">Format de sortie</div>
-      <div class="format-list">
+      <div class="sidebar-label"><span class="step-num">1</span> Format de sortie</div>
+      <div class="format-list" id="format-list">
         <div class="fmt active" data-fmt="fiche" data-icon="📄" data-name="Fiche de révision" onclick="selectFormat(this)"><span class="fmt-icon">📄</span><div class="fmt-info"><span class="fmt-name">Fiche de révision</span><span class="fmt-desc">Structurée & complète</span></div></div>
         <div class="fmt" data-fmt="quiz" data-icon="✅" data-name="Quiz QCM" onclick="selectFormat(this)"><span class="fmt-icon">✅</span><div class="fmt-info"><span class="fmt-name">Quiz QCM</span><span class="fmt-desc">6 questions & corrections</span></div></div>
         <div class="fmt" data-fmt="flash" data-icon="🃏" data-name="Flashcards" onclick="selectFormat(this)"><span class="fmt-icon">🃏</span><div class="fmt-info"><span class="fmt-name">Flashcards</span><span class="fmt-desc">10 cartes recto/verso</span></div></div>
@@ -233,8 +275,8 @@ textarea::placeholder{color:var(--text3)}
         <div class="fmt" data-fmt="examen" data-icon="📝" data-name="Sujet d'examen" data-premium="1" onclick="selectFormat(this)"><span class="fmt-icon">📝</span><div class="fmt-info"><span class="fmt-name">Sujet d'examen <span style="background:linear-gradient(135deg,#6c5ce7,#fd79a8);color:#fff;font-size:0.62rem;font-weight:700;padding:1px 7px;border-radius:100px;margin-left:4px;vertical-align:middle">PRO</span></span><span class="fmt-desc">Entraînement noté et corrigé, sur mesure</span></div></div>
       </div>
     </div>
-    <div class="sidebar-card">
-      <div class="sidebar-label">Importer ton cours</div>
+    <div class="sidebar-card" id="import-card">
+      <div class="sidebar-label"><span class="step-num">2</span> Importer ton cours</div>
       <input type="file" id="file-input" accept=".pdf,.txt" style="display:none">
       <input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none">
       <div class="import-btns">
@@ -257,14 +299,27 @@ textarea::placeholder{color:var(--text3)}
         <div class="stat-mini"><div class="stat-mini-val" id="stat-gen">–</div><div class="stat-mini-label">Générations</div></div>
         <div class="stat-mini"><div class="stat-mini-val" id="stat-fiches">–</div><div class="stat-mini-label">Fiches sauvées</div></div>
       </div>
+      <div class="quota-bar-wrap" id="quota-bar-wrap" style="display:none">
+        <div class="quota-bar-track"><div class="quota-bar-fill" id="quota-bar-fill" style="width:0%"></div></div>
+        <div class="quota-bar-label"><span id="quota-bar-text">0 / 0</span><span id="quota-bar-pct">0%</span></div>
+      </div>
     </div>
   </div>
 
   <div class="main-area">
+    <div class="quota-banner" id="quota-banner">
+      <span class="quota-banner-icon">⚠️</span>
+      <div class="quota-banner-text">
+        <div id="quota-banner-msg">Tu approches de ta limite.</div>
+        <div class="quota-banner-links" id="quota-banner-links"></div>
+      </div>
+      <button class="quota-banner-close" onclick="document.getElementById('quota-banner').style.display='none'">✕</button>
+    </div>
+
     <div class="express-area" id="express-area">
       <div class="course-zone">
         <div class="course-zone-header">
-          <span class="course-zone-title">📝 Ton cours</span>
+          <span class="course-zone-title"><span class="step-num" style="display:inline-flex;vertical-align:middle;margin-right:4px">3</span>📝 Ton cours</span>
           <span class="char-count" id="char-count">0 caractères</span>
         </div>
         <textarea id="course-input" placeholder="Colle ici le contenu de ton cours… FicheAI va l'analyser et générer ton outil de révision parfait en quelques secondes."></textarea>
@@ -289,8 +344,16 @@ textarea::placeholder{color:var(--text3)}
             <button id="reset-btn">↩ Nouveau</button>
           </div>
         </div>
-        <div id="result-spinner" class="result-spinner"><div class="spinner"></div><p>L'IA analyse ton cours…</p></div>
-        <div id="result-content" class="result-content" style="display:none"></div>
+        <div id="result-spinner" class="skeleton-wrap">
+          <div class="skeleton-title"></div>
+          <div class="skeleton-line w-full"></div>
+          <div class="skeleton-line w-80"></div>
+          <div class="skeleton-line w-60"></div>
+          <div class="skeleton-title" style="margin-top:14px"></div>
+          <div class="skeleton-line w-full"></div>
+          <div class="skeleton-line w-40"></div>
+        </div>
+        <div id="result-content" class="result-content"></div>
       </div>
       <div class="history-section" id="history-section">
         <div class="history-title">📂 Historique de session</div>
@@ -382,6 +445,19 @@ textarea::placeholder{color:var(--text3)}
   </div>
 </div>
 
+<div class="onboarding-overlay" id="onboarding-overlay">
+  <div class="onboarding-box">
+    <div class="onboarding-step-icon" id="onb-icon">🎯</div>
+    <h3 id="onb-title">Choisis ton format</h3>
+    <p id="onb-text">Fiche, quiz, flashcards, mind map… Sélectionne dans la colonne de gauche le type de contenu que tu veux générer.</p>
+    <div class="onboarding-dots"><div class="onboarding-dot active"></div><div class="onboarding-dot"></div><div class="onboarding-dot"></div></div>
+    <div class="onboarding-actions">
+      <button class="onboarding-skip" onclick="closeOnboarding()">Passer</button>
+      <button class="onboarding-next" id="onb-next-btn" onclick="onboardingNext()">Suivant</button>
+    </div>
+  </div>
+</div>
+
 <button class="dev-toggle" id="dev-toggle" onclick="toggleDevPanel()">🛠️ Dev</button>
 <div id="dev-panel" style="display:none;position:fixed;bottom:3.5rem;right:1rem;z-index:9999;">
   <div style="background:#0d0d1a;border:1px solid rgba(108,92,231,0.4);border-radius:12px;padding:1rem;min-width:220px;box-shadow:0 8px 32px rgba(0,0,0,0.5);">
@@ -392,6 +468,7 @@ textarea::placeholder{color:var(--text3)}
       <button onclick="simulatePlan('ultimate')" style="background:#181830;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:0.4rem 0.8rem;color:#9898b8;font-size:0.78rem;cursor:pointer;text-align:left;font-family:DM Sans,sans-serif;">👑 Simuler Ultimate</button>
       <button onclick="resetGenerations()" style="background:#181830;border:1px solid rgba(255,165,0,0.25);border-radius:8px;padding:0.4rem 0.8rem;color:#fb923c;font-size:0.78rem;cursor:pointer;text-align:left;font-family:DM Sans,sans-serif;">🔢 Générations à 0</button>
       <button onclick="simulatePlan('reset')" style="background:#181830;border:1px solid rgba(108,92,231,0.25);border-radius:8px;padding:0.4rem 0.8rem;color:#a29bfe;font-size:0.78rem;cursor:pointer;text-align:left;font-family:DM Sans,sans-serif;">🔄 Réinitialiser</button>
+      <button onclick="localStorage.removeItem('onboarding_vu');showOnboarding();" style="background:#181830;border:1px solid rgba(108,92,231,0.25);border-radius:8px;padding:0.4rem 0.8rem;color:#a29bfe;font-size:0.78rem;cursor:pointer;text-align:left;font-family:DM Sans,sans-serif;">🎓 Revoir l'onboarding</button>
     </div>
   </div>
 </div>
@@ -401,10 +478,19 @@ var SUPABASE_URL='https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
 var SUPABASE_KEY='sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ';
 var PRO_M='https://buy.stripe.com/00wfZibWR8Zl8o7eUK43S05';
 var ULT_M='https://buy.stripe.com/aFadRaaSN2AX33NeUK43S07';
+var RECHARGE_50='https://buy.stripe.com/28E14o9OJdfBgUD4g643S09';
+var RECHARGE_150='https://buy.stripe.com/7sY8wQbWRgrN6fZ6oe43S0a';
+var RECHARGE_400='https://buy.stripe.com/14A14o2mhdfB7k3bIy43S0b';
 var currentFormat='fiche',currentFormatName='Fiche de révision',currentFormatIcon='📄';
-var tokensLeft=5,lastResult='',sessionHistory=[],currentUserEmail=null,currentUserToken=null,savedUser=null;
+var tokensLeft=5,tokensLimit=5,lastResult='',sessionHistory=[],currentUserEmail=null,currentUserToken=null,savedUser=null;
 var devPanelOpen=false,currentMode='express';
 var courseContent='',chatHistory=[],chatMsgCount=0;
+var onboardingStep=0;
+var onboardingSteps=[
+  {icon:'🎯',title:'Choisis ton format',text:'Fiche, quiz, flashcards, mind map… Sélectionne dans la colonne de gauche le type de contenu que tu veux générer.'},
+  {icon:'📝',title:'Colle ou importe ton cours',text:'Colle directement ton cours dans la zone de texte, ou importe un fichier PDF / TXT depuis tes documents.'},
+  {icon:'⚡',title:'Génère en un clic',text:'Clique sur "Générer avec l\\'IA" et récupère ta fiche en quelques secondes. Tu peux ensuite la copier, l\\'exporter en PDF ou la sauvegarder.'}
+];
 
 function showToast(msg){
   var t=document.createElement('div');
@@ -412,6 +498,31 @@ function showToast(msg){
   t.style.cssText='position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:#0d0d1a;border:1px solid rgba(108,92,231,0.4);color:#f0efff;padding:0.7rem 1.5rem;border-radius:100px;font-size:0.85rem;font-weight:600;z-index:10000;box-shadow:0 4px 20px rgba(0,0,0,0.4);white-space:nowrap;';
   document.body.appendChild(t);
   setTimeout(function(){t.remove();},2500);
+}
+
+// ── ONBOARDING (3 étapes, affiché une seule fois) ──
+function showOnboarding(){
+  if(localStorage.getItem('onboarding_vu'))return;
+  onboardingStep=0;
+  renderOnboardingStep();
+  document.getElementById('onboarding-overlay').classList.add('active');
+}
+function renderOnboardingStep(){
+  var s=onboardingSteps[onboardingStep];
+  document.getElementById('onb-icon').textContent=s.icon;
+  document.getElementById('onb-title').textContent=s.title;
+  document.getElementById('onb-text').textContent=s.text;
+  document.querySelectorAll('.onboarding-dot').forEach(function(d,i){d.classList.toggle('active',i===onboardingStep);});
+  document.getElementById('onb-next-btn').textContent=onboardingStep===onboardingSteps.length-1?'Compris !':'Suivant';
+}
+function onboardingNext(){
+  onboardingStep++;
+  if(onboardingStep>=onboardingSteps.length){closeOnboarding();return;}
+  renderOnboardingStep();
+}
+function closeOnboarding(){
+  document.getElementById('onboarding-overlay').classList.remove('active');
+  localStorage.setItem('onboarding_vu','1');
 }
 
 function toggleMenu(){var m=document.getElementById('user-menu');m.style.display=m.style.display==='block'?'none':'block';}
@@ -427,14 +538,15 @@ function toggleDevPanel(){devPanelOpen=!devPanelOpen;document.getElementById('de
 function simulatePlan(plan){
   if(!savedUser)return;
   if(plan==='reset'){window.location.reload();return;}
-  var limits={starter:5,pro:50,ultimate:999999};
-  savedUser.plan=plan;savedUser.remaining=limits[plan];
+  var limits={starter:5,pro:50,ultimate:300};
+  savedUser.plan=plan;savedUser.remaining=limits[plan];savedUser.limit=limits[plan];
   localStorage.setItem('ficheai_user',JSON.stringify(savedUser));
   document.getElementById('plan-name').textContent=plan.charAt(0).toUpperCase()+plan.slice(1);
-  document.getElementById('tok-nav').textContent=limits[plan]===999999?'∞':limits[plan];
-  tokensLeft=limits[plan];
+  document.getElementById('tok-nav').textContent=limits[plan];
+  tokensLeft=limits[plan];tokensLimit=limits[plan];
   showToast('✅ Plan simulé : '+plan);
   updateNavUpgradeBtn();
+  updateQuotaUI();
   if(currentMode==='chat')renderChatMode();
 }
 
@@ -443,6 +555,7 @@ function resetGenerations(){
   tokensLeft=0;savedUser.remaining=0;
   localStorage.setItem('ficheai_user',JSON.stringify(savedUser));
   document.getElementById('tok-nav').textContent='0';
+  updateQuotaUI();
   showToast('🔢 Générations à 0 !');
 }
 
@@ -455,6 +568,43 @@ function updateNavUpgradeBtn(){
   else{btn.textContent='👑 Ultimate';btn.href='#';btn.target='_self';btn.style.cssText='background:linear-gradient(135deg,#fdcb6e,#e17055);display:inline-block;color:white;padding:0.38rem 1rem;border-radius:100px;font-size:0.82rem;font-weight:700;text-decoration:none;cursor:default;pointer-events:none;opacity:0.85;';}
 }
 
+// ── BANDEAU / BARRE DE QUOTA (affichage automatique, aucune action admin requise) ──
+function updateQuotaUI(){
+  if(!savedUser||tokensLimit<=0)return;
+  var used=tokensLimit-tokensLeft;
+  var pct=Math.round((used/tokensLimit)*100);
+  var badge=document.getElementById('plan-badge-nav');
+  badge.classList.remove('low','critical');
+  if(pct>=95)badge.classList.add('critical');
+  else if(pct>=80)badge.classList.add('low');
+
+  var barWrap=document.getElementById('quota-bar-wrap');
+  if(barWrap){
+    barWrap.style.display='block';
+    var fill=document.getElementById('quota-bar-fill');
+    fill.style.width=Math.min(100,pct)+'%';
+    fill.classList.remove('low','critical');
+    if(pct>=95)fill.classList.add('critical');else if(pct>=80)fill.classList.add('low');
+    document.getElementById('quota-bar-text').textContent=used+' / '+tokensLimit;
+    document.getElementById('quota-bar-pct').textContent=pct+'%';
+  }
+
+  var banner=document.getElementById('quota-banner');
+  if(pct>=80){
+    banner.style.display='flex';
+    banner.classList.toggle('critical',pct>=95);
+    document.getElementById('quota-banner-msg').innerHTML=pct>=95
+      ? 'Tu as utilisé <b>'+pct+'%</b> de tes générations ce mois-ci ('+used+' / '+tokensLimit+'). Plus que '+tokensLeft+' restante'+(tokensLeft>1?'s':'')+' !'
+      : 'Tu approches de ta limite : <b>'+pct+'%</b> utilisé ('+used+' / '+tokensLimit+' générations ce mois-ci).';
+    document.getElementById('quota-banner-links').innerHTML=
+      '<a href="'+RECHARGE_50+'" target="_blank">+50 générations — 6,99€</a>'+
+      '<a href="'+RECHARGE_150+'" target="_blank">+150 générations — 19,99€</a>'+
+      '<a href="'+RECHARGE_400+'" target="_blank">+400 générations — 49,99€</a>';
+  } else {
+    banner.style.display='none';
+  }
+}
+
 try{savedUser=JSON.parse(localStorage.getItem('ficheai_user'));}catch(e){}
 
 if(savedUser&&savedUser.email){
@@ -463,12 +613,16 @@ if(savedUser&&savedUser.email){
   document.getElementById('user-display').style.display='inline-block';
   ensureUsername();
   document.getElementById('nav-login-link').style.display='none';
-  if(savedUser.remaining!==undefined){tokensLeft=savedUser.remaining;document.getElementById('tok-nav').textContent=tokensLeft===999999?'∞':tokensLeft;}
+  if(savedUser.remaining!==undefined){tokensLeft=savedUser.remaining;}
+  if(savedUser.limit!==undefined){tokensLimit=savedUser.limit;}
+  document.getElementById('tok-nav').textContent=tokensLeft;
   if(savedUser.plan)document.getElementById('plan-name').textContent=savedUser.plan.charAt(0).toUpperCase()+savedUser.plan.slice(1);
   fetch(SUPABASE_URL+'/rest/v1/rpc/get_is_dev',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({p_email:savedUser.email})}).then(function(r){return r.json();}).then(function(isDev){if(isDev)document.getElementById('dev-toggle').style.display='block';}).catch(function(){});
   document.getElementById('stats-card').style.display='block';
-  document.getElementById('stat-gen').textContent=tokensLeft===999999?'∞':tokensLeft;
+  document.getElementById('stat-gen').textContent=tokensLeft;
   loadFichesCount();
+  updateQuotaUI();
+  showOnboarding();
 }
 updateNavUpgradeBtn();
 
@@ -561,7 +715,7 @@ function showUsernameModal(){
 function showRechargeModal(message){
   var modal=document.createElement('div');
   modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:999;display:flex;align-items:center;justify-content:center;padding:1.5rem';
-  modal.innerHTML='<div style="background:#0f0f1a;border:1px solid rgba(108,92,231,0.35);border-radius:20px;padding:2rem;max-width:440px;text-align:center"><div style="font-size:2.2rem;margin-bottom:0.8rem">🎉</div><h3 style="font-size:1.15rem;margin-bottom:0.6rem">Tu es sacrément assidu ce mois-ci !</h3><p style="font-size:0.85rem;color:#a0a0c0;line-height:1.6;margin-bottom:1.5rem">'+message+' En attendant la remise à zéro du mois prochain, tu peux débloquer plus de générations dès maintenant :</p><div style="display:flex;flex-direction:column;gap:0.6rem;margin-bottom:1rem"><a href="https://buy.stripe.com/28E14o9OJdfBgUD4g643S09" target="_blank" style="background:#181830;border:1px solid rgba(255,255,255,0.13);color:#fff;padding:0.7rem 1rem;border-radius:12px;text-decoration:none;font-weight:600;display:flex;justify-content:space-between"><span>+50 générations</span><span>6,99€</span></a><a href="https://buy.stripe.com/7sY8wQbWRgrN6fZ6oe43S0a" target="_blank" style="background:linear-gradient(135deg,#6c5ce7,#fd79a8);color:#fff;padding:0.7rem 1rem;border-radius:12px;text-decoration:none;font-weight:700;display:flex;justify-content:space-between"><span>+150 générations</span><span>19,99€</span></a><a href="https://buy.stripe.com/14A14o2mhdfB7k3bIy43S0b" target="_blank" style="background:#181830;border:1px solid rgba(255,255,255,0.13);color:#fff;padding:0.7rem 1rem;border-radius:12px;text-decoration:none;font-weight:600;display:flex;justify-content:space-between"><span>+400 générations</span><span>49,99€</span></a></div><button onclick="this.closest(\'div[style*=fixed]\').remove()" style="background:none;border:1px solid rgba(255,255,255,0.15);color:#a0a0c0;padding:0.6rem 1.3rem;border-radius:100px;cursor:pointer;font-size:0.85rem">Plus tard</button></div>';
+  modal.innerHTML='<div style="background:#0f0f1a;border:1px solid rgba(108,92,231,0.35);border-radius:20px;padding:2rem;max-width:440px;text-align:center"><div style="font-size:2.2rem;margin-bottom:0.8rem">🎉</div><h3 style="font-size:1.15rem;margin-bottom:0.6rem">Tu es sacrément assidu ce mois-ci !</h3><p style="font-size:0.85rem;color:#a0a0c0;line-height:1.6;margin-bottom:1.5rem">'+message+' En attendant la remise à zéro du mois prochain, tu peux débloquer plus de générations dès maintenant :</p><div style="display:flex;flex-direction:column;gap:0.6rem;margin-bottom:1rem"><a href="'+RECHARGE_50+'" target="_blank" style="background:#181830;border:1px solid rgba(255,255,255,0.13);color:#fff;padding:0.7rem 1rem;border-radius:12px;text-decoration:none;font-weight:600;display:flex;justify-content:space-between"><span>+50 générations</span><span>6,99€</span></a><a href="'+RECHARGE_150+'" target="_blank" style="background:linear-gradient(135deg,#6c5ce7,#fd79a8);color:#fff;padding:0.7rem 1rem;border-radius:12px;text-decoration:none;font-weight:700;display:flex;justify-content:space-between"><span>+150 générations</span><span>19,99€</span></a><a href="'+RECHARGE_400+'" target="_blank" style="background:#181830;border:1px solid rgba(255,255,255,0.13);color:#fff;padding:0.7rem 1rem;border-radius:12px;text-decoration:none;font-weight:600;display:flex;justify-content:space-between"><span>+400 générations</span><span>49,99€</span></a></div><button onclick="this.closest(\'div[style*=fixed]\').remove()" style="background:none;border:1px solid rgba(255,255,255,0.15);color:#a0a0c0;padding:0.6rem 1.3rem;border-radius:100px;cursor:pointer;font-size:0.85rem">Plus tard</button></div>';
   document.body.appendChild(modal);
   modal.addEventListener('click',function(e){if(e.target===modal)modal.remove();});
 }
@@ -632,7 +786,45 @@ document.getElementById('course-input').addEventListener('input',function(){docu
 
 function updateChatContext(filename){var el=document.getElementById('chat-context-text');if(el)el.innerHTML='Cours chargé : <span>'+filename+'</span>';}
 
-// ── CORRECTION BUG ** : utilise innerHTML + formatChatText au lieu de textContent ──
+// ── RENDU DU RÉSULTAT EN CARTES DE SECTION ──
+// Remplace l'ancien rendu en bloc de texte continu par des cartes visuellement séparées,
+// pour répondre au retour "les fiches gagneraient à être plus jolies / structurées".
+function escapeHtmlRc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function boldifyRc(t){return escapeHtmlRc(t).replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');}
+
+function renderResultAsCards(text){
+  var lines=text.split('\n');
+  var html='';
+  var inSection=false,inList=false;
+  var sectionEmojiRe=/^([📚🎯📖⚡❓🔗🃏🧠💬📅✅📝])\s*(.+)/u;
+
+  lines.forEach(function(rawLine){
+    var t=rawLine.trim();
+    if(!t){
+      if(inList){html+='';inList=false;}
+      return;
+    }
+    if(/^[━─=]{3,}$/.test(t))return; // séparateurs ignorés, remplacés par les cartes elles-mêmes
+    var sm=t.match(sectionEmojiRe);
+    if(sm && sm[2].length<80 && !/^[▸→✦•\-]/.test(sm[2])){
+      if(inList){html+='</div>';inList=false;}
+      if(inSection)html+='</div>';
+      html+='<div class="rc-section"><div class="rc-section-title">'+sm[1]+' '+escapeHtmlRc(sm[2])+'</div>';
+      inSection=true;
+      return;
+    }
+    var bm=t.match(/^[▸→✦•\-]\s*(.+)/);
+    if(bm){
+      html+='<div class="rc-item">'+boldifyRc(bm[1])+'</div>';
+      return;
+    }
+    html+='<div class="rc-p">'+boldifyRc(t)+'</div>';
+  });
+  if(inSection)html+='</div>';
+  if(!html)html='<div class="rc-plain">'+boldifyRc(text).replace(/\n/g,'<br>')+'</div>';
+  return html;
+}
+
 document.getElementById('gen-btn').addEventListener('click',async function(){
   var input=document.getElementById('course-input').value.trim();
   var errBox=document.getElementById('error-box');
@@ -654,11 +846,16 @@ document.getElementById('gen-btn').addEventListener('click',async function(){
       throw new Error(data.error);
     }
     lastResult=data.result;
-    // CORRECTION : innerHTML + formatChatText pour rendu correct du markdown (gras, séparateurs, etc.)
-    content.innerHTML=formatChatText(data.result);
+    content.innerHTML=renderResultAsCards(data.result);
     document.getElementById('result-title').textContent=currentFormatIcon+' '+currentFormatName;
     spinner.style.display='none';content.style.display='block';
-    if(tokensLeft!==999999){tokensLeft--;document.getElementById('tok-nav').textContent=tokensLeft;document.getElementById('stat-gen').textContent=tokensLeft;if(savedUser){savedUser.remaining=tokensLeft;localStorage.setItem('ficheai_user',JSON.stringify(savedUser));}}
+    if(tokensLeft!==999999){
+      tokensLeft--;
+      document.getElementById('tok-nav').textContent=tokensLeft;
+      document.getElementById('stat-gen').textContent=tokensLeft;
+      if(savedUser){savedUser.remaining=tokensLeft;localStorage.setItem('ficheai_user',JSON.stringify(savedUser));}
+      updateQuotaUI();
+    }
     if(currentUserEmail){
       var lignes=data.result.split('\n').filter(function(l){return l.trim().length>3;});
       var titre=(lignes[1]||lignes[0]||currentFormatName).replace(/[📚🎯📖⚡❓🔗━▸✦]/g,'').trim().substring(0,80);
@@ -667,7 +864,7 @@ document.getElementById('gen-btn').addEventListener('click',async function(){
     sessionHistory.unshift({icon:currentFormatIcon,name:currentFormatName,preview:input.substring(0,55)+'…',result:data.result});
     if(sessionHistory.length>6)sessionHistory.pop();
     renderHistory();
-  }catch(e){spinner.style.display='none';content.innerHTML='⚠️ Erreur : '+e.message;content.style.display='block';}
+  }catch(e){spinner.style.display='none';content.innerHTML='<div class="rc-plain">⚠️ Erreur : '+e.message+'</div>';content.style.display='block';}
   btn.disabled=false;
   btn.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Générer avec l\'IA';
 });
@@ -697,8 +894,7 @@ function renderHistory(){
 
 function loadHistory(i){
   var h=sessionHistory[i];
-  // CORRECTION : innerHTML + formatChatText pour cohérence avec le rendu principal
-  document.getElementById('result-content').innerHTML=formatChatText(h.result);
+  document.getElementById('result-content').innerHTML=renderResultAsCards(h.result);
   document.getElementById('result-title').textContent=h.icon+' '+h.name;
   document.getElementById('result-card').style.display='block';
   document.getElementById('result-spinner').style.display='none';
