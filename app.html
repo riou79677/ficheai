@@ -640,10 +640,11 @@ function updateQuotaUI(){
     document.getElementById('quota-banner-msg').innerHTML=pct>=95
       ? 'Tu as utilisé <b>'+pct+'%</b> de tes générations ce mois-ci ('+used+' / '+tokensLimit+'). Plus que '+tokensLeft+' restante'+(tokensLeft>1?'s':'')+' !'
       : 'Tu approches de ta limite : <b>'+pct+'%</b> utilisé ('+used+' / '+tokensLimit+' générations ce mois-ci).';
-    document.getElementById('quota-banner-links').innerHTML=
-      '<a href="'+RECHARGE_50+'" target="_blank">+50 générations — 6,99€</a>'+
-      '<a href="'+RECHARGE_150+'" target="_blank">+150 générations — 19,99€</a>'+
-      '<a href="'+RECHARGE_400+'" target="_blank">+400 générations — 49,99€</a>';
+    var bp=getPlan();
+    var rl='<a href="'+RECHARGE_50+'" target="_blank">+50 générations — 6,99€</a><a href="'+RECHARGE_150+'" target="_blank">+150 générations — 19,99€</a><a href="'+RECHARGE_400+'" target="_blank">+400 générations — 49,99€</a>';
+    document.getElementById('quota-banner-links').innerHTML=bp==='starter'
+      ? '<a href="'+PRO_M+'" target="_blank">⚡ Passer à Pro — 7,99€/mois</a><a href="'+ULT_M+'" target="_blank">👑 Ultimate</a>'
+      : bp==='pro' ? '<a href="'+ULT_M+'" target="_blank">👑 Passer à Ultimate</a>'+rl : rl;
   } else {
     banner.style.display='none';
   }
@@ -765,6 +766,33 @@ function showUsernameModal(){
   }
   document.getElementById('confirm-username-btn').addEventListener('click',submitUsername);
   document.getElementById('new-username-input').addEventListener('keydown',function(e){if(e.key==='Enter')submitUsername();});
+}
+
+function limitOption(href,label,price,primary){
+  return '<a href="'+href+'" target="_blank" style="'+(primary?'background:linear-gradient(135deg,#6c5ce7,#fd79a8);font-weight:700;':'background:#181830;border:1px solid rgba(255,255,255,0.13);font-weight:600;')+'color:#fff;padding:0.75rem 1rem;border-radius:12px;text-decoration:none;display:flex;justify-content:space-between"><span>'+label+'</span><span>'+price+'</span></a>';
+}
+function rechargeOptions(){
+  return limitOption(RECHARGE_50,'+50 générations','6,99€',false)+limitOption(RECHARGE_150,'+150 générations','19,99€',false)+limitOption(RECHARGE_400,'+400 générations','49,99€',false);
+}
+// Fenêtre affichée quand la limite est atteinte : Starter -> abonnements, Pro -> Ultimate (+ recharges), Ultimate -> recharges.
+function showLimitModal(message,kind){
+  var plan=getPlan();
+  if(plan==='ultimate'){showRechargeModal(message||'Tu as atteint ta limite de générations ce mois-ci.');return;}
+  var title,intro,opts;
+  if(plan==='starter'){
+    title='Tu as utilisé tes générations gratuites 🎉';
+    intro='Passe à un abonnement pour continuer à réviser. Pro : 50 générations par mois, Chat IA, export PDF et sujets d’examen. Ultimate : 300 générations et 300 messages de chat par mois.';
+    opts=limitOption(PRO_M,'⚡ Pro','7,99€/mois',true)+limitOption(ULT_M,'👑 Ultimate','Voir l’offre',false);
+  } else {
+    title='Limite atteinte pour ce mois-ci';
+    intro=(message?message+' ':'')+'Ultimate offre 300 générations et 300 messages de chat par mois'+(kind==='chat'?'.':', ou tu peux recharger des générations tout de suite :');
+    opts=limitOption(ULT_M,'👑 Passer à Ultimate','Voir l’offre',true)+(kind==='chat'?'':rechargeOptions());
+  }
+  var modal=document.createElement('div');
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:999;display:flex;align-items:center;justify-content:center;padding:1.5rem';
+  modal.innerHTML='<div style="background:#0f0f1a;border:1px solid rgba(108,92,231,0.35);border-radius:20px;padding:2rem;max-width:440px;text-align:center"><h3 style="font-size:1.15rem;margin-bottom:0.7rem">'+title+'</h3><p style="font-size:0.85rem;color:#a0a0c0;line-height:1.6;margin-bottom:1.3rem">'+intro+'</p><div style="display:flex;flex-direction:column;gap:0.6rem;margin-bottom:1rem">'+opts+'</div><button onclick="this.closest(\'div[style*=fixed]\').remove()" style="background:none;border:1px solid rgba(255,255,255,0.15);color:#a0a0c0;padding:0.6rem 1.3rem;border-radius:100px;cursor:pointer;font-size:0.85rem">Plus tard</button></div>';
+  document.body.appendChild(modal);
+  modal.addEventListener('click',function(ev){if(ev.target===modal)modal.remove();});
 }
 
 function showRechargeModal(message){
@@ -902,10 +930,10 @@ document.getElementById('gen-btn').addEventListener('click',async function(){
   if(!savedUser||!savedUser.email){showSignupPopup();return;}
   if(!input){errBox.textContent='⚠️ Colle ou importe ton cours !';errBox.style.display='block';return;}
   if(input.length<30){errBox.textContent='⚠️ Le cours est trop court.';errBox.style.display='block';return;}
-  if(tokensLeft<=0){errBox.textContent='⚠️ Tu as utilisé toutes tes générations. Passe à Pro !';errBox.style.display='block';return;}
+  if(tokensLeft<=0){showLimitModal();return;}
   var formats=selectedFormats.slice();
   if(tokensLeft!==999999&&tokensLeft<formats.length){
-    errBox.textContent='⚠️ Il te reste '+tokensLeft+' génération'+(tokensLeft>1?'s':'')+' et tu as sélectionné '+formats.length+' formats (1 génération par format). Retire un format ou recharge tes générations.';
+    errBox.textContent='⚠️ Il te reste '+tokensLeft+' génération'+(tokensLeft>1?'s':'')+' et tu as sélectionné '+formats.length+' formats (1 génération par format). Retire un format ou passe à l’abonnement supérieur.';
     errBox.style.display='block';return;
   }
   var btn=this;btn.disabled=true;
@@ -923,8 +951,8 @@ document.getElementById('gen-btn').addEventListener('click',async function(){
       var response=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(currentUserToken||'')},body:JSON.stringify({course:input,format:f,language:langSel,instructions:instructions})});
       var data=await readResponseSafely(response,'génération');
       if(data.error){
-        if(response.status===403&&savedUser&&savedUser.plan==='ultimate'&&generatedResults.length===0){
-          spinner.style.display='none';resultCard.style.display='none';showRechargeModal(data.error);btn.disabled=false;btn.innerHTML=GEN_BTN_HTML;return;
+        if(response.status===403&&/limite/i.test(data.error||'')&&generatedResults.length===0){
+          spinner.style.display='none';resultCard.style.display='none';showLimitModal(data.error);btn.disabled=false;btn.innerHTML=GEN_BTN_HTML;return;
         }
         throw new Error(data.error);
       }
@@ -1092,11 +1120,31 @@ async function sendChatMessage(isFullscreen){
   document.getElementById(isFullscreen?'chat-fullscreen-send-btn':'chat-send-btn').disabled=true;
   try{
     var response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(currentUserToken||'')},body:JSON.stringify({messages:chatHistory.slice(-12),courseContent:courseContent.substring(0,6000),language:document.getElementById('lang-sel').value})});
-    var data=await readResponseSafely(response,'chat');
-    removeTyping();
-    if(data.error){if(response.status===403&&savedUser&&savedUser.plan==='ultimate'){showRechargeModal(data.error);}else{addMessage('ai','⚠️ '+data.error,isFullscreen);}return;}
-    chatHistory.push({role:'assistant',content:data.result});
-    addMessage('ai',data.result,isFullscreen);
+    var ct=response.headers.get('content-type')||'';
+    if(!response.ok||ct.indexOf('text/plain')===-1){
+      var data=await readResponseSafely(response,'chat');
+      removeTyping();
+      var emsg=data.error||'Erreur inattendue.';
+      if(response.status===403&&/limite/i.test(emsg)&&getPlan()==='pro'){showLimitModal(emsg,'chat');}
+      else if(response.status===403&&/limite/i.test(emsg)&&getPlan()==='ultimate'){showRechargeModal(emsg);}
+      else{addMessage('ai','⚠️ '+emsg,isFullscreen);}
+    } else {
+      // Affichage progressif de la réponse, mot par mot.
+      var box=document.getElementById(isFullscreen?'chat-fullscreen-messages':'chat-messages');
+      var reader=response.body.getReader(),decoder=new TextDecoder(),acc='',bubble=null,pending=false;
+      var paint=function(){pending=false;if(bubble){bubble.innerHTML=formatChatText(acc);box.scrollTop=box.scrollHeight;}};
+      while(true){
+        var chunk=await reader.read();
+        if(chunk.done)break;
+        acc+=decoder.decode(chunk.value,{stream:true});
+        if(!bubble){removeTyping();addMessage('ai','',isFullscreen);bubble=box.lastElementChild.querySelector('.msg-content');}
+        if(!pending){pending=true;requestAnimationFrame(paint);}
+      }
+      acc+=decoder.decode();
+      removeTyping();
+      if(!bubble){addMessage('ai','⚠️ Réponse vide, réessaie.',isFullscreen);}
+      else{paint();chatHistory.push({role:'assistant',content:acc});}
+    }
   }catch(e){removeTyping();addMessage('ai','⚠️ Erreur réseau. Réessaie.',isFullscreen);}
   document.getElementById(isFullscreen?'chat-fullscreen-send-btn':'chat-send-btn').disabled=false;
 }
