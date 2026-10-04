@@ -231,6 +231,19 @@ textarea::placeholder{color:var(--text3)}
 @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:900px){.app-layout{flex-direction:column;padding:1rem}.sidebar{width:100%}.format-list{display:grid;grid-template-columns:repeat(2,1fr)}.fmt-desc{display:none}.tips-row{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:480px){nav{padding:0 1rem}.tips-row{grid-template-columns:1fr}.chat-messages{min-height:300px;max-height:400px}}
+.instr-zone{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:0.8rem 1rem;transition:border 0.2s}
+.instr-zone:focus-within{border-color:var(--purple)}
+.instr-zone label{display:block;font-size:0.76rem;font-weight:600;color:var(--text2);margin-bottom:0.45rem}
+.instr-zone label span{color:var(--text3);font-weight:400}
+.instr-zone input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:9px;padding:0.6rem 0.8rem;font-size:0.84rem;color:var(--text);font-family:var(--font-b);outline:none}
+.instr-zone input:focus{border-color:var(--purple)}
+.instr-zone input::placeholder{color:var(--text3)}
+.multi-note{background:rgba(108,92,231,0.08);border:1px solid rgba(108,92,231,0.25);border-radius:11px;padding:0.6rem 1rem;font-size:0.8rem;color:var(--purple2)}
+.fmt-hint{font-size:0.68rem;color:var(--text3);margin:-0.4rem 0 0.7rem;line-height:1.4}
+.rc-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:0.9rem}
+.rc-tab{background:var(--bg3);border:1px solid var(--border2);border-radius:100px;padding:0.4rem 0.9rem;font-size:0.78rem;font-weight:600;color:var(--text2);cursor:pointer;font-family:var(--font-b);transition:all 0.18s}
+.rc-tab:hover{border-color:var(--purple2);color:var(--purple2)}
+.rc-tab.active{border-color:var(--purple);background:rgba(108,92,231,0.16);color:var(--purple2)}
 </style>
 </head>
 <body>
@@ -271,6 +284,7 @@ textarea::placeholder{color:var(--text3)}
         <button class="mode-btn" id="mode-chat-btn" onclick="switchMode('chat')">💬 Chat IA</button>
       </div>
       <div class="sidebar-label"><span class="step-num">1</span> Format de sortie</div>
+      <div class="fmt-hint">Tu peux en choisir plusieurs (1 génération par format, 4 maximum).</div>
       <div class="format-list" id="format-list">
         <div class="fmt active" data-fmt="fiche" data-icon="📄" data-name="Fiche de révision" onclick="selectFormat(this)"><span class="fmt-icon">📄</span><div class="fmt-info"><span class="fmt-name">Fiche de révision</span><span class="fmt-desc">Structurée & complète</span></div></div>
         <div class="fmt" data-fmt="quiz" data-icon="✅" data-name="Quiz QCM" onclick="selectFormat(this)"><span class="fmt-icon">✅</span><div class="fmt-info"><span class="fmt-name">Quiz QCM</span><span class="fmt-desc">6 questions & corrections</span></div></div>
@@ -330,11 +344,16 @@ textarea::placeholder{color:var(--text3)}
         </div>
         <textarea id="course-input" placeholder="Colle ici le contenu de ton cours… FicheAI va l'analyser et générer ton outil de révision parfait en quelques secondes."></textarea>
       </div>
+      <div class="instr-zone">
+        <label for="instructions-input">🎯 Consignes pour l’IA <span>(optionnel)</span></label>
+        <input type="text" id="instructions-input" maxlength="500" placeholder="Ex : fais-le plus court, insiste sur les formules, explique comme à un débutant…">
+      </div>
       <div class="tips-row">
         <div class="tip-card" onclick="genererDirectement()"><div class="tip-icon">⚡</div><div class="tip-title">Générer maintenant</div><div class="tip-desc">Lance la génération avec le format choisi</div></div>
         <div class="tip-card" onclick="switchMode('chat')"><div class="tip-icon">💬</div><div class="tip-title">Mode Chat IA</div><div class="tip-desc">Discute librement sur ton cours</div></div>
         <div class="tip-card" onclick="document.getElementById('file-input').click()"><div class="tip-icon">📎</div><div class="tip-title">Importer un fichier</div><div class="tip-desc">PDF ou TXT depuis tes documents</div></div>
       </div>
+      <div id="multi-note" class="multi-note" style="display:none"></div>
       <div id="error-box" class="error-box" style="display:none"></div>
       <button id="gen-btn" class="gen-btn">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
@@ -350,6 +369,7 @@ textarea::placeholder{color:var(--text3)}
             <button id="reset-btn">↩ Nouveau</button>
           </div>
         </div>
+        <div id="result-tabs" class="rc-tabs" style="display:none"></div>
         <div id="result-spinner" class="skeleton-wrap">
           <div class="skeleton-title"></div>
           <div class="skeleton-line w-full"></div>
@@ -492,6 +512,24 @@ var tokensLeft=5,tokensLimit=5,lastResult='',sessionHistory=[],currentUserEmail=
 var devPanelOpen=false,currentMode='express';
 var courseContent='',chatHistory=[],chatMsgCount=0;
 var onboardingStep=0;
+var selectedFormats=['fiche'];
+var MAX_FORMATS=4;
+var generatedResults=[];
+var activeResultIndex=0;
+var GEN_BTN_HTML='';
+var PDF_NOTE='ℹ️ Seul le texte est lu : les schémas, images et formules ne sont pas pris en compte.';
+function formatMeta(f){var el=document.querySelector('.fmt[data-fmt="'+f+'"]');return el?{name:el.dataset.name,icon:el.dataset.icon}:{name:f,icon:'📄'};}
+function updateGenCostNote(){
+  var el=document.getElementById('multi-note');var n=selectedFormats.length;
+  if(n>1){el.style.display='block';el.textContent='⚡ '+n+' formats sélectionnés : '+n+' générations seront utilisées.';}
+  else{el.style.display='none';}
+}
+function getCharLimit(){var plan=savedUser?(savedUser.plan||'starter'):'starter';return plan==='ultimate'?100000:plan==='pro'?80000:30000;}
+function updateCharCount(){
+  var n=document.getElementById('course-input').value.length;var lim=getCharLimit();var el=document.getElementById('char-count');
+  if(n>lim){el.textContent=n+' caractères — seuls les '+lim+' premiers seront utilisés (limite de ton plan)';el.style.color='#fbbf24';}
+  else{el.textContent=n+' caractères';el.style.color='';}
+}
 var onboardingSteps=[
   {icon:'🎯',title:'Choisis ton format',text:'Fiche, quiz, flashcards, mind map… Sélectionne dans la colonne de gauche le type de contenu que tu veux générer.'},
   {icon:'📝',title:'Colle ou importe ton cours',text:'Colle directement ton cours dans la zone de texte, ou importe un fichier PDF / TXT depuis tes documents.'},
@@ -631,6 +669,7 @@ if(savedUser&&savedUser.email){
   showOnboarding();
 }
 updateNavUpgradeBtn();
+GEN_BTN_HTML=document.getElementById('gen-btn').innerHTML;
 
 if(/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)){document.getElementById('camera-btn').style.display='flex';}
 
@@ -667,9 +706,19 @@ function selectFormat(el){
     modal.addEventListener('click',function(e){if(e.target===modal)modal.remove();});
     return;
   }
-  document.querySelectorAll('.fmt').forEach(function(f){f.classList.remove('active');});
-  el.classList.add('active');
-  currentFormat=el.dataset.fmt;currentFormatName=el.dataset.name;currentFormatIcon=el.dataset.icon;
+  var fmt=el.dataset.fmt;
+  var idx=selectedFormats.indexOf(fmt);
+  if(idx!==-1){
+    if(selectedFormats.length>1)selectedFormats.splice(idx,1);
+    else return;
+  } else {
+    if(selectedFormats.length>=MAX_FORMATS){showToast('⚠️ Maximum '+MAX_FORMATS+' formats à la fois');return;}
+    selectedFormats.push(fmt);
+  }
+  document.querySelectorAll('.fmt').forEach(function(f){f.classList.toggle('active',selectedFormats.indexOf(f.dataset.fmt)!==-1);});
+  currentFormat=selectedFormats[selectedFormats.length-1];
+  var m=formatMeta(currentFormat);currentFormatName=m.name;currentFormatIcon=m.icon;
+  updateGenCostNote();
 }
 
 async function readResponseSafely(response,contexte){
@@ -747,7 +796,7 @@ function handleFileLoad(file){
     reader.onload=function(ev){
       var txt=ev.target.result||'';
       if(txt.replace(/\s/g,'').length<30){setFileBadge('⚠️ Ce fichier semble vide. Vérifie ton fichier ou copie-colle ton cours directement.','error');return;}
-      courseContent=txt;document.getElementById('course-input').value=txt;document.getElementById('char-count').textContent=txt.length+' caractères';setFileBadge('✅ '+file.name,'ok');updateChatContext(file.name);
+      courseContent=txt;document.getElementById('course-input').value=txt;updateCharCount();setFileBadge('✅ '+file.name,'ok');updateChatContext(file.name);
     };
     reader.onerror=function(){setFileBadge('⚠️ Impossible de lire ce fichier. Réessaie ou copie-colle ton cours.','error');};
     reader.readAsText(file);
@@ -766,9 +815,9 @@ function handleFileLoad(file){
         for(var i=1;i<=maxPages;i++){var page=await pdf.getPage(i);var content=await page.getTextContent();text+=content.items.map(function(item){return item.str;}).join(' ')+'\n';}
         var usefulChars=text.replace(/\s/g,'').length;
         if(usefulChars<100){setFileBadge('⚠️ Ce PDF semble être un document scanné ou une photo : aucun texte lisible dedans. Copie-colle ton cours en texte à la place (la lecture des scans arrive bientôt !).','error');return;}
-        courseContent=text;document.getElementById('course-input').value=text;document.getElementById('char-count').textContent=text.length+' caractères';
-        if(pdf.numPages>pageLimit){setFileBadge('⚠️ '+file.name+' : '+pdf.numPages+' pages au total, seules les '+pageLimit+' premières ont été lues (limite de ton plan '+plan.charAt(0).toUpperCase()+plan.slice(1)+').','warn');}
-        else{setFileBadge('✅ '+file.name+' — '+maxPages+' page'+(maxPages>1?'s':'')+' lue'+(maxPages>1?'s':''),'ok');}
+        courseContent=text;document.getElementById('course-input').value=text;updateCharCount();
+        if(pdf.numPages>pageLimit){setFileBadge('⚠️ '+file.name+' : '+pdf.numPages+' pages au total, seules les '+pageLimit+' premières ont été lues (limite de ton plan '+plan.charAt(0).toUpperCase()+plan.slice(1)+'). Découpe ton PDF pour traiter la suite. '+PDF_NOTE,'warn');}
+        else{setFileBadge('✅ '+file.name+' — '+maxPages+' page'+(maxPages>1?'s':'')+' lue'+(maxPages>1?'s':'')+' · '+PDF_NOTE,'ok');}
         updateChatContext(file.name);
       }catch(err){
         var name=(err&&err.name)||'';
@@ -788,7 +837,7 @@ function handleFileLoad(file){
 
 document.getElementById('file-input').addEventListener('change',function(e){if(e.target.files[0])handleFileLoad(e.target.files[0]);});
 document.getElementById('camera-input').addEventListener('change',function(e){if(e.target.files[0])handleFileLoad(e.target.files[0]);});
-document.getElementById('course-input').addEventListener('input',function(){document.getElementById('char-count').textContent=this.value.length+' caractères';courseContent=this.value;});
+document.getElementById('course-input').addEventListener('input',function(){updateCharCount();courseContent=this.value;});
 
 function updateChatContext(filename){var el=document.getElementById('chat-context-text');if(el)el.innerHTML='Cours chargé : <span>'+filename+'</span>';}
 
@@ -831,6 +880,21 @@ function renderResultAsCards(text){
   return html;
 }
 
+function renderResultTabs(){
+  var el=document.getElementById('result-tabs');
+  if(generatedResults.length<2){el.style.display='none';el.innerHTML='';return;}
+  el.style.display='flex';
+  el.innerHTML=generatedResults.map(function(r,i){return '<button class="rc-tab'+(i===activeResultIndex?' active':'')+'" onclick="setActiveResultTab('+i+')">'+r.icon+' '+r.name+'</button>';}).join('');
+}
+function setActiveResultTab(i){
+  var r=generatedResults[i];if(!r)return;
+  activeResultIndex=i;
+  lastResult=r.result;currentFormat=r.fmt;currentFormatName=r.name;currentFormatIcon=r.icon;
+  document.getElementById('result-content').innerHTML=renderResultAsCards(r.result);
+  document.getElementById('result-title').textContent=r.icon+' '+r.name;
+  renderResultTabs();
+}
+
 document.getElementById('gen-btn').addEventListener('click',async function(){
   var input=document.getElementById('course-input').value.trim();
   var errBox=document.getElementById('error-box');
@@ -839,40 +903,59 @@ document.getElementById('gen-btn').addEventListener('click',async function(){
   if(!input){errBox.textContent='⚠️ Colle ou importe ton cours !';errBox.style.display='block';return;}
   if(input.length<30){errBox.textContent='⚠️ Le cours est trop court.';errBox.style.display='block';return;}
   if(tokensLeft<=0){errBox.textContent='⚠️ Tu as utilisé toutes tes générations. Passe à Pro !';errBox.style.display='block';return;}
-  var btn=this;
-  btn.disabled=true;btn.textContent='Génération en cours…';
+  var formats=selectedFormats.slice();
+  if(tokensLeft!==999999&&tokensLeft<formats.length){
+    errBox.textContent='⚠️ Il te reste '+tokensLeft+' génération'+(tokensLeft>1?'s':'')+' et tu as sélectionné '+formats.length+' formats (1 génération par format). Retire un format ou recharge tes générations.';
+    errBox.style.display='block';return;
+  }
+  var btn=this;btn.disabled=true;
+  var instructions=(document.getElementById('instructions-input').value||'').trim();
+  var langSel=document.getElementById('lang-sel').value;
   var resultCard=document.getElementById('result-card'),spinner=document.getElementById('result-spinner'),content=document.getElementById('result-content');
+  generatedResults=[];activeResultIndex=0;renderResultTabs();
   resultCard.style.display='block';spinner.style.display='flex';content.style.display='none';
   resultCard.scrollIntoView({behavior:'smooth',block:'nearest'});
-  try{
-    var response=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(currentUserToken||'')},body:JSON.stringify({course:input,format:currentFormat,language:document.getElementById('lang-sel').value})});
-    var data=await readResponseSafely(response,'génération');
-    if(data.error){
-      if(response.status===403&&savedUser&&savedUser.plan==='ultimate'){spinner.style.display='none';resultCard.style.display='none';showRechargeModal(data.error);btn.disabled=false;btn.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Générer avec l\'IA';return;}
-      throw new Error(data.error);
-    }
-    lastResult=data.result;
-    content.innerHTML=renderResultAsCards(data.result);
-    document.getElementById('result-title').textContent=currentFormatIcon+' '+currentFormatName;
-    spinner.style.display='none';content.style.display='block';
-    if(tokensLeft!==999999){
-      tokensLeft--;
-      document.getElementById('tok-nav').textContent=tokensLeft;
-      document.getElementById('stat-gen').textContent=tokensLeft;
-      if(savedUser){savedUser.remaining=tokensLeft;localStorage.setItem('ficheai_user',JSON.stringify(savedUser));}
-      updateQuotaUI();
-    }
-    if(currentUserEmail){
-      var lignes=data.result.split('\n').filter(function(l){return l.trim().length>3;});
-      var titre=(lignes[1]||lignes[0]||currentFormatName).replace(/[📚🎯📖⚡❓🔗━▸✦]/g,'').trim().substring(0,80);
-      fetch('/api/fiches',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_email:currentUserEmail,format:currentFormat,format_icon:currentFormatIcon,titre:titre,contenu:data.result})}).then(function(){loadFichesCount();}).catch(function(){});
-    }
-    sessionHistory.unshift({icon:currentFormatIcon,name:currentFormatName,preview:input.substring(0,55)+'…',result:data.result});
-    if(sessionHistory.length>6)sessionHistory.pop();
-    renderHistory();
-  }catch(e){spinner.style.display='none';content.innerHTML='<div class="rc-plain">⚠️ Erreur : '+e.message+'</div>';content.style.display='block';}
-  btn.disabled=false;
-  btn.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Générer avec l\'IA';
+  var partialError=null;
+  for(var k=0;k<formats.length;k++){
+    var f=formats[k],meta=formatMeta(f);
+    btn.textContent=formats.length>1?('Génération '+(k+1)+'/'+formats.length+'…'):'Génération en cours…';
+    try{
+      var response=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(currentUserToken||'')},body:JSON.stringify({course:input,format:f,language:langSel,instructions:instructions})});
+      var data=await readResponseSafely(response,'génération');
+      if(data.error){
+        if(response.status===403&&savedUser&&savedUser.plan==='ultimate'&&generatedResults.length===0){
+          spinner.style.display='none';resultCard.style.display='none';showRechargeModal(data.error);btn.disabled=false;btn.innerHTML=GEN_BTN_HTML;return;
+        }
+        throw new Error(data.error);
+      }
+      generatedResults.push({fmt:f,name:meta.name,icon:meta.icon,result:data.result});
+      if(tokensLeft!==999999){
+        tokensLeft--;
+        document.getElementById('tok-nav').textContent=tokensLeft;
+        document.getElementById('stat-gen').textContent=tokensLeft;
+        if(savedUser){savedUser.remaining=tokensLeft;localStorage.setItem('ficheai_user',JSON.stringify(savedUser));}
+        updateQuotaUI();
+      }
+      if(currentUserEmail){
+        var lignes=data.result.split('\n').filter(function(l){return l.trim().length>3;});
+        var titre=(lignes[1]||lignes[0]||meta.name).replace(/[📚🎯📖⚡❓🔗━▸✦]/g,'').trim().substring(0,80);
+        fetch('/api/fiches',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_email:currentUserEmail,format:f,format_icon:meta.icon,titre:titre,contenu:data.result})}).then(function(){loadFichesCount();}).catch(function(){});
+      }
+      sessionHistory.unshift({icon:meta.icon,name:meta.name,preview:input.substring(0,55)+'…',result:data.result});
+      if(sessionHistory.length>6)sessionHistory.pop();
+      renderHistory();
+      if(generatedResults.length===1){spinner.style.display='none';content.style.display='block';setActiveResultTab(0);}
+      else{renderResultTabs();}
+    }catch(e){partialError=meta.name+' : '+e.message;break;}
+  }
+  if(generatedResults.length===0){
+    spinner.style.display='none';
+    content.innerHTML='<div class="rc-plain">⚠️ Erreur : '+escapeHtmlRc(partialError||'inconnue')+'</div>';
+    content.style.display='block';
+  } else if(partialError){
+    errBox.textContent='⚠️ '+partialError+' (les formats précédents ont bien été générés).';errBox.style.display='block';
+  }
+  btn.disabled=false;btn.innerHTML=GEN_BTN_HTML;
 });
 
 document.getElementById('copy-btn').addEventListener('click',function(){
@@ -885,7 +968,7 @@ document.getElementById('download-btn').addEventListener('click',function(){
 document.getElementById('reset-btn').addEventListener('click',function(){
   document.getElementById('result-card').style.display='none';
   document.getElementById('course-input').value='';
-  document.getElementById('char-count').textContent='0 caractères';
+  updateCharCount();
   document.getElementById('file-badge').style.display='none';
   window.scrollTo({top:0,behavior:'smooth'});
 });
@@ -900,6 +983,7 @@ function renderHistory(){
 
 function loadHistory(i){
   var h=sessionHistory[i];
+  generatedResults=[];renderResultTabs();
   document.getElementById('result-content').innerHTML=renderResultAsCards(h.result);
   document.getElementById('result-title').textContent=h.icon+' '+h.name;
   document.getElementById('result-card').style.display='block';
