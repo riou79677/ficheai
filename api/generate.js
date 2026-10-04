@@ -1,5 +1,10 @@
 const SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
 
+// Modèle IA utilisé selon le plan. Pendant la bêta, tous les plans utilisent le même modèle.
+// Plus tard, il suffira de changer une ligne ici (ex : pro: 'claude-sonnet-5-5', ultimate: 'claude-opus-5-5').
+const MODEL_BY_PLAN = { starter: 'claude-sonnet-4-5', pro: 'claude-sonnet-4-5', ultimate: 'claude-sonnet-4-5' };
+const modelFor = (plan) => MODEL_BY_PLAN[plan] || MODEL_BY_PLAN.starter;
+
 // Vercel coupe les fonctions à 10 s par défaut. Une génération sur un cours long dépasse ce délai,
 // ce qui produisait l'erreur « problème temporaire ». 60 s est accepté sur tous les plans Vercel.
 export const config = { maxDuration: 60 };
@@ -323,7 +328,7 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-5',
+        model: modelFor(user.plan),
         max_tokens: MAX_TOKENS[format] || 2500,
         system: 'Tu es FicheAI, un assistant pédagogique expert. ' + langInstruction + ' ' + niveauInstruction + ' ' + antiInjectionGuard + ' Sois précis, structuré et pédagogique.',
         messages: [{
