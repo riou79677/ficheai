@@ -1,5 +1,13 @@
 const SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
 
+// Modèle IA utilisé selon le plan. Pendant la bêta, tous les plans utilisent le même modèle.
+// Plus tard, il suffira de changer une ligne ici (ex : pro: 'claude-sonnet-5-5', ultimate: 'claude-opus-5-5').
+const MODEL_BY_PLAN = { starter: 'claude-sonnet-4-5', pro: 'claude-sonnet-4-5', ultimate: 'claude-sonnet-4-5' };
+const modelFor = (plan) => MODEL_BY_PLAN[plan] || MODEL_BY_PLAN.starter;
+
+// Même raison que generate.js : évite la coupure à 10 s de Vercel.
+export const config = { maxDuration: 60 };
+
 export default async function handler(req, res) {
   // Same-origin uniquement : pas de CORS ouvert au monde entier.
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -157,20 +165,50 @@ Quand tu réponds :
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-5',
-        max_tokens: 1500,
+        model: modelFor(user.plan),
+        stream: true,
+        max_tokens: 2500,
         system: systemPrompt,
         messages: messages.slice(-12)
       })
     });
 
-    const data = await response.json();
-    if (data.error) throw new Error(data.error.message);
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      throw new Error((errData.error && errData.error.message) || 'Erreur du service IA');
+    }
 
-    return res.status(200).json({ result: data.content[0].text });
+    // Réponse en streaming : le texte est envoyé au navigateur au fur et à mesure,
+    // pour que le Chat IA s'affiche progressivement au lieu d'un seul bloc à la fin.
+    res.status(200);
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+    res.setHeader('X-Accel-Buffering', 'no');
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        try {
+          const evt = JSON.parse(line.slice(6));
+          if (evt.type === 'content_block_delta' && evt.delta && evt.delta.type === 'text_delta') {
+            res.write(evt.delta.text);
+          }
+        } catch (err) { /* ligne non JSON ignorée */ }
+      }
+    }
+    return res.end();
 
   } catch (error) {
     console.error('Erreur API chat:', error);
+    if (res.headersSent) return res.end();
     return res.status(500).json({ error: error.message });
   }
 }
