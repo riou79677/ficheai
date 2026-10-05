@@ -1,8 +1,9 @@
 const SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
 
-// Modèle IA utilisé selon le plan. Pendant la bêta, tous les plans utilisent le même modèle.
-// Plus tard, il suffira de changer une ligne ici (ex : pro: 'claude-sonnet-5-5', ultimate: 'claude-opus-5-5').
-const MODEL_BY_PLAN = { starter: 'claude-sonnet-4-5', pro: 'claude-sonnet-4-5', ultimate: 'claude-sonnet-4-5' };
+// Modèle IA utilisé selon le plan. Tarifs en $ par million de tokens (entrée / sortie) :
+// Haiku 4.5 = 1 / 5 · Sonnet 5.5 = 2 / 10 · Opus 5.5 = 4 / 20 · Fable 5.1 = 10 / 50.
+// Sonnet 5.5 est à la fois plus récent et moins cher que Sonnet 4.5 (3 / 15). Pour changer de modèle, modifier une ligne ci-dessous.
+const MODEL_BY_PLAN = { starter: 'claude-sonnet-5-5', pro: 'claude-sonnet-5-5', ultimate: 'claude-sonnet-5-5' };
 const modelFor = (plan) => MODEL_BY_PLAN[plan] || MODEL_BY_PLAN.starter;
 
 // Même raison que generate.js : évite la coupure à 10 s de Vercel.
