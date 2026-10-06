@@ -132,7 +132,9 @@ async function handleLogin(){
       plan:plan,
       remaining:remaining,
       limit:limit,
-      access_token:data.access_token
+      access_token:data.access_token,
+      refresh_token:data.refresh_token,
+      expires_at:data.expires_at
     }));
     successBox.textContent='Connecté ! Redirection...';
     successBox.style.display='block';
