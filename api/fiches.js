@@ -8,16 +8,29 @@ export default async function handler(req, res) {
     console.error('fiches.js : SUPABASE_SERVICE_ROLE_KEY manquante.');
     return res.status(500).json({ error: 'Configuration serveur incomplète' });
   }
+  const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || 'sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ';
+  const headers = { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY };
 
-  const headers = {
-    'apikey': SERVICE_KEY,
-    'Authorization': 'Bearer ' + SERVICE_KEY
-  };
+  // ── Authentification : l'email vient du jeton de connexion, jamais de ce que le navigateur envoie ──
+  // (avant, n'importe qui pouvait écrire dans la bibliothèque d'un autre en donnant son email)
+  const authHeader = req.headers['authorization'] || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  if (!token) return res.status(401).json({ error: 'Connecte-toi pour continuer.' });
+  let email;
+  try {
+    const authRes = await fetch(SUPABASE_URL + '/auth/v1/user', {
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + token }
+    });
+    if (!authRes.ok) return res.status(401).json({ error: 'Session invalide, reconnecte-toi.' });
+    const authData = await authRes.json();
+    email = authData.email;
+    if (!email) return res.status(401).json({ error: 'Session invalide.' });
+  } catch (e) {
+    return res.status(503).json({ error: 'Service momentanément indisponible' });
+  }
 
-  // ── Charger les fiches d'un utilisateur (on ne renvoie que les id : compteur) ──
+  // ── Compter les fiches de l'utilisateur connecté (on ne renvoie que les id) ──
   if (req.method === 'GET') {
-    const email = req.query.email;
-    if (!email) return res.status(400).json([]);
     try {
       const r = await fetch(
         SUPABASE_URL + '/rest/v1/fiches?user_email=eq.' + encodeURIComponent(email) + '&select=id',
@@ -31,18 +44,12 @@ export default async function handler(req, res) {
     }
   }
 
-  // ── Sauvegarder une fiche ──
+  // ── Sauvegarder une fiche pour l'utilisateur connecté ──
   if (req.method === 'POST') {
     const b = req.body || {};
-    const email = b.user_email || b.email;
-    if (!email || !b.contenu) {
-      return res.status(400).json({ error: 'Paramètres manquants' });
-    }
-    if (String(b.contenu).length > 50000) {
-      return res.status(400).json({ error: 'Contenu trop volumineux.' });
-    }
+    if (!b.contenu) return res.status(400).json({ error: 'Paramètres manquants' });
+    if (String(b.contenu).length > 50000) return res.status(400).json({ error: 'Contenu trop volumineux.' });
     try {
-      // Vérifie que l'email correspond à un compte existant avant toute écriture
       const checkRes = await fetch(
         SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=id',
         { headers }
@@ -58,11 +65,7 @@ export default async function handler(req, res) {
     try {
       const r = await fetch(SUPABASE_URL + '/rest/v1/fiches', {
         method: 'POST',
-        headers: {
-          ...headers,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=minimal'
-        },
+        headers: { ...headers, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
         body: JSON.stringify({
           user_email: email,
           format: b.format || null,
