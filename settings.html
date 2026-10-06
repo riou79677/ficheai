@@ -100,6 +100,7 @@ main{flex:1;display:flex;gap:0;max-width:900px;margin:0 auto;width:100%;padding:
 footer{padding:1.5rem;text-align:center;font-size:0.78rem;color:var(--text3);border-top:1px solid var(--border);}
 @media(max-width:600px){main{flex-direction:column;padding:1.5rem 1rem;}.settings-sidebar{width:100%;margin-right:0;margin-bottom:1.5rem;display:flex;gap:0.4rem;flex-wrap:wrap;}.sidebar-title{display:none;}.sidebar-item{width:auto;flex:1;justify-content:center;font-size:0.78rem;padding:0.5rem 0.6rem;}.sidebar-icon{display:none;}}
 </style>
+<script src="/auth.js"></script>
 </head>
 <body>
 <nav>
@@ -331,7 +332,7 @@ async function ensureUsername(){
   updateBadgeDisplay();
   if(savedUser.username) return;
   try{
-    var r = await fetch(SUPABASE_URL+'/rest/v1/rpc/get_username',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({p_email:savedUser.email})});
+    var r = await fetch(SUPABASE_URL+'/rest/v1/rpc/get_username',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+((await ficheaiToken())||SUPABASE_KEY),'Content-Type':'application/json'},body:JSON.stringify({p_email:savedUser.email})});
     var uname = await r.json();
     if(uname){
       savedUser.username = uname;
@@ -363,7 +364,7 @@ function showUsernameModal(){
     if(val.length < 3){ err.textContent = 'Le pseudo doit contenir au moins 3 caractères.'; err.style.display = 'block'; return; }
     if(!/^[a-zA-Z0-9_]+$/.test(val)){ err.textContent = 'Lettres, chiffres et underscores (_) uniquement.'; err.style.display = 'block'; return; }
     try{
-      var r = await fetch(SUPABASE_URL+'/rest/v1/rpc/set_username',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({p_email:savedUser.email,p_username:val})});
+      var r = await fetch(SUPABASE_URL+'/rest/v1/rpc/set_username',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+((await ficheaiToken())||SUPABASE_KEY),'Content-Type':'application/json'},body:JSON.stringify({p_email:savedUser.email,p_username:val})});
       var res = await r.json();
       if(res && res.success){
         savedUser.username = val;
@@ -435,7 +436,7 @@ async function saveNiveau(niveau){
   try {
     var r = await fetch(SUPABASE_URL + '/rest/v1/rpc/set_niveau_scolaire', {
       method: 'POST',
-      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + (savedUser.access_token || SUPABASE_KEY), 'Content-Type': 'application/json' },
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + ((await ficheaiToken()) || SUPABASE_KEY), 'Content-Type': 'application/json' },
       body: JSON.stringify({ p_email: savedUser.email, p_niveau: niveau })
     });
     var res = await r.json();
@@ -452,7 +453,7 @@ async function loadNiveau(){
   try {
     var r = await fetch(SUPABASE_URL + '/rest/v1/rpc/get_niveau_scolaire', {
       method: 'POST',
-      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + (savedUser.access_token || SUPABASE_KEY), 'Content-Type': 'application/json' },
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + ((await ficheaiToken()) || SUPABASE_KEY), 'Content-Type': 'application/json' },
       body: JSON.stringify({ p_email: savedUser.email })
     });
     var niveau = await r.json();
@@ -480,7 +481,7 @@ async function changeEmail() {
   var newEmail = document.getElementById('new-email').value.trim();
   if (!newEmail) { showMsg('msg-change-email', '⚠️ Entre ton nouvel email.', true); return; }
   try {
-    var r = await fetch(SUPABASE_URL + '/auth/v1/user', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + (savedUser.access_token || SUPABASE_KEY) }, body: JSON.stringify({ email: newEmail }) });
+    var r = await fetch(SUPABASE_URL + '/auth/v1/user', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + ((await ficheaiToken()) || SUPABASE_KEY) }, body: JSON.stringify({ email: newEmail }) });
     var d = await r.json();
     if (d.error) { showMsg('msg-change-email', '⚠️ ' + d.error.message, true); return; }
     showMsg('msg-change-email', '✅ Email mis à jour ! Vérifie ta boîte mail.', false);
@@ -494,7 +495,7 @@ async function changePassword() {
   if (newPw.length < 8) { showMsg('msg-password', '⚠️ 8 caractères minimum.', true); return; }
   if (newPw !== confirmPw) { showMsg('msg-password', '⚠️ Les mots de passe ne correspondent pas.', true); return; }
   try {
-    var r = await fetch(SUPABASE_URL + '/auth/v1/user', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + (savedUser.access_token || SUPABASE_KEY) }, body: JSON.stringify({ password: newPw }) });
+    var r = await fetch(SUPABASE_URL + '/auth/v1/user', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + ((await ficheaiToken()) || SUPABASE_KEY) }, body: JSON.stringify({ password: newPw }) });
     var d = await r.json();
     if (d.error) { showMsg('msg-password', '⚠️ ' + d.error.message, true); return; }
     showMsg('msg-password', '✅ Mot de passe mis à jour !', false);
@@ -530,14 +531,14 @@ document.getElementById('confirm-ok').addEventListener('click', async function()
   closeConfirm();
   if (actionEnCours === 'fiches') {
     try {
-      var r = await fetch(SUPABASE_URL + '/rest/v1/rpc/delete_all_my_fiches', { method: 'POST', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + (savedUser.access_token || SUPABASE_KEY), 'Content-Type': 'application/json' }, body: JSON.stringify({ p_email: savedUser.email }) });
+      var r = await fetch(SUPABASE_URL + '/rest/v1/rpc/delete_all_my_fiches', { method: 'POST', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + ((await ficheaiToken()) || SUPABASE_KEY), 'Content-Type': 'application/json' }, body: JSON.stringify({ p_email: savedUser.email }) });
       var res = await r.json();
       if (res && res.success) { showMsg('msg-delete-fiches', '✅ Toutes tes fiches ont été supprimées (' + (res.deleted||0) + ').', false); }
       else { showMsg('msg-delete-fiches', '⚠️ Une erreur est survenue. Réessaie.', true); }
     } catch(e) { showMsg('msg-delete-fiches', '⚠️ Erreur réseau. Réessaie.', true); }
   } else if (actionEnCours === 'compte') {
     try {
-      var r2 = await fetch(SUPABASE_URL + '/rest/v1/rpc/delete_account_by_email', { method: 'POST', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + (savedUser.access_token || SUPABASE_KEY), 'Content-Type': 'application/json' }, body: JSON.stringify({ p_email: savedUser.email }) });
+      var r2 = await fetch(SUPABASE_URL + '/rest/v1/rpc/delete_account_by_email', { method: 'POST', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + ((await ficheaiToken()) || SUPABASE_KEY), 'Content-Type': 'application/json' }, body: JSON.stringify({ p_email: savedUser.email }) });
       var res2 = await r2.json();
       if (res2 && res2.success) {
         localStorage.removeItem('ficheai_user');
