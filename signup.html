@@ -211,7 +211,7 @@ body:JSON.stringify({p_email:email,p_niveau:niveau})
 }).catch(function(){});
 }
 
-localStorage.setItem('ficheai_user',JSON.stringify({email:email,username:username,plan:'starter',remaining:5,access_token:data.access_token,niveau_scolaire:niveau}));
+localStorage.setItem('ficheai_user',JSON.stringify({email:email,username:username,plan:'starter',remaining:5,access_token:data.access_token,refresh_token:data.refresh_token,expires_at:data.expires_at,niveau_scolaire:niveau}));
 successBox.innerHTML='✅ Compte créé avec succès !';
 successBox.style.display='block';
 setTimeout(showPlanModal, 600);
