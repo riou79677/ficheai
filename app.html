@@ -6,6 +6,7 @@
 <title>FicheAI — Générateur de fiches IA</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="/auth.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--bg:#07070f;--bg2:#0d0d1a;--bg3:#111120;--surface:#181830;--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.12);--purple:#6c5ce7;--purple2:#a29bfe;--pink:#fd79a8;--cyan:#00cec9;--gold:#fdcb6e;--text:#f0efff;--text2:#9898b8;--text3:#555570;--font-h:'Syne',sans-serif;--font-b:'DM Sans',sans-serif;--ease:cubic-bezier(0.4,0,0.2,1);}
@@ -676,7 +677,7 @@ if(/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)){document.getEle
 
 async function loadFichesCount(){
   if(!currentUserEmail)return;
-  try{var r=await fetch('/api/fiches?email='+encodeURIComponent(currentUserEmail));var data=await r.json();if(Array.isArray(data))document.getElementById('stat-fiches').textContent=data.length;}catch(e){}
+  try{var r=await fetch('/api/fiches',{headers:{'Authorization':'Bearer '+((await ficheaiToken())||'')}});var data=await r.json();if(Array.isArray(data))document.getElementById('stat-fiches').textContent=data.length;}catch(e){}
 }
 
 var inactivityTimer;
@@ -739,7 +740,7 @@ async function ensureUsername(){
   updateBadgeDisplay();
   if(savedUser.username)return;
   try{
-    var r=await fetch(SUPABASE_URL+'/rest/v1/rpc/get_username',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({p_email:savedUser.email})});
+    var r=await fetch(SUPABASE_URL+'/rest/v1/rpc/get_username',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+((await ficheaiToken())||SUPABASE_KEY),'Content-Type':'application/json'},body:JSON.stringify({p_email:savedUser.email})});
     var uname=await r.json();
     if(uname){savedUser.username=uname;localStorage.setItem('ficheai_user',JSON.stringify(savedUser));updateBadgeDisplay();return;}
   }catch(e){}
@@ -758,7 +759,7 @@ function showUsernameModal(){
     if(val.length<3){err.textContent='Le pseudo doit contenir au moins 3 caractères.';err.style.display='block';return;}
     if(!/^[a-zA-Z0-9_]+$/.test(val)){err.textContent='Lettres, chiffres et underscores (_) uniquement.';err.style.display='block';return;}
     try{
-      var r=await fetch(SUPABASE_URL+'/rest/v1/rpc/set_username',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({p_email:savedUser.email,p_username:val})});
+      var r=await fetch(SUPABASE_URL+'/rest/v1/rpc/set_username',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+((await ficheaiToken())||SUPABASE_KEY),'Content-Type':'application/json'},body:JSON.stringify({p_email:savedUser.email,p_username:val})});
       var res=await r.json();
       if(res&&res.success){savedUser.username=val;localStorage.setItem('ficheai_user',JSON.stringify(savedUser));updateBadgeDisplay();overlay.remove();}
       else{var messages={deja_pris:'Ce pseudo est déjà pris, essaie-en un autre.',trop_court:'Le pseudo doit contenir au moins 3 caractères.',caracteres_invalides:'Lettres, chiffres et underscores (_) uniquement.'};err.textContent=messages[res&&res.reason]||'Une erreur est survenue, réessaie.';err.style.display='block';}
@@ -948,7 +949,7 @@ document.getElementById('gen-btn').addEventListener('click',async function(){
     var f=formats[k],meta=formatMeta(f);
     btn.textContent=formats.length>1?('Génération '+(k+1)+'/'+formats.length+'…'):'Génération en cours…';
     try{
-      var response=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(currentUserToken||'')},body:JSON.stringify({course:input,format:f,language:langSel,instructions:instructions})});
+      var response=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+((await ficheaiToken())||'')},body:JSON.stringify({course:input,format:f,language:langSel,instructions:instructions})});
       var data=await readResponseSafely(response,'génération');
       if(data.error){
         if(response.status===403&&/limite/i.test(data.error||'')&&generatedResults.length===0){
@@ -967,7 +968,7 @@ document.getElementById('gen-btn').addEventListener('click',async function(){
       if(currentUserEmail){
         var lignes=data.result.split('\n').filter(function(l){return l.trim().length>3;});
         var titre=(lignes[1]||lignes[0]||meta.name).replace(/[📚🎯📖⚡❓🔗━▸✦]/g,'').trim().substring(0,80);
-        fetch('/api/fiches',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_email:currentUserEmail,format:f,format_icon:meta.icon,titre:titre,contenu:data.result})}).then(function(){loadFichesCount();}).catch(function(){});
+        fetch('/api/fiches',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+((await ficheaiToken())||'')},body:JSON.stringify({user_email:currentUserEmail,format:f,format_icon:meta.icon,titre:titre,contenu:data.result})}).then(function(){loadFichesCount();}).catch(function(){});
       }
       sessionHistory.unshift({icon:meta.icon,name:meta.name,preview:input.substring(0,55)+'…',result:data.result});
       if(sessionHistory.length>6)sessionHistory.pop();
@@ -1056,10 +1057,10 @@ function addMessage(role,text,isFullscreen){
 
 function copyMsg(btn){var content=btn.closest('.msg').querySelector('.msg-content').innerText;navigator.clipboard.writeText(content).then(function(){showToast('✅ Copié !');});}
 
-function saveMsg(btn){
+async function saveMsg(btn){
   if(!currentUserEmail){showToast('⚠️ Connecte-toi pour sauvegarder');return;}
   var content=btn.closest('.msg').querySelector('.msg-content').innerText;
-  fetch('/api/fiches',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_email:currentUserEmail,format:currentFormat,format_icon:currentFormatIcon,titre:'Chat — '+new Date().toLocaleDateString('fr-FR'),contenu:content})}).then(function(){showToast('✅ Sauvegardé !');loadFichesCount();}).catch(function(){showToast('⚠️ Erreur sauvegarde');});
+  fetch('/api/fiches',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+((await ficheaiToken())||'')},body:JSON.stringify({user_email:currentUserEmail,format:currentFormat,format_icon:currentFormatIcon,titre:'Chat — '+new Date().toLocaleDateString('fr-FR'),contenu:content})}).then(function(){showToast('✅ Sauvegardé !');loadFichesCount();}).catch(function(){showToast('⚠️ Erreur sauvegarde');});
 }
 
 function addTyping(isFullscreen){
@@ -1119,7 +1120,7 @@ async function sendChatMessage(isFullscreen){
   addTyping(isFullscreen);
   document.getElementById(isFullscreen?'chat-fullscreen-send-btn':'chat-send-btn').disabled=true;
   try{
-    var response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(currentUserToken||'')},body:JSON.stringify({messages:chatHistory.slice(-12),courseContent:courseContent.substring(0,6000),language:document.getElementById('lang-sel').value})});
+    var response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+((await ficheaiToken())||'')},body:JSON.stringify({messages:chatHistory.slice(-12),courseContent:courseContent.substring(0,6000),language:document.getElementById('lang-sel').value})});
     var ct=response.headers.get('content-type')||'';
     if(!response.ok||ct.indexOf('text/plain')===-1){
       var data=await readResponseSafely(response,'chat');
