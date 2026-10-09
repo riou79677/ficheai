@@ -29,7 +29,7 @@ th{color:var(--text);font-weight:700;background:var(--bg2)}
 td{color:var(--text2)}
 .note{background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:1rem 1.2rem;margin:1.5rem 0;font-size:0.85rem}
 footer{padding:1.5rem;text-align:center;font-size:0.78rem;color:var(--text3);border-top:1px solid var(--border);}
-</style>
+ul{margin:0.4rem 0 1rem 1.3rem}li{margin-bottom:0.4rem;line-height:1.7;color:var(--text2,#a0a0c0)}</style>
 </head>
 <body>
 <nav>
@@ -40,69 +40,69 @@ FicheAI
 <a href="/" class="nav-link">← Retour à l'accueil</a>
 </nav>
 <main>
-<h1>Politique de confidentialité</h1>
-<p class="updated">Dernière mise à jour : 28 juillet 2026</p>
+  <h1>Politique de confidentialité</h1>
+  <p class="subtitle">Dernière mise à jour : octobre 2026</p>
 
-<h2>1. Qui sommes-nous</h2>
-<p>FicheAI est une application web de révision assistée par intelligence artificielle, s'adressant principalement à un public scolaire et étudiant. Cette politique explique quelles données personnelles nous collectons, pourquoi, et comment elles sont protégées.</p>
+  <h2>1. Responsable du traitement</h2>
+  <p>Le responsable du traitement est FicheAI (Ilan M., micro-entreprise), contact : <a href="contact.html">contact@ficheai.fr</a>. La présente politique explique quelles données sont collectées, pourquoi, à qui elles sont confiées et quels sont tes droits.</p>
 
-<h2>2. Données collectées</h2>
-<table>
-<tr><th>Donnée</th><th>Finalité</th></tr>
-<tr><td>Prénom, pseudo, email, mot de passe (chiffré)</td><td>Création et gestion du compte utilisateur</td></tr>
-<tr><td>Niveau scolaire</td><td>Adaptation du contenu généré au niveau de l'utilisateur</td></tr>
-<tr><td>Contenus de cours importés (texte, PDF)</td><td>Génération des fiches, quiz, flashcards demandés</td></tr>
-<tr><td>Historique de génération et de conversation avec le chat IA</td><td>Fonctionnement du service, suivi de l'usage par rapport aux quotas du forfait</td></tr>
-<tr><td>Données de paiement (gérées par Stripe)</td><td>Facturation des abonnements Pro et Ultimate</td></tr>
-</table>
-<p>FicheAI ne collecte pas de données de localisation précise, de données biométriques, ni de catégories particulières de données sensibles au sens du RGPD.</p>
+  <h2>2. Données collectées</h2>
+  <ul>
+    <li><strong>Compte :</strong> adresse email, mot de passe (géré par le système d'authentification, jamais conservé en clair), pseudo, niveau scolaire, date d'inscription.</li>
+    <li><strong>Utilisation :</strong> formule souscrite, compteurs de générations et de messages de chat, état éventuel de suspension du compte.</li>
+    <li><strong>Contenus :</strong> les fiches, quiz et autres contenus générés et enregistrés dans ta bibliothèque.</li>
+    <li><strong>Paiement :</strong> les paiements sont traités par Stripe. FicheAI conserve uniquement l'identifiant client Stripe et l'état de ton abonnement, jamais ton numéro de carte.</li>
+    <li><strong>Données techniques :</strong> journaux de connexion et d'erreur nécessaires au fonctionnement et à la sécurité du service.</li>
+  </ul>
 
-<h2>3. Utilisateurs mineurs</h2>
-<p>FicheAI s'adressant en grande partie à des lycéens, une partie de nos utilisateurs sont mineurs. Conformément à la réglementation française (article 45 de la loi Informatique et Libertés), la création d'un compte par un utilisateur de moins de 15 ans nécessite le consentement conjoint du mineur et d'un titulaire de l'autorité parentale.</p>
-<p>Nous appliquons les principes suivants concernant les données des mineurs :</p>
-<ul>
-<li>Aucune donnée personnelle de mineur n'est utilisée à des fins de profilage publicitaire ou commerciale ;</li>
-<li>Aucune donnée n'est revendue ou partagée avec des tiers à des fins commerciales ;</li>
-<li>Les paramètres de confidentialité les plus protecteurs sont appliqués par défaut.</li>
-</ul>
-<p>Un parent ou tuteur légal souhaitant exercer un droit d'accès, de rectification ou de suppression concernant les données de son enfant mineur peut contacter l'éditeur via la page de contact.</p>
+  <h2>3. Finalités et bases légales</h2>
+  <ul>
+    <li>Fournir le service, gérer ton compte, tes quotas et ta bibliothèque : exécution du contrat.</li>
+    <li>Gérer les abonnements, paiements et obligations comptables : exécution du contrat et obligation légale.</li>
+    <li>Assurer la sécurité du service, prévenir les abus et la fraude : intérêt légitime.</li>
+    <li>Répondre à tes messages et demandes d'assistance : intérêt légitime.</li>
+  </ul>
+  <p>FicheAI ne vend pas tes données et ne les utilise pas à des fins publicitaires.</p>
 
-<h2>4. Utilisation de l'intelligence artificielle</h2>
-<p>Les contenus de cours importés par l'utilisateur sont transmis à l'API Claude, développée par la société Anthropic, aux seules fins de générer les fiches, quiz, flashcards et autres contenus demandés. Ces contenus ne sont pas utilisés par FicheAI à d'autres fins que la fourniture du service demandé par l'utilisateur.</p>
-<p>Nous invitons les utilisateurs à ne pas importer de documents contenant des données personnelles sensibles les concernant ou concernant des tiers (données de santé, informations judiciaires, etc.) au-delà de ce qui est strictement nécessaire au contenu pédagogique du cours.</p>
+  <h2>4. Tes cours et l'intelligence artificielle</h2>
+  <p>Lorsque tu génères un contenu ou que tu utilises le chat, le texte de ton cours (et tes messages de chat) est transmis à notre prestataire d'intelligence artificielle, Anthropic, uniquement pour produire le résultat demandé. FicheAI ne conserve pas le texte de ton cours : seul le contenu généré que tu enregistres est stocké dans ta bibliothèque. Selon les conditions d'Anthropic applicables à son interface professionnelle (API), les contenus transmis ne sont pas utilisés pour entraîner ses modèles par défaut.</p>
+  <p>Évite de saisir dans tes cours des informations sensibles te concernant ou concernant d'autres personnes.</p>
 
-<h2>5. Sous-traitants et hébergement</h2>
-<table>
-<tr><th>Prestataire</th><th>Rôle</th></tr>
-<tr><td>Supabase</td><td>Hébergement de la base de données et authentification des comptes</td></tr>
-<tr><td>Vercel</td><td>Hébergement de l'application web</td></tr>
-<tr><td>Stripe</td><td>Traitement des paiements et gestion des abonnements</td></tr>
-<tr><td>Anthropic (API Claude)</td><td>Génération des contenus pédagogiques à partir des cours importés</td></tr>
-</table>
-<p>Ces prestataires agissent en tant que sous-traitants au sens du RGPD et sont soumis à leurs propres politiques de confidentialité et engagements de sécurité.</p>
+  <h2>5. Destinataires et sous-traitants</h2>
+  <ul>
+    <li><strong>Supabase</strong> : base de données et authentification.</li>
+    <li><strong>Vercel</strong> : hébergement du site.</li>
+    <li><strong>Anthropic</strong> : intelligence artificielle générant les contenus.</li>
+    <li><strong>Stripe</strong> : paiement des abonnements et recharges.</li>
+  </ul>
+  <p>Ces prestataires n'agissent que sur nos instructions pour fournir le service. Tes données ne sont pas partagées avec d'autres tiers, sauf obligation légale.</p>
 
-<h2>6. Base légale du traitement</h2>
-<p>Les traitements de données mis en œuvre par FicheAI reposent sur : l'exécution du contrat conclu avec l'utilisateur lors de la création de son compte (fourniture du service), et, le cas échéant, le consentement de l'utilisateur ou de son représentant légal pour les utilisateurs mineurs de moins de 15 ans.</p>
+  <h2>6. Transferts hors de l'Union européenne</h2>
+  <p>Certains de ces prestataires sont établis ou traitent des données hors de l'Union européenne, notamment aux États-Unis. Ces transferts sont encadrés par des garanties appropriées prévues par le RGPD (clauses contractuelles types de la Commission européenne ou décision d'adéquation).</p>
 
-<h2>7. Durée de conservation</h2>
-<p>Les données de compte sont conservées tant que le compte est actif. En cas d'inactivité prolongée ou de demande de suppression, les données sont supprimées dans un délai raisonnable, sauf obligation légale de conservation plus longue (notamment en matière comptable pour les données de facturation).</p>
+  <h2>7. Durées de conservation</h2>
+  <ul>
+    <li>Données de compte et fiches : pendant la durée de vie du compte, puis supprimées à la suppression du compte.</li>
+    <li>Données de facturation : 10 ans à compter de la clôture de l'exercice, conformément aux obligations comptables.</li>
+    <li>Messages envoyés via le formulaire de contact : 3 ans maximum.</li>
+    <li>Journaux techniques : durée limitée, strictement nécessaire à la sécurité.</li>
+  </ul>
 
-<h2>8. Sécurité des données</h2>
-<p>FicheAI met en œuvre des mesures techniques raisonnables pour protéger les données des utilisateurs : mots de passe stockés de façon chiffrée, connexions chiffrées (HTTPS), et restrictions d'accès à la base de données.</p>
-<p>En cas de violation de données susceptible d'engendrer un risque pour les droits et libertés des utilisateurs, FicheAI s'engage à notifier les autorités compétentes et les utilisateurs concernés dans les délais prévus par la réglementation applicable.</p>
+  <h2>8. Cookies et stockage dans ton navigateur</h2>
+  <p>FicheAI utilise uniquement le stockage de ton navigateur nécessaire au fonctionnement du service (maintien de ta connexion, préférences d'affichage). Aucun cookie publicitaire ni outil de suivi publicitaire n'est utilisé. Ces éléments strictement nécessaires ne requièrent pas ton consentement.</p>
 
-<h2>9. Vos droits</h2>
-<p>Conformément au RGPD et à la loi Informatique et Libertés, vous disposez des droits suivants sur vos données personnelles : droit d'accès, de rectification, d'effacement, de limitation du traitement, d'opposition, et de portabilité.</p>
-<p>Pour exercer ces droits, vous pouvez contacter l'éditeur du service via la page de contact. Une réponse sera apportée dans les meilleurs délais.</p>
-<p>Vous disposez également du droit d'introduire une réclamation auprès de la Commission Nationale de l'Informatique et des Libertés (CNIL) si vous estimez que vos droits ne sont pas respectés.</p>
+  <h2>9. Sécurité</h2>
+  <p>Les échanges sont chiffrés (HTTPS). L'accès aux données est restreint par des règles d'authentification : chaque utilisateur ne peut consulter que ses propres fiches. Aucun système n'étant infaillible, nous t'informerons en cas de violation de données, conformément à la loi.</p>
 
-<h2>10. Cookies</h2>
-<p>FicheAI utilise uniquement les cookies et technologies de stockage local strictement nécessaires au fonctionnement du service (maintien de la session de connexion). Aucun cookie publicitaire ou de suivi tiers n'est utilisé.</p>
+  <h2>10. Mineurs</h2>
+  <p>Le service est destiné aux personnes de 15 ans et plus. Un mineur de moins de 15 ans ne peut utiliser FicheAI qu'avec l'accord du titulaire de l'autorité parentale. Si tu penses qu'un enfant de moins de 15 ans s'est inscrit sans cet accord, écris-nous et nous supprimerons le compte.</p>
 
-<h2>11. Modifications de cette politique</h2>
-<p>Cette politique de confidentialité peut être mise à jour pour refléter une évolution du service ou de la réglementation applicable. La date de dernière mise à jour figure en haut de cette page.</p>
+  <h2>11. Tes droits</h2>
+  <p>Tu disposes d'un droit d'accès, de rectification, d'effacement, de limitation, d'opposition et de portabilité de tes données, ainsi que du droit de définir des directives sur leur sort après ton décès. Tu peux supprimer ton compte et tes fiches depuis la page Paramètres, ou exercer tes droits en écrivant à <a href="contact.html">contact@ficheai.fr</a> (une réponse te sera apportée sous un mois). En cas de désaccord, tu peux saisir la CNIL (cnil.fr).</p>
 
-<div class="note">Pour toute question relative à vos données personnelles, contactez l'éditeur de FicheAI via la page de contact du site.</div>
+  <h2>12. Modifications</h2>
+  <p>Cette politique peut évoluer. La date de dernière mise à jour figure en haut de la page ; les changements importants te seront signalés.</p>
+
 </main>
 <footer>FicheAI · Fait pour les étudiants 🎓 · © 2026</footer>
 </body>
