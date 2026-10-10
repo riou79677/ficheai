@@ -176,15 +176,19 @@ export default async function handler(req, res) {
     if (action === 'grant_bonus_generations') {
       const { email, amount } = payload || {};
       if (!email || !amount || amount <= 0) return res.status(400).json({ error: 'Email ou quantité invalide' });
-      const currentR = await fetch(SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=generations_limit', { headers: sb });
+      const currentR = await fetch(SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=bonus_generations,bonus_expires_at', { headers: sb });
       const currentData = await currentR.json();
-      const current = (currentData && currentData[0]) ? (currentData[0].generations_limit || 0) : 0;
+      if (!currentData || !currentData[0]) return res.status(404).json({ error: 'Utilisateur introuvable' });
+      const cur = currentData[0];
+      const expired = cur.bonus_expires_at && new Date(cur.bonus_expires_at) < new Date();
+      const newBonus = (expired ? 0 : (cur.bonus_generations || 0)) + amount;
+      const expiresAt = new Date(Date.now() + 365 * 24 * 3600 * 1000).toISOString();
       const r = await fetch(SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email), {
         method: 'PATCH', headers: { ...sb, 'Prefer': 'return=representation' },
-        body: JSON.stringify({ generations_limit: current + amount })
+        body: JSON.stringify({ bonus_generations: newBonus, bonus_expires_at: expiresAt })
       });
       const result = await r.json();
-      return res.status(200).json({ success: true, new_limit: current + amount, result });
+      return res.status(200).json({ success: true, new_bonus: newBonus, result });
     }
 
     // ── Supprimer définitivement un compte ──
