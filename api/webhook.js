@@ -80,8 +80,8 @@ export default async function handler(req, res) {
     'price_1TXfj3JBbEVt3aRDei6gdSy0': { plan: 'ultimate', genLimit: 300, chatLimit: 300, fcLimit: 500 },  // Ultimate annuel
   };
 
-  // Paliers de recharge ponctuelle (paiement unique, pas d'abonnement) : ajoutent des
-  // générations supplémentaires pour finir le mois en cours, sans réinitialiser le compteur déjà utilisé.
+  // Paliers de recharge ponctuelle (paiement unique, pas d'abonnement) : créditent un solde séparé
+  // (bonus_generations), valable 12 mois, consommé après le quota mensuel et jamais remis à zéro.
   const CREDIT_PACKS = {
     'price_1TvvwjJBbEVt3aRDYw3CewZz': 50,   // Recharge 50 générations — 6,99€
     'price_1TvvwqJBbEVt3aRDRZXro9z5': 150,  // Recharge 150 générations — 19,99€
@@ -112,6 +112,14 @@ export default async function handler(req, res) {
       throw new Error('Échec du crédit de générations : ' + JSON.stringify(result));
     }
     return result;
+  }
+
+  // Forfait actuellement enregistré pour un utilisateur (null si introuvable).
+  async function getCurrentPlan(email) {
+    const r = await fetch(SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=plan',
+      { headers: { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY } });
+    const d = await r.json();
+    return Array.isArray(d) && d[0] ? d[0].plan : null;
   }
 
   // Met à jour le plan d'un utilisateur dans Supabase via la clé service_role
@@ -204,7 +212,15 @@ export default async function handler(req, res) {
 
       let fields;
       const isActive = (status === 'active' || status === 'trialing');
-      if (isActive && priceId && PLANS[priceId]) {
+      const alreadyOnThisPlan = isActive && priceId && PLANS[priceId] &&
+        event.type === 'customer.subscription.updated' &&
+        (await getCurrentPlan(email)) === PLANS[priceId].plan;
+      if (alreadyOnThisPlan) {
+        // Simple mise à jour de l'abonnement (ex : résiliation programmée puis reprise dans le portail) :
+        // le forfait n'a pas changé, donc on ne remet PAS les compteurs à zéro. Le quota se renouvelle
+        // tout seul chaque mois dans la fonction check_and_consume_quota.
+        fields = { stripe_customer_id: customerId };
+      } else if (isActive && priceId && PLANS[priceId]) {
         const p = PLANS[priceId];
         fields = {
           plan: p.plan,
