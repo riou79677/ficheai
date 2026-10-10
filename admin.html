@@ -506,7 +506,7 @@ async function confirmGift(){
     var res=await callAdmin('grant_bonus_generations',{email:giftTargetEmail,amount:selectedGift});
     if(res.error)throw new Error(res.error);
     closeGiftModal();
-    showMsg('quota-msg','✅ +'+selectedGift+' générations offertes à '+giftTargetEmail+' (nouvelle limite : '+res.new_limit+').','ok');
+    showMsg('quota-msg','✅ +'+selectedGift+' générations offertes à '+giftTargetEmail+' (solde de recharges : '+res.new_bonus+').','ok');
     await loadStats();
   }catch(e){btn.textContent='Offrir';btn.disabled=false;errEl.textContent='Erreur : '+e.message;errEl.style.display='block';}
 }
