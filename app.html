@@ -1128,8 +1128,8 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'){var overlay
 async function sendChatMessage(isFullscreen){
   var plan=getPlan();
   if(plan==='starter'){showToast('💬 Chat IA disponible à partir du plan Pro !');return;}
-  var limit=plan==='ultimate'?999999:20;
-  if(chatMsgCount>=limit&&limit!==999999){showToast('⚠️ Limite de '+limit+' messages atteinte !');return;}
+  var limit=plan==='ultimate'?300:20;
+  if(chatMsgCount>=limit){showToast('⚠️ Limite de '+limit+' messages atteinte !');return;}
   var inputId=isFullscreen?'chat-fullscreen-input':'chat-input';
   var input=document.getElementById(inputId);
   var text=input?input.value.trim():'';
@@ -1171,7 +1171,7 @@ async function sendChatMessage(isFullscreen){
 }
 
 function updateChatCount(){
-  var plan=getPlan();var limit=plan==='ultimate'?'∞':20;
+  var plan=getPlan();var limit=plan==='ultimate'?300:20;
   var el=document.getElementById('chat-count');if(el)el.textContent=chatMsgCount+' / '+limit+' messages ce mois';
   var elFs=document.getElementById('chat-fullscreen-count');if(elFs)elFs.textContent=chatMsgCount+' / '+limit+' messages ce mois';
 }
