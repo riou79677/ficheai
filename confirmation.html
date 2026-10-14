@@ -84,55 +84,74 @@ h1{font-family:var(--font-h);font-size:1.9rem;font-weight:800;letter-spacing:-0.
   </div>
 </main>
 
+<script src="/auth.js"></script>
 <script>
 (function() {
-  // Récupère le plan depuis le localStorage pour personnaliser la page
-  var user = null;
-  try { user = JSON.parse(localStorage.getItem('ficheai_user')); } catch(e) {}
-
-  var plan = user && user.plan ? user.plan : 'pro';
+  var SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
+  var SUPABASE_KEY = 'sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ';
   var planBadge = document.getElementById('plan-badge');
   var featGen = document.getElementById('feat-gen');
+  var featChat = document.getElementById('feat-chat');
   var loadingMsg = document.getElementById('loading-msg');
+  var user = null;
+  try { user = JSON.parse(localStorage.getItem('ficheai_user')); } catch (e) {}
 
-  if (plan === 'ultimate') {
-    planBadge.textContent = '👑 Plan Ultimate activé';
-    planBadge.style.background = 'linear-gradient(135deg,rgba(253,203,110,0.15),rgba(225,112,85,0.1))';
-    planBadge.style.borderColor = 'rgba(253,203,110,0.4)';
-    planBadge.style.color = '#fdcb6e';
-    featGen.textContent = '300 générations par mois';
-  } else {
-    planBadge.textContent = '🚀 Plan Pro activé';
-    featGen.textContent = '50 générations par mois';
-  }
+  // Tant que le forfait réel n'est pas confirmé par la base, on n'affiche aucun forfait précis.
+  planBadge.textContent = '✨ Activation de ton abonnement…';
+  featGen.textContent = 'Générations mensuelles incluses';
+  loadingMsg.textContent = 'Un instant, on confirme ton paiement…';
 
-  // Rafraîchir le profil utilisateur depuis Supabase après quelques secondes
-  // pour que le plan soit bien mis à jour localement
-  setTimeout(async function() {
-    if (!user || !user.email) {
-      loadingMsg.textContent = '';
-      return;
+  function showPlan(plan) {
+    if (plan === 'ultimate') {
+      planBadge.textContent = '👑 Plan Ultimate activé';
+      planBadge.style.background = 'linear-gradient(135deg,rgba(253,203,110,0.15),rgba(225,112,85,0.1))';
+      planBadge.style.borderColor = 'rgba(253,203,110,0.4)';
+      planBadge.style.color = '#fdcb6e';
+      featGen.textContent = '300 générations par mois';
+      if (featChat) featChat.textContent = 'Chat IA : 300 messages par mois';
+    } else {
+      planBadge.textContent = '🚀 Plan Pro activé';
+      featGen.textContent = '50 générations par mois';
+      if (featChat) featChat.textContent = 'Chat IA : 20 messages par mois';
     }
-    try {
-      // Attendre que le webhook Stripe ait eu le temps de mettre à jour le plan
-      await new Promise(r => setTimeout(r, 3000));
-      var res = await fetch('/api/admin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'get_user_plan', payload: { email: user.email } })
-      });
-      // Si l'endpoint répond, on met à jour le localStorage
-      if (res.ok) {
-        var data = await res.json();
-        if (data.plan) {
-          user.plan = data.plan;
-          localStorage.setItem('ficheai_user', JSON.stringify(user));
-        }
-      }
-    } catch(e) {}
     loadingMsg.textContent = '✅ Compte activé — bonne révision !';
     loadingMsg.style.color = '#00cec9';
-  }, 1000);
+  }
+
+  async function readPlan() {
+    var token = await window.ficheaiToken();
+    if (!token || !user || !user.email) return null;
+    var r = await fetch(SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(user.email) + '&select=plan,generations_used,generations_limit,bonus_generations,bonus_expires_at',
+      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + token } });
+    var d = await r.json();
+    return Array.isArray(d) && d[0] ? d[0] : null;
+  }
+
+  async function run() {
+    if (!user || !user.email) {
+      planBadge.textContent = '✨ Paiement reçu';
+      loadingMsg.textContent = 'Connecte-toi pour retrouver ton abonnement.';
+      return;
+    }
+    // Le webhook Stripe met à jour le forfait quelques secondes après le paiement : on vérifie toutes les 2 secondes pendant 30 secondes.
+    for (var i = 0; i < 15; i++) {
+      try {
+        var u = await readPlan();
+        if (u && (u.plan === 'pro' || u.plan === 'ultimate')) {
+          var base = u.generations_limit || 5, used = u.generations_used || 0;
+          var bonus = (u.bonus_generations > 0 && (!u.bonus_expires_at || new Date(u.bonus_expires_at) > new Date())) ? u.bonus_generations : 0;
+          user.plan = u.plan; user.limit = base + bonus; user.remaining = Math.max(0, base - used) + bonus;
+          localStorage.setItem('ficheai_user', JSON.stringify(user));
+          showPlan(u.plan);
+          return;
+        }
+      } catch (e) {}
+      await new Promise(function (res) { setTimeout(res, 2000); });
+    }
+    planBadge.textContent = '✨ Paiement reçu';
+    loadingMsg.textContent = "L'activation prend un peu plus de temps que prévu. Actualise cette page dans une minute, ou écris-nous si ton abonnement n'apparaît pas.";
+  }
+  run();
 })();
 </script>
 </body>
