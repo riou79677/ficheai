@@ -406,7 +406,8 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:anywhere;max-width:100vw;o
           <span class="chat-header-title">✨ Assistant FicheAI</span>
         </div>
         <div class="chat-header-right">
-          <button class="chat-clear-btn" onclick="clearChat()">🗑️ Effacer</button>
+          <button class="chat-clear-btn" onclick="openChatHistory()">🕘 Historique</button>
+          <button class="chat-clear-btn" onclick="clearChat()">➕ Nouvelle</button>
           <button class="chat-fullscreen-btn" onclick="openChatFullscreen()">⛶ Plein écran</button>
         </div>
       </div>
@@ -445,7 +446,7 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:anywhere;max-width:100vw;o
             <div class="chat-header-dot"></div>
             ✨ Assistant FicheAI — Plein écran
           </div>
-          <button class="chat-fullscreen-close" onclick="closeChatFullscreen()">✕ Fermer</button>
+          <button class="chat-fullscreen-close" onclick="openChatHistory()" style="margin-right:6px">🕘 Historique</button><button class="chat-fullscreen-close" onclick="clearChat()" style="margin-right:6px">➕ Nouvelle</button><button class="chat-fullscreen-close" onclick="closeChatFullscreen()">✕ Fermer</button>
         </div>
         <div class="chat-fullscreen-messages" id="chat-fullscreen-messages"></div>
         <div class="chat-fullscreen-input-zone">
@@ -1201,11 +1202,69 @@ function closeChatFullscreen(){
   mainMessages.innerHTML=fsMessages.innerHTML;mainMessages.scrollTop=mainMessages.scrollHeight;
 }
 
+
+// ── Historique du Chat IA (Pro : 5 dernières conversations, Ultimate : toutes) ──
+var currentConvId=null,savingConv=false;
+async function convApi(method,qs,body){
+  var t=await ficheaiToken();
+  var r=await fetch('/api/conversations'+(qs||''),{method:method,headers:{'Content-Type':'application/json','Authorization':'Bearer '+(t||'')},body:body?JSON.stringify(body):undefined});
+  var d={};try{d=await r.json();}catch(e){}
+  if(!r.ok)throw new Error(d.error||'Erreur');
+  return d;
+}
+async function saveConversation(){
+  if(savingConv||!chatHistory.length)return;
+  savingConv=true;
+  try{
+    var d=await convApi('POST','',{id:currentConvId,messages:chatHistory});
+    if(d&&d.id)currentConvId=d.id;
+  }catch(e){}
+  savingConv=false;
+}
+function escHist(t){return String(t==null?'':t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+async function openChatHistory(){
+  var m=document.getElementById('chat-history-modal'),list=document.getElementById('chat-history-list'),note=document.getElementById('chat-history-note');
+  m.style.display='flex';list.innerHTML='<p style="color:var(--text3);font-size:0.85rem">Chargement…</p>';
+  try{
+    var d=await convApi('GET','');
+    note.textContent=d.plan==='ultimate'?'Toutes tes conversations sont conservées jusqu\'à ce que tu les supprimes.':'Plan Pro : tes 5 dernières conversations sont conservées. Ultimate garde tout l\'historique.';
+    if(!d.conversations.length){list.innerHTML='<p style="color:var(--text3);font-size:0.85rem">Aucune conversation enregistrée pour l\'instant. Elles s\'enregistrent automatiquement.</p>';return;}
+    list.innerHTML=d.conversations.map(function(c){
+      var date=new Date(c.updated_at).toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
+      return '<div style="display:flex;align-items:center;gap:6px;padding:0.55rem 0.4rem;border-bottom:1px solid var(--border)'+(c.id===currentConvId?';background:rgba(124,109,250,0.1);border-radius:8px':'')+'">'
+        +'<button onclick="openConversation(\''+c.id+'\')" style="flex:1;text-align:left;background:none;border:none;color:var(--text);cursor:pointer;font-size:0.86rem;min-width:0"><span style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escHist(c.title)+'</span><span style="font-size:0.7rem;color:var(--text3)">'+date+'</span></button>'
+        +'<button title="Renommer" onclick="renameConversation(\''+c.id+'\')" style="background:none;border:none;cursor:pointer;color:var(--text2)">✏️</button>'
+        +'<button title="Supprimer" onclick="deleteConversation(\''+c.id+'\')" style="background:none;border:none;cursor:pointer;color:var(--text2)">🗑️</button></div>';
+    }).join('');
+  }catch(e){list.innerHTML='<p style="color:#f09595;font-size:0.85rem">⚠️ '+escHist(e.message)+'</p>';}
+}
+function closeChatHistory(){document.getElementById('chat-history-modal').style.display='none';}
+async function openConversation(id){
+  try{
+    var d=await convApi('GET','?id='+encodeURIComponent(id));
+    var fs=document.getElementById('chat-fullscreen-overlay').classList.contains('active');
+    ['chat-messages','chat-fullscreen-messages'].forEach(function(b){var el=document.getElementById(b);if(el)el.innerHTML='';});
+    chatHistory=(d.messages||[]).slice();currentConvId=d.id;
+    chatHistory.forEach(function(m){addMessage(m.role==='user'?'user':'ai',m.content,fs);});
+    closeChatHistory();
+    var box=document.getElementById(fs?'chat-fullscreen-messages':'chat-messages');if(box)box.scrollTop=box.scrollHeight;
+  }catch(e){showToast('⚠️ '+e.message);}
+}
+async function renameConversation(id){
+  var t=prompt('Nouveau nom de la conversation :');
+  if(!t||!t.trim())return;
+  try{await convApi('PATCH','?id='+encodeURIComponent(id),{title:t.trim()});openChatHistory();}catch(e){showToast('⚠️ '+e.message);}
+}
+async function deleteConversation(id){
+  if(!confirm('Supprimer définitivement cette conversation ?'))return;
+  try{await convApi('DELETE','?id='+encodeURIComponent(id));if(id===currentConvId){currentConvId=null;}openChatHistory();}catch(e){showToast('⚠️ '+e.message);}
+}
+
 function clearChat(){
-  chatHistory=[];chatMsgCount=0;
+  chatHistory=[];currentConvId=null;
   var mainMessages=document.getElementById('chat-messages');
   mainMessages.innerHTML='<div class="chat-welcome" id="chat-welcome"><div class="chat-welcome-icon">✨</div><h3>Bonjour ! Je suis ton assistant FicheAI</h3><p>Charge ton cours puis parle-moi librement.<br>Je génère, explique, résume et t\'aide à réviser.</p><div class="chat-suggestions"><div class="chat-sug" onclick="sendSuggestion(\'Génère une fiche de révision complète sur mon cours\')">📄 Faire une fiche</div><div class="chat-sug" onclick="sendSuggestion(\'Crée un quiz de 5 questions sur mon cours\')">✅ Créer un quiz</div><div class="chat-sug" onclick="sendSuggestion(\'Explique-moi les points les plus importants\')">💡 Points clés</div><div class="chat-sug" onclick="sendSuggestion(\'Quelles questions risquent de tomber à l\'examen ?\')">🎯 Questions d\'exam</div><div class="chat-sug" onclick="sendSuggestion(\'Fais-moi 10 flashcards sur ce cours\')">🃏 Flashcards</div></div></div>';
-  updateChatCount();showToast('💬 Conversation effacée');
+  updateChatCount();showToast('💬 Nouvelle conversation');
 }
 
 document.addEventListener('keydown',function(e){if(e.key==='Escape'){var overlay=document.getElementById('chat-fullscreen-overlay');if(overlay&&overlay.classList.contains('active'))closeChatFullscreen();}});
@@ -1249,7 +1308,7 @@ async function sendChatMessage(isFullscreen){
       acc+=decoder.decode();
       removeTyping();
       if(!bubble){addMessage('ai','⚠️ Réponse vide, réessaie.',isFullscreen);}
-      else{paint();chatHistory.push({role:'assistant',content:acc});}
+      else{paint();chatHistory.push({role:'assistant',content:acc});saveConversation();}
     }
   }catch(e){removeTyping();addMessage('ai','⚠️ Erreur réseau. Réessaie.',isFullscreen);}
   document.getElementById(isFullscreen?'chat-fullscreen-send-btn':'chat-send-btn').disabled=false;
@@ -1357,6 +1416,17 @@ function exportMsgToPDF(btn){var content=btn.closest('.msg').querySelector('.msg
   setInterval(render,1000);            // met à jour l'affichage chaque seconde
 })();
 </script>
+
+<div id="chat-history-modal" style="display:none;position:fixed;inset:0;z-index:6000;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;padding:1rem">
+  <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:20px;width:100%;max-width:480px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.2rem;border-bottom:1px solid var(--border)">
+      <b style="font-family:var(--font-h)">🕘 Tes conversations</b>
+      <button onclick="closeChatHistory()" style="background:none;border:1px solid var(--border2);color:var(--text2);border-radius:8px;padding:0.3rem 0.7rem;cursor:pointer">✕</button>
+    </div>
+    <div id="chat-history-list" style="overflow-y:auto;padding:0.8rem 1rem;flex:1"></div>
+    <p id="chat-history-note" style="font-size:0.72rem;color:var(--text3);padding:0.6rem 1.2rem;border-top:1px solid var(--border)"></p>
+  </div>
+</div>
 <script>
 window.addEventListener('load',function(){if(location.hash==='#chat'&&typeof openChatFullscreen==='function'&&getPlan()!=='starter'){setTimeout(openChatFullscreen,500);}});
 </script>

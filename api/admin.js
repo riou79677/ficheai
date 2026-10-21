@@ -163,6 +163,8 @@ export default async function handler(req, res) {
     if (action === 'delete_account') {
       const { email } = payload || {};
       if (!email) return res.status(400).json({ error: 'Email manquant' });
+      await fetch(SUPABASE_URL + '/rest/v1/chat_conversations?user_email=eq.' + encodeURIComponent(email), { method: 'DELETE', headers: sb }).catch(() => {});
+      await fetch(SUPABASE_URL + '/rest/v1/api_usage?user_email=eq.' + encodeURIComponent(email), { method: 'DELETE', headers: sb }).catch(() => {});
       const r = await fetch(SUPABASE_URL + '/rest/v1/rpc/delete_account_by_email', {
         method: 'POST', headers: sb, body: JSON.stringify({ p_email: email })
       });
