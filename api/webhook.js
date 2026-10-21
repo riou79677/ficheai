@@ -76,6 +76,7 @@ export default async function handler(req, res) {
   const PLANS = {
     'price_1TXfc5JBbEVt3aRD8UpsC4Ym': { plan: 'pro',      genLimit: 50,  chatLimit: 20,  fcLimit: 100 },  // Pro mensuel
     'price_1TXfefJBbEVt3aRDhNEcUNQl': { plan: 'pro',      genLimit: 50,  chatLimit: 20,  fcLimit: 100 },  // Pro annuel
+    'price_1USuiLJBbEVt3aRDV5FtLJtZ': { plan: 'pro',      genLimit: 50,  chatLimit: 20,  fcLimit: 100 },  // Pro annuel 79,90 € (actuel)
     'price_1TXfiUJBbEVt3aRDXGVS7pAz': { plan: 'ultimate', genLimit: 300, chatLimit: 300, fcLimit: 500 },  // Ultimate mensuel
     'price_1TXfj3JBbEVt3aRDei6gdSy0': { plan: 'ultimate', genLimit: 300, chatLimit: 300, fcLimit: 500 },  // Ultimate annuel
   };
