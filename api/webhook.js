@@ -232,6 +232,7 @@ export default async function handler(req, res) {
           flashcards_limit: p.fcLimit,
           flashcards_used: 0,
           quota_period_start: new Date().toISOString(),
+          plan_expires_at: null,
           stripe_customer_id: customerId
         };
       } else {

@@ -56,7 +56,7 @@ export default async function handler(req, res) {
   try {
     // ── Statistiques générales ──
     if (action === 'get_stats') {
-      const usersR = await fetch(SUPABASE_URL + '/rest/v1/users?select=email,username,plan,generations_used,generations_limit,chat_messages_used,chat_messages_limit,flashcards_used,flashcards_limit,niveau_scolaire,quota_period_start,created_at,banned,banned_until,banned_reason', { headers: sb });
+      const usersR = await fetch(SUPABASE_URL + '/rest/v1/users?select=email,username,plan,generations_used,generations_limit,chat_messages_used,chat_messages_limit,flashcards_used,flashcards_limit,niveau_scolaire,quota_period_start,plan_expires_at,created_at,banned,banned_until,banned_reason', { headers: sb });
       const users = await usersR.json();
       // Le compteur mensuel se remet à zéro au prochain usage ; ici on affiche la valeur réelle (0 si la période est expirée).
       const monthAgo = Date.now() - 31 * 24 * 3600 * 1000;
@@ -138,7 +138,7 @@ export default async function handler(req, res) {
 
     // ── Modifier manuellement le plan/quota d'un utilisateur ──
     if (action === 'set_plan') {
-      const { email, plan, generations_limit, chat_messages_limit, flashcards_limit } = payload || {};
+      const { email, plan, generations_limit, chat_messages_limit, flashcards_limit, days } = payload || {};
       if (!email) return res.status(400).json({ error: 'Email manquant' });
       const body = {};
       if (plan) {
@@ -147,6 +147,9 @@ export default async function handler(req, res) {
         body.generations_used = 0; body.chat_messages_used = 0; body.flashcards_used = 0;
         body.generations_used_today = 0; body.chat_used_today = 0; body.flashcards_used_today = 0;
         body.quota_period_start = new Date().toISOString();
+        // Accès offert pour une durée limitée : repasse automatiquement en Starter à l'échéance (vérifié toutes les 10 min).
+        const d = parseInt(days, 10);
+        body.plan_expires_at = (plan !== 'starter' && d > 0 && d <= 366) ? new Date(Date.now() + d * 86400000).toISOString() : null;
       }
       if (generations_limit !== undefined) body.generations_limit = generations_limit;
       if (chat_messages_limit !== undefined) body.chat_messages_limit = chat_messages_limit;

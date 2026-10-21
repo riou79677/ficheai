@@ -206,6 +206,15 @@ tr.clickable-row:hover{background:rgba(108,92,231,0.08)}
       <button class="plan-btn" id="plan-btn-pro" onclick="selectPlan('pro')">⚡ Pro</button>
       <button class="plan-btn" id="plan-btn-ultimate" onclick="selectPlan('ultimate')">👑 Ultimate</button>
     </div>
+    <div id="plan-duration-zone" style="display:none;margin:0.6rem 0">
+      <p style="font-size:0.8rem;color:var(--text3);margin-bottom:0.3rem">Durée de l'accès :</p>
+      <select id="plan-duration" style="width:100%;background:var(--bg3);border:1.5px solid var(--border2);border-radius:10px;padding:0.6rem 0.8rem;color:var(--text);font-family:inherit">
+        <option value="">Sans limite (jusqu'à changement manuel)</option>
+        <option value="7">7 jours puis retour automatique en Starter</option>
+        <option value="14">14 jours puis retour automatique en Starter</option>
+        <option value="30">30 jours puis retour automatique en Starter</option>
+      </select>
+    </div>
     <p class="mini-note" id="plan-limits-note"></p>
     <div id="plan-confirm-zone" style="display:none;margin-top:1rem">
       <p style="font-size:0.78rem;color:var(--text3);margin-bottom:0.4rem">Code de confirmation : <strong id="plan-code-display" style="color:var(--purple2);letter-spacing:0.15em;font-size:1rem"></strong></p>
@@ -458,6 +467,8 @@ function openPlanModal(email,currentPlan){
   document.getElementById('plan-modal-current').textContent=(currentPlan||'starter').toUpperCase();
   document.getElementById('plan-confirm-zone').style.display='none';
   document.getElementById('plan-limits-note').textContent='';
+  document.getElementById('plan-duration-zone').style.display='none';document.getElementById('plan-duration').value='';
+  (function(){var u=currentModalUser;var n=document.getElementById('plan-modal-current');if(u&&u.plan_expires_at){n.textContent=(currentPlan||'starter').toUpperCase()+' (jusqu\'au '+new Date(u.plan_expires_at).toLocaleDateString('fr-FR')+')';}})();
   document.getElementById('plan-code-input').value='';
   document.getElementById('plan-code-err').style.display='none';
   ['starter','pro','ultimate'].forEach(function(p){document.getElementById('plan-btn-'+p).className='plan-btn';});
@@ -469,6 +480,7 @@ function selectPlan(plan){
   selectedPlan=plan;
   ['starter','pro','ultimate'].forEach(function(p){document.getElementById('plan-btn-'+p).className='plan-btn'+(p===plan?' selected-'+p:'');});
   document.getElementById('plan-limits-note').textContent=PLAN_LIMITS_INFO[plan]||'';
+  document.getElementById('plan-duration-zone').style.display=plan==='starter'?'none':'block';
   planConfirmCode=Math.floor(100000+Math.random()*900000).toString();
   document.getElementById('plan-code-display').textContent=planConfirmCode;
   document.getElementById('plan-confirm-zone').style.display='block';
@@ -486,7 +498,7 @@ async function confirmPlanChange(){
   btn.textContent='Enregistrement...';btn.disabled=true;
   try{
     // Le serveur (api/admin.js) applique automatiquement les limites du nouveau plan.
-    await callAdmin('set_plan',{email:currentModalUser.email,plan:selectedPlan});
+    await callAdmin('set_plan',{email:currentModalUser.email,plan:selectedPlan,days:document.getElementById('plan-duration').value||null});
     closePlanModal();
     showMsg('users-msg','✅ Forfait de '+currentModalUser.email+' changé en '+selectedPlan.toUpperCase()+' (limites mises à jour).','ok');
     await loadStats();
