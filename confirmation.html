@@ -98,6 +98,10 @@ h1{font-family:var(--font-h);font-size:1.9rem;font-weight:800;letter-spacing:-0.
 
   // Tant que le forfait réel n'est pas confirmé par la base, on n'affiche aucun forfait précis.
   planBadge.textContent = '✨ Activation de ton abonnement…';
+  // Indice d'affichage venant du lien Stripe (?plan=pro | ?plan=ultimate) : purement visuel, la base de données reste la source de vérité.
+  var hint = (new URLSearchParams(location.search).get('plan') || '').toLowerCase();
+  if (hint === 'ultimate') planBadge.textContent = '👑 Plan Ultimate — activation en cours…';
+  else if (hint === 'pro') planBadge.textContent = '🚀 Plan Pro — activation en cours…';
   featGen.textContent = 'Générations mensuelles incluses';
   loadingMsg.textContent = 'Un instant, on confirme ton paiement…';
 
