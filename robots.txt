@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin.html
+Disallow: /app.html
+Disallow: /dashboard.html
+Disallow: /home.html
+Disallow: /settings.html
+Disallow: /revision.html
+Disallow: /onboarding.html
+Disallow: /update-password.html
+
+Sitemap: https://studyai-kappa-swart.vercel.app/sitemap.xml

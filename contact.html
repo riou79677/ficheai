@@ -63,6 +63,18 @@ box-shadow:0 4px 20px rgba(108,92,231,0.35);}
 /* Mobile : jamais de texte coupé ni de débordement horizontal */
 html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw;overflow-x:hidden}img,svg,video,canvas{max-width:100%}pre,code{white-space:pre-wrap;word-break:break-word}button,.btn{white-space:normal}
 </style>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#09090f">
+<meta name="description" content="Une question, un bug ou une idée ? Écris à l'équipe FicheAI.">
+<link rel="canonical" href="https://studyai-kappa-swart.vercel.app/contact.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="FicheAI">
+<meta property="og:title" content="Contact — FicheAI">
+<meta property="og:description" content="Une question, un bug ou une idée ? Écris à l'équipe FicheAI.">
+<meta property="og:url" content="https://studyai-kappa-swart.vercel.app/contact.html">
+<meta property="og:image" content="https://studyai-kappa-swart.vercel.app/og-image.png">
+<meta property="og:image:alt" content="FicheAI : fiches de révision, flashcards et quiz générés par IA">
+<meta name="twitter:card" content="summary_large_image">
 </head>
 <body>
 <div class="bg-ambient"></div>
@@ -101,6 +113,7 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
       </div>
       <div class="field">
         <label>Message</label>
+        <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;opacity:0;height:0;width:0">
         <textarea id="message" placeholder="Décris ton problème ou ta question en détail..."></textarea>
         <div class="err" id="err-message">Le message ne peut pas être vide.</div>
       </div>
@@ -150,7 +163,7 @@ async function sendContact() {
     var response = await fetch('/api/contact', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, subject, message })
+      body: JSON.stringify({ email, subject, message, website: (document.getElementById('website')||{}).value || '' })
     });
     if (response.ok) {
       document.getElementById('form-section').style.display = 'none';

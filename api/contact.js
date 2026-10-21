@@ -7,7 +7,10 @@ export default async function handler(req, res) {
   const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!SERVICE_KEY) return res.status(500).json({ error: 'Configuration serveur incomplète' });
 
-  const { email, subject, message } = req.body || {};
+  const { email, subject, message, website } = req.body || {};
+
+  // Anti-spam : champ piège (invisible pour un humain). Un robot le remplit : on fait semblant de réussir.
+  if (website) return res.status(200).json({ success: true });
 
   if (!email || !subject || !message) {
     return res.status(400).json({ error: 'Paramètres manquants' });
@@ -17,11 +20,26 @@ export default async function handler(req, res) {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return res.status(400).json({ error: 'Email invalide' });
   }
+  if (String(subject).length > 200) {
+    return res.status(400).json({ error: 'Objet trop long' });
+  }
   if (message.length > 5000) {
     return res.status(400).json({ error: 'Message trop long (5000 caractères max)' });
   }
 
   try {
+    // Anti-spam : 5 messages maximum par heure et par adresse e-mail
+    const since = new Date(Date.now() - 3600 * 1000).toISOString();
+    const cnt = await fetch(SUPABASE_URL + '/rest/v1/contact_messages?select=id&email=eq.' + encodeURIComponent(email) + '&created_at=gte.' + encodeURIComponent(since), {
+      headers: { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY }
+    });
+    if (cnt.ok) {
+      const rows = await cnt.json();
+      if (Array.isArray(rows) && rows.length >= 5) {
+        return res.status(429).json({ error: 'Trop de messages envoyés. Réessaie dans une heure.' });
+      }
+    }
+
     const insertRes = await fetch(SUPABASE_URL + '/rest/v1/contact_messages', {
       method: 'POST',
       headers: {

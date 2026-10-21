@@ -80,6 +80,9 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="/auth.js"></script>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#09090f">
+<meta name="robots" content="noindex, nofollow">
 </head>
 <body>
 <nav>
@@ -329,5 +332,7 @@ if (!fiche) return;
 exportToPDF(fiche.contenu, (fiche.format_icon||'📄')+' '+(fiche.titre||'Fiche'), fiche.format);
 }
 </script>
+<script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};</script>
+<script defer src="/_vercel/insights/script.js"></script>
 </body>
 </html>
