@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Accueil — FicheAI</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#09090f;--bg2:#0f0f1a;--bg3:#13131f;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);--purple:#7c6dfa;--purple2:#a78bfa;--pink:#f472b6;--gold:#fdcb6e;--text:#f1f0ff;--text2:#a0a0c0;--text3:#5a5a7a;--font-h:'Syne',sans-serif;--font-b:'DM Sans',sans-serif}
+html{-webkit-text-size-adjust:100%}
+body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh;overflow-wrap:anywhere}
+nav{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1rem 1.5rem;border-bottom:1px solid var(--border)}
+.logo{font-family:var(--font-h);font-size:1.25rem;font-weight:800;background:linear-gradient(135deg,var(--purple2),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-decoration:none}
+.nav-right{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;justify-content:flex-end}
+.nav-right a{color:var(--text2);text-decoration:none;font-size:0.85rem}
+.nav-right a:hover{color:var(--text)}
+main{max-width:980px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-family:var(--font-h);font-size:clamp(1.5rem,4vw,2.1rem);font-weight:800;margin-bottom:0.4rem}
+.sub{color:var(--text2);font-size:0.95rem;margin-bottom:1.6rem}
+.status{display:flex;flex-wrap:wrap;gap:0.6rem;margin-bottom:1.8rem}
+.pill{background:var(--bg2);border:1px solid var(--border2);border-radius:100px;padding:0.4rem 0.9rem;font-size:0.8rem;color:var(--text2)}
+.pill b{color:var(--text)}
+.hero-card{display:block;text-decoration:none;color:inherit;background:linear-gradient(135deg,rgba(124,109,250,0.2),rgba(244,114,182,0.12));border:1.5px solid rgba(167,139,250,0.55);border-radius:22px;padding:1.6rem;margin-bottom:1.2rem;position:relative;transition:transform .2s,border-color .2s}
+.hero-card:hover{transform:translateY(-2px);border-color:var(--purple2)}
+.tag{display:inline-block;background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff;font-size:0.7rem;font-weight:700;padding:0.25rem 0.8rem;border-radius:100px;margin-bottom:0.8rem;letter-spacing:0.04em}
+.hero-card h2{font-family:var(--font-h);font-size:1.4rem;margin-bottom:0.4rem}
+.hero-card p{color:var(--text2);font-size:0.92rem;line-height:1.6;max-width:640px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
+.card{display:block;text-decoration:none;color:inherit;background:var(--bg2);border:1px solid var(--border);border-radius:18px;padding:1.3rem;transition:transform .2s,border-color .2s}
+.card:hover{transform:translateY(-2px);border-color:var(--border2)}
+.card .ic{font-size:1.6rem;margin-bottom:0.6rem}
+.card h3{font-family:var(--font-h);font-size:1.02rem;margin-bottom:0.3rem}
+.card p{color:var(--text2);font-size:0.84rem;line-height:1.55}
+.lock{opacity:0.9}
+.lock .badge{display:inline-block;margin-top:0.6rem;font-size:0.72rem;font-weight:700;color:var(--gold);background:rgba(253,203,110,0.12);padding:0.2rem 0.7rem;border-radius:100px}
+@media(max-width:520px){nav{padding:0.8rem 1rem}main{padding:1.4rem 1rem 3rem}.hero-card{padding:1.25rem}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/home.html" class="logo">FicheAI</a>
+  <div class="nav-right">
+    <a href="/dashboard.html">Bibliothèque</a>
+    <a href="/settings.html">Paramètres</a>
+    <a href="#" id="logout">Déconnexion</a>
+  </div>
+</nav>
+<main>
+  <h1 id="hello">Bienvenue 👋</h1>
+  <p class="sub">Que veux-tu faire aujourd'hui ?</p>
+  <div class="status" id="status"></div>
+
+  <a class="hero-card" href="/revision.html">
+    <span class="tag">⭐ MODE RÉVISION</span>
+    <h2>🧠 Révise tes fiches pour de vrai</h2>
+    <p>Transforme tes fiches en séances de révision actives : tu t'entraînes, tu te testes, et tu retiens plus longtemps qu'en relisant simplement.</p>
+  </a>
+
+  <div class="grid">
+    <a class="card" href="/app.html"><div class="ic">⚡</div><h3>Générateur</h3><p>Colle ou importe un cours, choisis un format : fiche, quiz, flashcards, résumé…</p></a>
+    <a class="card" id="chat-card" href="/app.html#chat"><div class="ic">💬</div><h3>Chat IA</h3><p>Pose tes questions sur ton cours à un tuteur qui s'appuie sur ton contenu.</p><span class="badge" id="chat-badge" style="display:none">Dès le plan Pro</span></a>
+    <a class="card" href="/dashboard.html"><div class="ic">📚</div><h3>Ma bibliothèque</h3><p>Retrouve toutes les fiches que tu as enregistrées.</p></a>
+    <a class="card" href="/settings.html"><div class="ic">⚙️</div><h3>Paramètres &amp; abonnement</h3><p>Ton niveau scolaire, ton plan, tes recharges et ton abonnement.</p></a>
+  </div>
+</main>
+<script src="/auth.js"></script>
+<script>
+var SB='https://qyjqtjrqnlbgtxvnjvnk.supabase.co',KEY='sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ';
+var u=null;try{u=JSON.parse(localStorage.getItem('ficheai_user'));}catch(e){}
+if(!u||!u.email){window.location.replace('/login.html');}
+function esc(t){return String(t==null?'':t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+document.getElementById('logout').addEventListener('click',function(e){e.preventDefault();try{localStorage.removeItem('ficheai_user');}catch(x){}window.location.href='/';});
+(async function(){
+  if(!u)return;
+  if(u.username)document.getElementById('hello').textContent='Salut '+u.username+' 👋';
+  var plan=u.plan||'starter';
+  try{
+    var t=await window.ficheaiToken();
+    if(t){
+      var r=await fetch(SB+'/rest/v1/users?email=eq.'+encodeURIComponent(u.email)+'&select=plan,generations_used,generations_limit,bonus_generations,bonus_expires_at,username',{headers:{apikey:KEY,Authorization:'Bearer '+t}});
+      var d=await r.json();
+      if(Array.isArray(d)&&d[0]){
+        var x=d[0];plan=x.plan||plan;
+        var bonus=(x.bonus_generations>0&&(!x.bonus_expires_at||new Date(x.bonus_expires_at)>new Date()))?x.bonus_generations:0;
+        var left=Math.max(0,(x.generations_limit||0)-(x.generations_used||0))+bonus;
+        var names={starter:'Starter',pro:'Pro',ultimate:'Ultimate'};
+        document.getElementById('status').innerHTML='<span class="pill">Plan <b>'+esc(names[plan]||plan)+'</b></span><span class="pill"><b>'+left+'</b> génération'+(left>1?'s':'')+' restante'+(left>1?'s':'')+(plan==='starter'?' cette semaine':' ce mois-ci')+'</span>';
+        if(x.username)document.getElementById('hello').textContent='Salut '+x.username+' 👋';
+      }
+    }
+  }catch(e){}
+  if(plan==='starter'){document.getElementById('chat-badge').style.display='inline-block';document.getElementById('chat-card').classList.add('lock');document.getElementById('chat-card').href='/settings.html';}
+})();
+</script>
+</body>
+</html>

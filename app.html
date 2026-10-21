@@ -1271,5 +1271,8 @@ function exportMsgToPDF(btn){var content=btn.closest('.msg').querySelector('.msg
   setInterval(render,1000);            // met à jour l'affichage chaque seconde
 })();
 </script>
+<script>
+window.addEventListener('load',function(){if(location.hash==='#chat'&&typeof openChatFullscreen==='function'&&getPlan()!=='starter'){setTimeout(openChatFullscreen,500);}});
+</script>
 </body>
 </html>

@@ -634,7 +634,7 @@ async function initAccountState() {
   if (!u || !u.email) return;
   var login = document.getElementById('nav-login'), signup = document.getElementById('nav-signup');
   if (login) { login.textContent = 'Mon espace'; login.href = '/dashboard.html'; }
-  if (signup) { signup.textContent = '⚡ Ouvrir FicheAI'; signup.href = '/app.html'; }
+  if (signup) { signup.textContent = '⚡ Ouvrir FicheAI'; signup.href = '/home.html'; }
   document.querySelectorAll('a[href="/login.html"]').forEach(function(a){ if (a.id !== 'nav-login') { a.textContent = 'Mon espace'; a.href = '/dashboard.html'; } });
   var plan = u.plan || 'starter';
   try {
