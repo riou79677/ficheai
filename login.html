@@ -127,7 +127,7 @@ async function handleLogin(){
         if(rl)rl.addEventListener('click',async function(ev){
           ev.preventDefault();rl.textContent='Envoi…';
           try{
-            var rr=await fetch(SUPABASE_URL+'/auth/v1/resend',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},body:JSON.stringify({type:'signup',email:email})});
+            var rr=await fetch(SUPABASE_URL+'/auth/v1/resend?redirect_to='+encodeURIComponent('https://studyai-kappa-swart.vercel.app/login.html?confirmed=1'),{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},body:JSON.stringify({type:'signup',email:email})});
             rl.textContent=rr.ok?'✅ Email renvoyé, vérifie ta boîte (et les spams)':'⚠️ Impossible de renvoyer pour le moment, réessaie dans quelques minutes';
           }catch(e){rl.textContent='⚠️ Erreur réseau, réessaie';}
         });
@@ -209,5 +209,10 @@ document.getElementById('forgot-link').addEventListener('click',async function()
 </script>
 <script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};</script>
 <script defer src="/_vercel/insights/script.js"></script>
+<script>
+(function(){try{if(new URLSearchParams(location.search).get('confirmed')==='1'){
+var b=document.getElementById('msg-success');if(b){b.textContent='✅ Ton adresse e-mail est confirmée ! Connecte-toi pour commencer.';b.style.display='block';}
+}}catch(e){}})();
+</script>
 </body>
 </html>
