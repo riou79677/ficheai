@@ -145,6 +145,22 @@ tr.clickable-row:hover{background:rgba(108,92,231,0.08)}
 </div>
 
 <div class="section">
+<h2>💸 Consommation de crédit IA (30 derniers jours)</h2>
+<p class="mini-note" id="usage-total">Chargement...</p>
+<table>
+<thead><tr><th>Utilisateur</th><th>Générations</th><th>Messages chat</th><th>Tokens (entrée / sortie)</th><th>Coût estimé</th></tr></thead>
+<tbody id="usage-table"></tbody>
+</table>
+<h3 style="margin:1.2rem 0 0.5rem;font-size:0.95rem">Dernières activités</h3>
+<table>
+<thead><tr><th>Date</th><th>Utilisateur</th><th>Action</th><th>Tokens</th><th>Coût</th></tr></thead>
+<tbody id="usage-recent"></tbody>
+</table>
+<div class="msg" id="usage-msg"></div>
+<p class="mini-note">Coût calculé à partir des tokens réellement facturés par Anthropic (2 $ / M en entrée, 10 $ / M en sortie). Seuls les appels faits après la mise en ligne de cette version sont comptés.</p>
+</div>
+
+<div class="section">
 <h2>👑 Administrateur</h2>
 <div id="admin-account-section"></div>
 </div>
@@ -288,10 +304,10 @@ async function unlock(){
 function showDashboard(){
   document.getElementById('lock-screen').style.display='none';
   document.getElementById('dashboard').style.display='block';
-  Promise.all([loadStats(),loadFiches()]).catch(function(){});
+  Promise.all([loadStats(),loadFiches(),loadUsage()]).catch(function(){});
 }
 
-function refreshDashboard(){Promise.all([loadStats(),loadFiches()]).catch(function(){});}
+function refreshDashboard(){Promise.all([loadStats(),loadFiches(),loadUsage()]).catch(function(){});}
 
 document.getElementById('admin-password').addEventListener('keydown',function(e){if(e.key==='Enter')unlock();});
 document.getElementById('admin-email').addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('admin-password').focus();});
@@ -565,6 +581,19 @@ function exportCSV(){
   allUsersData.forEach(function(u){rows.push([u.email,u.username||'',u.plan,(u.generations_used??0),u.generations_limit,new Date(u.created_at).toLocaleDateString('fr-FR'),u.banned?'oui':'non']);});
   var csv=rows.map(function(r){return r.map(function(v){return '"'+String(v).replace(/"/g,'""')+'"';}).join(',');}).join('\n');
   var a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));a.download='ficheai_utilisateurs_'+new Date().toISOString().split('T')[0]+'.csv';a.click();
+}
+
+async function loadUsage(){
+  try{
+    var d=await callAdmin('get_api_usage');
+    function esc(t){return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+    function usd(n){return '$'+Number(n||0).toFixed(3);}
+    document.getElementById('usage-total').textContent='Total : '+usd(d.total_cost_usd)+' (≈ '+(Number(d.total_cost_usd||0)*0.86).toFixed(2)+' €) sur 30 jours.';
+    var t=document.getElementById('usage-table');
+    t.innerHTML=(d.users&&d.users.length)?d.users.map(function(u){return '<tr><td>'+esc(u.email)+'</td><td>'+u.generations+'</td><td>'+u.chats+'</td><td>'+u.input_tokens.toLocaleString('fr-FR')+' / '+u.output_tokens.toLocaleString('fr-FR')+'</td><td><b>'+usd(u.cost_usd)+'</b></td></tr>';}).join(''):'<tr><td colspan="5" style="color:var(--text3)">Aucune donnée pour l\'instant.</td></tr>';
+    var r=document.getElementById('usage-recent');
+    r.innerHTML=(d.recent&&d.recent.length)?d.recent.map(function(x){return '<tr><td>'+new Date(x.created_at).toLocaleString('fr-FR')+'</td><td>'+esc(x.user_email)+'</td><td>'+esc(x.kind)+'</td><td>'+(x.input_tokens+x.output_tokens).toLocaleString('fr-FR')+'</td><td>$'+Number(x.cost_usd).toFixed(4)+'</td></tr>';}).join(''):'';
+  }catch(e){if(e.message!=='WRONG_SECRET'){var m=document.getElementById('usage-msg');m.textContent='⚠️ Impossible de charger la consommation : '+e.message;m.className='msg error';}}
 }
 
 async function loadFiches(){

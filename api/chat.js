@@ -7,6 +7,20 @@ const MODEL_BY_PLAN = { starter: 'claude-sonnet-5-5', pro: 'claude-sonnet-5-5', 
 const modelFor = (plan) => MODEL_BY_PLAN[plan] || MODEL_BY_PLAN.starter;
 
 // Même raison que generate.js : évite la coupure à 10 s de Vercel.
+
+// ── Suivi de consommation API : une ligne par appel IA (tokens + coût estimé en $) ──
+// Tarif Sonnet 5.5 : 2 $ / million de tokens en entrée, 10 $ / million en sortie.
+async function logApiUsage(SERVICE_KEY, email, kind, model, inTok, outTok) {
+  try {
+    const cost = ((inTok || 0) * 2 + (outTok || 0) * 10) / 1e6;
+    await fetch('https://qyjqtjrqnlbgtxvnjvnk.supabase.co/rest/v1/api_usage', {
+      method: 'POST',
+      headers: { apikey: SERVICE_KEY, Authorization: 'Bearer ' + SERVICE_KEY, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+      body: JSON.stringify({ user_email: email, kind: kind, model: model, input_tokens: inTok || 0, output_tokens: outTok || 0, cost_usd: cost })
+    });
+  } catch (e) { console.error('Log usage:', e && e.message); }
+}
+
 export const config = { maxDuration: 60 };
 
 export default async function handler(req, res) {
@@ -189,6 +203,7 @@ Quand tu réponds :
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
+    let inTok = 0, outTok = 0;
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
@@ -199,12 +214,15 @@ Quand tu réponds :
         if (!line.startsWith('data: ')) continue;
         try {
           const evt = JSON.parse(line.slice(6));
+          if (evt.type === 'message_start' && evt.message && evt.message.usage) inTok = evt.message.usage.input_tokens || 0;
+          if (evt.type === 'message_delta' && evt.usage) outTok = evt.usage.output_tokens || outTok;
           if (evt.type === 'content_block_delta' && evt.delta && evt.delta.type === 'text_delta') {
             res.write(evt.delta.text);
           }
         } catch (err) { /* ligne non JSON ignorée */ }
       }
     }
+    await logApiUsage(SERVICE_KEY, email, 'chat', modelFor(user.plan), inTok, outTok);
     return res.end();
 
   } catch (error) {

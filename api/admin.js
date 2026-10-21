@@ -170,6 +170,26 @@ export default async function handler(req, res) {
       return res.status(200).json(result);
     }
 
+    // ── Consommation de l'API IA : totaux par utilisateur (30 jours) + dernières activités ──
+    if (action === 'get_api_usage') {
+      const since = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();
+      const r = await fetch(SUPABASE_URL + '/rest/v1/api_usage?select=user_email,kind,input_tokens,output_tokens,cost_usd,created_at&created_at=gte.' + since + '&order=created_at.desc&limit=5000', { headers: sb });
+      const rows = await r.json();
+      const list = Array.isArray(rows) ? rows : [];
+      const byUser = {};
+      list.forEach(x => {
+        const u = byUser[x.user_email] || (byUser[x.user_email] = { email: x.user_email, generations: 0, chats: 0, cost_usd: 0, input_tokens: 0, output_tokens: 0 });
+        if (String(x.kind).startsWith('chat')) u.chats++; else u.generations++;
+        u.cost_usd += Number(x.cost_usd) || 0; u.input_tokens += x.input_tokens || 0; u.output_tokens += x.output_tokens || 0;
+      });
+      const users = Object.values(byUser).sort((a, b) => b.cost_usd - a.cost_usd);
+      return res.status(200).json({
+        total_cost_usd: users.reduce((s, u) => s + u.cost_usd, 0),
+        users: users,
+        recent: list.slice(0, 40)
+      });
+    }
+
     if (action === 'get_contact_messages') {
       const limit = payload?.limit || 50;
       const onlyUnread = payload?.unread_only || false;

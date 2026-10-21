@@ -8,6 +8,20 @@ const modelFor = (plan) => MODEL_BY_PLAN[plan] || MODEL_BY_PLAN.starter;
 
 // Vercel coupe les fonctions à 10 s par défaut. Une génération sur un cours long dépasse ce délai,
 // ce qui produisait l'erreur « problème temporaire ». 60 s est accepté sur tous les plans Vercel.
+
+// ── Suivi de consommation API : une ligne par appel IA (tokens + coût estimé en $) ──
+// Tarif Sonnet 5.5 : 2 $ / million de tokens en entrée, 10 $ / million en sortie.
+async function logApiUsage(SERVICE_KEY, email, kind, model, inTok, outTok) {
+  try {
+    const cost = ((inTok || 0) * 2 + (outTok || 0) * 10) / 1e6;
+    await fetch('https://qyjqtjrqnlbgtxvnjvnk.supabase.co/rest/v1/api_usage', {
+      method: 'POST',
+      headers: { apikey: SERVICE_KEY, Authorization: 'Bearer ' + SERVICE_KEY, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+      body: JSON.stringify({ user_email: email, kind: kind, model: model, input_tokens: inTok || 0, output_tokens: outTok || 0, cost_usd: cost })
+    });
+  } catch (e) { console.error('Log usage:', e && e.message); }
+}
+
 export const config = { maxDuration: 60 };
 
 // Longueur maximale de la réponse selon le format. 1500 tokens coupait les fiches et les cartes
@@ -341,6 +355,7 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
 
     const data = await response.json();
     if (data.error) throw new Error(data.error.message);
+    await logApiUsage(SERVICE_KEY, email, 'generation:' + format, modelFor(user.plan), data.usage && data.usage.input_tokens, data.usage && data.usage.output_tokens);
 
     // ── CORRECTION (03/10/2026) : suppression du PATCH manuel du compteur ──
     // check_and_consume_quota() incrémente DÉJÀ generations_used en base (confirmé dans la RPC SQL).

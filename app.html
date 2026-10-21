@@ -639,8 +639,8 @@ function updateQuotaUI(){
     banner.style.display='flex';
     banner.classList.toggle('critical',pct>=95);
     document.getElementById('quota-banner-msg').innerHTML=pct>=95
-      ? 'Tu as utilisé <b>'+pct+'%</b> de tes générations ce mois-ci ('+used+' / '+tokensLimit+'). Plus que '+tokensLeft+' restante'+(tokensLeft>1?'s':'')+' !'
-      : 'Tu approches de ta limite : <b>'+pct+'%</b> utilisé ('+used+' / '+tokensLimit+' générations ce mois-ci).';
+      ? 'Tu as utilisé <b>'+pct+'%</b> de tes générations '+(getPlan()==='starter'?'cette semaine':'ce mois-ci')+' ('+used+' / '+tokensLimit+'). Plus que '+tokensLeft+' restante'+(tokensLeft>1?'s':'')+' !'
+      : 'Tu approches de ta limite : <b>'+pct+'%</b> utilisé ('+used+' / '+tokensLimit+' générations '+(getPlan()==='starter'?'cette semaine':'ce mois-ci')+').';
     var bp=getPlan();
     var rl='<a href="'+RECHARGE_50+'" target="_blank">+50 générations — 6,99€</a><a href="'+RECHARGE_150+'" target="_blank">+150 générations — 19,99€</a><a href="'+RECHARGE_400+'" target="_blank">+400 générations — 49,99€</a>';
     document.getElementById('quota-banner-links').innerHTML=bp==='starter'
@@ -806,7 +806,7 @@ function showLimitModal(message,kind){
     intro='Passe à un abonnement pour continuer à réviser. Pro : 50 générations par mois, Chat IA, export PDF et sujets d’examen. Ultimate : 300 générations et 300 messages de chat par mois.';
     opts=limitOption(PRO_M,'⚡ Pro','7,99€/mois',true)+limitOption(ULT_M,'👑 Ultimate','Voir l’offre',false);
   } else {
-    title='Limite atteinte pour ce mois-ci';
+    title=(plan==='starter'?'Limite atteinte pour cette semaine':'Limite atteinte pour ce mois-ci');
     intro=(message?message+' ':'')+'Ultimate offre 300 générations et 300 messages de chat par mois'+(kind==='chat'?'.':', ou tu peux recharger des générations tout de suite :');
     opts=limitOption(ULT_M,'👑 Passer à Ultimate','Voir l’offre',true)+(kind==='chat'?'':rechargeOptions());
   }
