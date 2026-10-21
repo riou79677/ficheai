@@ -1110,11 +1110,39 @@ function useCourseInChat(){
 }
 
 function formatChatText(text){
-  return text
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
-    .replace(/━+/g,'<hr style="border:none;border-top:1px solid rgba(255,255,255,0.1);margin:0.6rem 0">')
-    .replace(/\n/g,'<br>');
+  function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function inline(s){
+    return esc(s)
+      .replace(/`([^`]+)`/g,'<code style="background:rgba(255,255,255,0.08);padding:1px 6px;border-radius:5px;font-size:0.92em">$1</code>')
+      .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
+      .replace(/(^|[^*])\*([^*\s][^*]*)\*(?!\*)/g,'$1<em>$2</em>');
+  }
+  var lines=String(text).split('\n'),html='',list=null,para=[],inCode=false,code=[];
+  function flushPara(){if(para.length){html+='<p style="margin:0 0 0.7rem">'+para.map(inline).join('<br>')+'</p>';para=[];}}
+  function closeList(){if(list){html+='</'+list+'>';list=null;}}
+  lines.forEach(function(raw){
+    var line=raw.replace(/\s+$/,'');
+    if(/^```/.test(line.trim())){
+      if(inCode){html+='<pre style="background:#0b0b14;border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:0.7rem 0.9rem;overflow-x:auto;margin:0 0 0.7rem;white-space:pre-wrap">'+esc(code.join('\n'))+'</pre>';code=[];inCode=false;}
+      else{flushPara();closeList();inCode=true;}
+      return;
+    }
+    if(inCode){code.push(raw);return;}
+    if(!line.trim()){flushPara();closeList();return;}
+    if(/^[━─=]{3,}$/.test(line.trim())){flushPara();closeList();html+='<hr style="border:none;border-top:1px solid rgba(255,255,255,0.1);margin:0.6rem 0">';return;}
+    var h=line.match(/^#{1,4}\s+(.*)$/);
+    if(h){flushPara();closeList();html+='<div style="font-family:var(--font-h);font-weight:700;color:var(--text);margin:0.5rem 0 0.4rem">'+inline(h[1])+'</div>';return;}
+    var ul=line.match(/^\s*[-*•▸]\s+(.*)$/),ol=line.match(/^\s*\d+[.)]\s+(.*)$/);
+    if(ul||ol){
+      var tag=ul?'ul':'ol';flushPara();
+      if(list!==tag){closeList();html+='<'+tag+' style="margin:0 0 0.7rem;padding-left:1.3rem">';list=tag;}
+      html+='<li style="margin-bottom:0.25rem">'+inline((ul||ol)[1])+'</li>';return;
+    }
+    closeList();para.push(line);
+  });
+  if(inCode)html+='<pre style="background:#0b0b14;border-radius:10px;padding:0.7rem 0.9rem;white-space:pre-wrap">'+esc(code.join('\n'))+'</pre>';
+  flushPara();closeList();
+  return html||'';
 }
 
 function addMessage(role,text,isFullscreen){
