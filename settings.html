@@ -99,6 +99,8 @@ main{flex:1;display:flex;gap:0;max-width:900px;margin:0 auto;width:100%;padding:
 .btn-delete{background:rgba(244,114,182,0.15);border:1px solid rgba(244,114,182,0.4);color:var(--pink);padding:0.65rem 1.4rem;border-radius:10px;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:var(--font-b);}
 footer{padding:1.5rem;text-align:center;font-size:0.78rem;color:var(--text3);border-top:1px solid var(--border);}
 @media(max-width:600px){main{flex-direction:column;padding:1.5rem 1rem;}.settings-sidebar{width:100%;margin-right:0;margin-bottom:1.5rem;display:flex;gap:0.4rem;flex-wrap:wrap;}.sidebar-title{display:none;}.sidebar-item{width:auto;flex:1;justify-content:center;font-size:0.78rem;padding:0.5rem 0.6rem;}.sidebar-icon{display:none;}}
+/* Mobile : jamais de texte coupé ni de débordement horizontal */
+html{-webkit-text-size-adjust:100%}body{overflow-wrap:anywhere;max-width:100vw;overflow-x:hidden}img,svg,video,canvas{max-width:100%}pre,code{white-space:pre-wrap;word-break:break-word}button,.btn{white-space:normal}
 </style>
 <script src="/auth.js"></script>
 </head>

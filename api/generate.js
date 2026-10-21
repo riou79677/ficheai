@@ -38,7 +38,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Configuration serveur incomplète' });
   }
 
-  const { course, format, language, instructions } = req.body || {};
+  const { course, format, language, instructions, diagrams } = req.body || {};
 
   if (!course || !format) {
     return res.status(400).json({ error: 'Paramètres manquants' });
@@ -330,6 +330,11 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
 
   // Consignes libres de l'étudiant (optionnel) : espaces normalisés, limitées à 500 caractères.
   const userInstructions = String(instructions || '').replace(/\s+/g, ' ').trim().substring(0, 500);
+  // Schémas (option Pro/Ultimate) : l'IA ajoute des diagrammes Mermaid que le site dessine ensuite.
+  const wantDiagrams = !!diagrams && user.plan !== 'starter' && ['fiche', 'chrono'].includes(format);
+  const diagramBlock = wantDiagrams
+    ? '\n\nSCHÉMAS : ajoute à la toute fin 1 schéma (2 au maximum, seulement si le cours s\'y prête) pour visualiser un processus, une hiérarchie, une chronologie ou des relations entre notions. Écris-le dans un bloc ```mermaid ... ```. Règles strictes : première ligne `flowchart TD` ; identifiants simples (A, B, C...) ; chaque texte de nœud entre guillemets doubles, 4 mots maximum, sans parenthèses ni caractères spéciaux ; 12 nœuds maximum ; flèches avec `-->` ; rien d\'autre dans le bloc. Si le cours ne s\'y prête pas, n\'ajoute aucun schéma.'
+    : '';
   const instructionsBlock = userInstructions
     ? '\n\n---CONSIGNES---\n' + userInstructions + '\n---FIN CONSIGNES---'
     : '';
@@ -344,11 +349,11 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
       },
       body: JSON.stringify({
         model: modelFor(user.plan),
-        max_tokens: MAX_TOKENS[format] || 2500,
+        max_tokens: (MAX_TOKENS[format] || 2500) + (wantDiagrams ? 900 : 0),
         system: 'Tu es FicheAI, un assistant pédagogique expert. ' + langInstruction + ' ' + niveauInstruction + ' ' + antiInjectionGuard + ' Sois précis, structuré et pédagogique.',
         messages: [{
           role: 'user',
-          content: prompts[format] + '\n\n---COURS---\n' + String(course).substring(0, charLimit) + '\n---FIN COURS---' + instructionsBlock + '\n\nGénère maintenant le contenu demandé.'
+          content: prompts[format] + '\n\n---COURS---\n' + String(course).substring(0, charLimit) + '\n---FIN COURS---' + instructionsBlock + diagramBlock + '\n\nGénère maintenant le contenu demandé.'
         }]
       })
     });
