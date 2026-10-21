@@ -688,8 +688,9 @@ async function refreshAccount(){
     localStorage.setItem('ficheai_user',JSON.stringify(savedUser));
     tokensLeft=savedUser.remaining;tokensLimit=savedUser.limit;
     document.getElementById('plan-name').textContent=savedUser.plan.charAt(0).toUpperCase()+savedUser.plan.slice(1);
-    document.getElementById('tok-nav').textContent=tokensLeft;
-    document.getElementById('stat-gen').textContent=tokensLeft;
+    var shown=tokensLeft>=100000?'∞':tokensLeft;
+    document.getElementById('tok-nav').textContent=shown;
+    document.getElementById('stat-gen').textContent=shown;
     updateNavUpgradeBtn();updateQuotaUI();
     if(currentMode==='chat')renderChatMode();
   }catch(e){}
@@ -977,6 +978,8 @@ document.getElementById('gen-btn').addEventListener('click',async function(){
         }
         throw new Error(data.error);
       }
+      if(!data.result||typeof data.result!=='string'){throw new Error("L’IA n’a renvoyé aucun texte, réessaie dans un instant.");}
+      if(!data.result)throw new Error('Réponse vide du service, réessaie dans un instant.');
       generatedResults.push({fmt:f,name:meta.name,icon:meta.icon,result:data.result});
       if(tokensLeft!==999999){
         tokensLeft--;
