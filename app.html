@@ -880,7 +880,7 @@ function handleFileLoad(file){
         pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         var pdf=await pdfjsLib.getDocument({data:ev.target.result}).promise;
         var plan=savedUser?(savedUser.plan||'starter'):'starter';
-        var pageLimit=plan==='ultimate'?100:plan==='pro'?40:15;
+        var pageLimit=plan==='ultimate'?50:plan==='pro'?40:15;
         var maxPages=Math.min(pdf.numPages,pageLimit);
         var text='';
         for(var i=1;i<=maxPages;i++){var page=await pdf.getPage(i);var content=await page.getTextContent();text+=content.items.map(function(item){return item.str;}).join(' ')+'\n';}
