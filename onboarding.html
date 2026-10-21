@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Configure ton compte — FicheAI</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#09090f;--bg2:#0f0f1a;--bg3:#13131f;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);--purple:#7c6dfa;--purple2:#a78bfa;--pink:#f472b6;--text:#f1f0ff;--text2:#a0a0c0;--text3:#5a5a7a;--font-h:'Syne',sans-serif;--font-b:'DM Sans',sans-serif}
+html{-webkit-text-size-adjust:100%}
+body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh;overflow-wrap:break-word;
+background-image:radial-gradient(ellipse 70% 45% at 50% -10%,rgba(124,109,250,0.18),transparent 70%)}
+.wrap{max-width:620px;margin:0 auto;padding:2.2rem 1.1rem 3rem}
+.logo{display:flex;align-items:center;justify-content:center;gap:10px;font-family:var(--font-h);font-size:1.3rem;font-weight:800;text-decoration:none;margin-bottom:2rem;
+background:linear-gradient(135deg,var(--purple2),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.logo-icon{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--purple),var(--pink));display:flex;align-items:center;justify-content:center;box-shadow:0 2px 16px rgba(108,92,231,0.35)}
+.logo-icon svg{width:17px;height:17px}
+.steps{display:flex;justify-content:center;gap:6px;margin-bottom:1.2rem}
+.steps span{width:28px;height:4px;border-radius:4px;background:var(--border2)}
+.steps span.on{background:linear-gradient(90deg,var(--purple),var(--pink))}
+h1{font-family:var(--font-h);font-size:clamp(1.45rem,5vw,1.9rem);font-weight:800;text-align:center;margin-bottom:0.5rem}
+.sub{color:var(--text2);text-align:center;font-size:0.95rem;line-height:1.6;margin-bottom:2rem}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:1.4rem;margin-bottom:1.2rem}
+.card h2{font-family:var(--font-h);font-size:1.05rem;margin-bottom:0.25rem;display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap}
+.req{font-family:var(--font-b);font-size:0.68rem;font-weight:700;color:var(--pink);background:rgba(244,114,182,0.12);padding:0.15rem 0.6rem;border-radius:100px}
+.opt{font-family:var(--font-b);font-size:0.68rem;font-weight:700;color:var(--text2);background:rgba(255,255,255,0.06);padding:0.15rem 0.6rem;border-radius:100px}
+.card p.hint{color:var(--text2);font-size:0.85rem;line-height:1.55;margin-bottom:1rem}
+.levels{display:grid;grid-template-columns:1fr 1fr;gap:0.7rem}
+.lvl{background:var(--bg3);border:1.5px solid var(--border2);border-radius:14px;padding:0.95rem 0.8rem;text-align:left;cursor:pointer;color:var(--text);font-family:var(--font-b);transition:border-color .15s,transform .15s,background .15s}
+.lvl:hover{transform:translateY(-1px);border-color:rgba(167,139,250,0.5)}
+.lvl .e{font-size:1.4rem;display:block;margin-bottom:0.35rem}
+.lvl b{display:block;font-size:0.95rem;margin-bottom:0.15rem}
+.lvl small{color:var(--text2);font-size:0.78rem;line-height:1.4}
+.lvl.sel{border-color:var(--purple2);background:linear-gradient(135deg,rgba(124,109,250,0.18),rgba(244,114,182,0.08))}
+.chips{display:flex;flex-wrap:wrap;gap:0.5rem}
+.chip{background:var(--bg3);border:1.5px solid var(--border2);border-radius:100px;padding:0.5rem 0.95rem;font-size:0.86rem;color:var(--text);cursor:pointer;font-family:var(--font-b);transition:border-color .15s,background .15s}
+.chip:hover{border-color:rgba(167,139,250,0.5)}
+.chip.sel{border-color:var(--purple2);background:rgba(124,109,250,0.2)}
+.btn{width:100%;border:none;border-radius:100px;padding:1rem;font-size:1rem;font-weight:700;font-family:var(--font-b);color:#fff;cursor:pointer;
+background:linear-gradient(135deg,var(--purple),var(--pink));box-shadow:0 6px 26px rgba(124,109,250,0.35);transition:opacity .2s,transform .15s}
+.btn:hover:not(:disabled){transform:translateY(-1px)}
+.btn:disabled{opacity:0.4;cursor:not-allowed;box-shadow:none}
+.err{display:none;background:rgba(240,149,149,0.1);border:1px solid rgba(240,149,149,0.35);color:#f09595;border-radius:12px;padding:0.8rem 1rem;font-size:0.87rem;margin-bottom:1rem}
+.note{color:var(--text3);font-size:0.78rem;text-align:center;margin-top:0.9rem;line-height:1.5}
+@media(max-width:380px){.levels{grid-template-columns:1fr}.card{padding:1.1rem}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="logo" href="/home.html"><span class="logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></span>FicheAI</a>
+  <div class="steps"><span class="on"></span><span class="on"></span><span class="on"></span></div>
+  <h1>Dernière étape avant de commencer</h1>
+  <p class="sub">FicheAI adapte le vocabulaire, la difficulté et les exemples de tes fiches à ton niveau. Ça prend 10 secondes.</p>
+
+  <div class="card">
+    <h2>Quel est ton niveau ? <span class="req">Obligatoire</span></h2>
+    <p class="hint">Tu pourras le modifier à tout moment dans tes paramètres.</p>
+    <div class="levels" id="levels">
+      <button type="button" class="lvl" data-v="college"><span class="e">📘</span><b>Collège</b><small>De la 6e à la 3e, brevet</small></button>
+      <button type="button" class="lvl" data-v="lycee"><span class="e">📗</span><b>Lycée</b><small>Seconde, Première, Terminale, bac</small></button>
+      <button type="button" class="lvl" data-v="prepa"><span class="e">📕</span><b>Prépa</b><small>CPGE, concours</small></button>
+      <button type="button" class="lvl" data-v="superieur"><span class="e">📙</span><b>Études sup</b><small>Université, BTS, BUT, école</small></button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Comment as-tu connu FicheAI ? <span class="opt">Facultatif</span></h2>
+    <p class="hint">Ça m'aide à savoir où parler de FicheAI.</p>
+    <div class="chips" id="chips">
+      <button type="button" class="chip" data-v="discord">💬 Discord</button>
+      <button type="button" class="chip" data-v="tiktok">🎵 TikTok</button>
+      <button type="button" class="chip" data-v="instagram">📸 Instagram</button>
+      <button type="button" class="chip" data-v="youtube">▶️ YouTube</button>
+      <button type="button" class="chip" data-v="ami">👋 Un ami</button>
+      <button type="button" class="chip" data-v="prof">🎓 Un prof</button>
+      <button type="button" class="chip" data-v="recherche">🔎 Recherche Google</button>
+      <button type="button" class="chip" data-v="autre">✨ Autre</button>
+    </div>
+  </div>
+
+  <div class="err" id="err"></div>
+  <button class="btn" id="go" disabled>Choisis ton niveau pour continuer</button>
+  <p class="note">Ces informations servent uniquement à personnaliser FicheAI. Elles ne sont jamais partagées.</p>
+</div>
+
+<script src="/auth.js"></script>
+<script>
+var SB='https://qyjqtjrqnlbgtxvnjvnk.supabase.co',KEY='sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ';
+var u=null;try{u=JSON.parse(localStorage.getItem('ficheai_user'));}catch(e){}
+if(!u||!u.email){window.location.replace('/login.html');}
+var level=null,source=null,busy=false;
+var btn=document.getElementById('go'),err=document.getElementById('err');
+function nextUrl(){
+  var n=new URLSearchParams(location.search).get('next')||'';
+  return (/^\/[a-zA-Z0-9_\-]+\.html(#[a-z]*)?$/.test(n))?n:'/home.html';
+}
+document.querySelectorAll('.lvl').forEach(function(b){b.addEventListener('click',function(){
+  document.querySelectorAll('.lvl').forEach(function(x){x.classList.remove('sel');});
+  b.classList.add('sel');level=b.dataset.v;btn.disabled=false;btn.textContent='C\'est parti →';
+});});
+document.querySelectorAll('.chip').forEach(function(b){b.addEventListener('click',function(){
+  var was=b.classList.contains('sel');
+  document.querySelectorAll('.chip').forEach(function(x){x.classList.remove('sel');});
+  if(!was){b.classList.add('sel');source=b.dataset.v;}else{source=null;}
+});});
+btn.addEventListener('click',async function(){
+  if(!level||busy)return;
+  busy=true;btn.disabled=true;btn.textContent='Enregistrement…';err.style.display='none';
+  try{
+    var t=await window.ficheaiToken();
+    if(!t){window.location.replace('/login.html');return;}
+    var h={'Content-Type':'application/json',apikey:KEY,Authorization:'Bearer '+t};
+    var r1=await fetch(SB+'/rest/v1/rpc/set_niveau_scolaire',{method:'POST',headers:h,body:JSON.stringify({p_email:u.email,p_niveau:level})});
+    if(!r1.ok)throw new Error('niveau');
+    var r2=await fetch(SB+'/rest/v1/user_onboarding',{method:'POST',headers:Object.assign({Prefer:'return=minimal'},h),body:JSON.stringify({source:source})});
+    if(!r2.ok&&r2.status!==409)throw new Error('onboarding');
+    try{var cur=JSON.parse(localStorage.getItem('ficheai_user'))||{};cur.niveau_scolaire=level;cur.onboarded=true;localStorage.setItem('ficheai_user',JSON.stringify(cur));}catch(e){}
+    window.location.replace(nextUrl());
+  }catch(e){
+    err.textContent='⚠️ Impossible d\'enregistrer pour le moment. Vérifie ta connexion et réessaie.';
+    err.style.display='block';busy=false;btn.disabled=false;btn.textContent='C\'est parti →';
+  }
+});
+</script>
+</body>
+</html>

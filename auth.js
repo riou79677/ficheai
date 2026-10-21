@@ -39,4 +39,26 @@
     }
     return await pending;
   };
+  // Configuration du compte : à la première visite d'une page de l'espace connecté,
+  // on envoie l'utilisateur sur /onboarding.html tant qu'il n'a pas choisi son niveau.
+  (function () {
+    var pages = ['/home.html', '/app.html', '/dashboard.html', '/revision.html'];
+    if (pages.indexOf(location.pathname) === -1) return;
+    var u = readUser();
+    if (!u || !u.email || u.onboarded) return;
+    window.ficheaiToken().then(function (t) {
+      if (!t) return;
+      return fetch(SUPABASE_URL + '/rest/v1/user_onboarding?select=user_id', {
+        headers: { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + t }
+      }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+        if (!Array.isArray(d)) return;
+        if (d.length > 0) {
+          var cur = readUser() || {}; cur.onboarded = true;
+          try { localStorage.setItem('ficheai_user', JSON.stringify(cur)); } catch (e) {}
+          return;
+        }
+        location.replace('/onboarding.html?next=' + encodeURIComponent(location.pathname + location.hash));
+      });
+    }).catch(function () {});
+  })();
 })();

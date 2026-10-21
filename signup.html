@@ -87,16 +87,6 @@ FicheAI
 <input type="password" id="password" placeholder="8 caractères minimum" autocomplete="new-password">
 <small>Utilise au moins 8 caractères, avec des lettres et des chiffres.</small>
 </div>
-<div class="form-group">
-<label>Ton niveau</label>
-<select id="niveau" style="width:100%;background:var(--bg3);border:1.5px solid var(--border2);border-radius:10px;padding:0.8rem 1rem;font-size:0.9rem;color:var(--text);font-family:var(--font-b);outline:none;cursor:pointer">
-<option value="college">📘 Collège</option>
-<option value="lycee" selected>📗 Lycée</option>
-<option value="prepa">📕 Classe préparatoire</option>
-<option value="superieur">📙 Université / École</option>
-</select>
-<small>FicheAI adapte le vocabulaire et la difficulté de tes fiches à ton niveau. Modifiable à tout moment.</small>
-</div>
 <div class="consent-group">
 <input type="checkbox" id="consent-cgu">
 <label for="consent-cgu">J'ai lu et j'accepte les <a href="/cgu.html" target="_blank">CGU</a> et la <a href="/confidentialite.html" target="_blank">politique de confidentialité</a> de FicheAI.</label>
@@ -158,7 +148,6 @@ var firstname=document.getElementById('firstname').value.trim();
 var username=document.getElementById('username').value.trim();
 var email=document.getElementById('email').value.trim();
 var password=document.getElementById('password').value;
-var niveau=document.getElementById('niveau').value;
 var errBox=document.getElementById('msg-error');var successBox=document.getElementById('msg-success');var btn=document.getElementById('submit-btn');
 errBox.style.display='none';successBox.style.display='none';
 
@@ -206,15 +195,8 @@ headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization'
 body:JSON.stringify({id:newUser.id,email:email,username:username,plan:'starter',generations_used:0,generations_limit:5})
 }).catch(function(){});
 
-if(niveau && niveau !== 'lycee'){
-fetch(SUPABASE_URL+'/rest/v1/rpc/set_niveau_scolaire',{
-method:'POST',
-headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+data.access_token},
-body:JSON.stringify({p_email:email,p_niveau:niveau})
-}).catch(function(){});
-}
 
-localStorage.setItem('ficheai_user',JSON.stringify({email:email,username:username,plan:'starter',remaining:5,access_token:data.access_token,refresh_token:data.refresh_token,expires_at:data.expires_at,niveau_scolaire:niveau}));
+localStorage.setItem('ficheai_user',JSON.stringify({email:email,username:username,plan:'starter',remaining:5,access_token:data.access_token,refresh_token:data.refresh_token,expires_at:data.expires_at}));
 successBox.innerHTML='✅ Compte créé avec succès !';
 successBox.style.display='block';
 setTimeout(function(){showPlanModal(false);}, 600);
