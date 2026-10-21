@@ -232,6 +232,7 @@ nav{padding:0 1rem;}
 .btn-hero,.btn-hero-ghost{width:100%;justify-content:center;}
 }
 </style>
+<script src="/auth.js"></script>
 </head>
 <body>
 <div class="bg-ambient"></div>
@@ -255,8 +256,8 @@ FicheAI
 <span></span><span></span><span></span>
 </button>
 <div class="nav-cta">
-<a href="/login.html" class="btn-ghost">Se connecter</a>
-<a href="/signup.html" class="btn-primary">Essayer gratuitement</a>
+<a href="/login.html" class="btn-ghost" id="nav-login">Se connecter</a>
+<a href="/signup.html" class="btn-primary" id="nav-signup">Essayer gratuitement</a>
 </div>
 </nav>
 <div class="mobile-menu" id="mobile-menu">
@@ -463,7 +464,7 @@ FicheAI
 <li>✓ IA multilingue</li>
 <li>✓ Support prioritaire</li>
 </ul>
-<button onclick="handlePlanClick('pro',window.proBilling||'monthly')" style="display:block;width:100%;text-align:center;padding:0.8rem;border-radius:100px;background:linear-gradient(135deg,var(--purple),var(--pink));color:white;text-decoration:none;font-weight:700;font-size:0.85rem;box-shadow:0 4px 20px rgba(108,92,231,0.35);border:none;cursor:pointer;font-family:var(--font-b)">Essayer 7 jours gratuits</button>
+<button id="pro-cta" onclick="handlePlanClick('pro',window.proBilling||'monthly')" style="display:block;width:100%;text-align:center;padding:0.8rem;border-radius:100px;background:linear-gradient(135deg,var(--purple),var(--pink));color:white;text-decoration:none;font-weight:700;font-size:0.85rem;box-shadow:0 4px 20px rgba(108,92,231,0.35);border:none;cursor:pointer;font-family:var(--font-b)">Essayer 7 jours gratuits</button>
 </div>
 <div style="background:linear-gradient(180deg,rgba(253,203,110,0.07) 0%,var(--bg2) 100%);border:1px solid rgba(253,203,110,0.3);border-radius:22px;padding:2rem" class="reveal">
 <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem">Ultimate</div>
@@ -478,7 +479,7 @@ FicheAI
 <li>✓ 📈 Suivi de progression</li>
 <li>✓ Accès anticipé nouveautés</li>
 </ul>
-<button onclick="handlePlanClick('ultimate','monthly')" style="display:block;width:100%;text-align:center;padding:0.8rem;border-radius:100px;background:linear-gradient(135deg,#e17055,var(--gold));color:white;text-decoration:none;font-weight:700;font-size:0.85rem;border:none;cursor:pointer;font-family:var(--font-b)">S'abonner à Ultimate</button>
+<button id="ultimate-cta" onclick="handlePlanClick('ultimate','monthly')" style="display:block;width:100%;text-align:center;padding:0.8rem;border-radius:100px;background:linear-gradient(135deg,#e17055,var(--gold));color:white;text-decoration:none;font-weight:700;font-size:0.85rem;border:none;cursor:pointer;font-family:var(--font-b)">S'abonner à Ultimate</button>
 </div>
 </div>
 </section>
@@ -584,6 +585,7 @@ function setProBilling(b){
   document.getElementById('pro-price-note').textContent = yearly
     ? 'Facturé ' + fmtEur(PRO_YEARLY) + ' € par an · ' + Math.round(PRO_MONTHLY * 12 - PRO_YEARLY) + ' € économisés (2 mois offerts)'
     : 'Sans engagement · 7 jours d\'essai gratuit';
+  var _c = document.getElementById('pro-cta'); if (_c && !_c.disabled) _c.textContent = yearly ? 'S\'abonner à l\'année' : 'Essayer 7 jours gratuits';
   var on = 'background:linear-gradient(135deg,#6c5ce7,#fd79a8);color:#fff', off = 'background:transparent;color:#9898b8';
   ['monthly','yearly'].forEach(function(k){
     var el = document.getElementById('pro-btn-' + k);
@@ -603,26 +605,52 @@ async function handlePlanClick(plan, billing) {
   var originalText = btn.textContent;
   btn.textContent = 'Chargement...';
   btn.disabled = true;
+  function fail(msg) { alert(msg || 'Une erreur est survenue. Réessaie ou contacte le support.'); btn.textContent = originalText; btn.disabled = false; }
   try {
+    var token = window.ficheaiToken ? await window.ficheaiToken() : null;
+    if (!token) { window.location.href = '/login.html'; return; }
     var response = await fetch('/api/create-checkout', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ plan: plan, billing: billing, email: userData.email })
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ plan: plan, billing: billing })
     });
-    var data = await response.json();
-    if (data.url) {
-      window.location.href = data.url;
-    } else {
-      alert('Une erreur est survenue. Réessaie ou contacte le support.');
-      btn.textContent = originalText;
-      btn.disabled = false;
-    }
-  } catch(e) {
-    alert('Une erreur est survenue. Réessaie ou contacte le support.');
-    btn.textContent = originalText;
-    btn.disabled = false;
-  }
+    var data = {};
+    try { data = await response.json(); } catch(e) {}
+    if (data.url) { window.location.href = data.url; }
+    else { fail((data.error || '') + (data.detail ? ' (' + data.detail + ')' : '') || null); }
+  } catch(e) { fail(); }
 }
+
+// ── Affichage selon l'état de connexion et le plan réel (lu en base) ──
+var PLAN_RANK = { starter: 0, pro: 1, ultimate: 2 };
+function setCta(id, text, disabled) {
+  var el = document.getElementById(id); if (!el) return;
+  el.textContent = text; el.disabled = !!disabled;
+  el.style.opacity = disabled ? '0.55' : ''; el.style.cursor = disabled ? 'not-allowed' : 'pointer';
+  if (disabled) el.removeAttribute('onclick');
+}
+async function initAccountState() {
+  var u = null; try { u = JSON.parse(localStorage.getItem('ficheai_user')); } catch(e) {}
+  if (!u || !u.email) return;
+  var login = document.getElementById('nav-login'), signup = document.getElementById('nav-signup');
+  if (login) { login.textContent = 'Mon espace'; login.href = '/dashboard.html'; }
+  if (signup) { signup.textContent = '⚡ Ouvrir FicheAI'; signup.href = '/app.html'; }
+  document.querySelectorAll('a[href="/login.html"]').forEach(function(a){ if (a.id !== 'nav-login') { a.textContent = 'Mon espace'; a.href = '/dashboard.html'; } });
+  var plan = u.plan || 'starter';
+  try {
+    var t = window.ficheaiToken ? await window.ficheaiToken() : null;
+    if (t) {
+      var r = await fetch('https://qyjqtjrqnlbgtxvnjvnk.supabase.co/rest/v1/users?email=eq.' + encodeURIComponent(u.email) + '&select=plan',
+        { headers: { apikey: 'sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ', Authorization: 'Bearer ' + t } });
+      var d = await r.json(); if (Array.isArray(d) && d[0] && d[0].plan) plan = d[0].plan;
+    }
+  } catch(e) {}
+  var rank = PLAN_RANK[plan] || 0;
+  if (rank >= 1) { setCta('pro-cta', '✓ Ton plan actuel' + (rank === 1 ? '' : ' (inclus dans Ultimate)'), true); }
+  if (rank >= 2) { setCta('ultimate-cta', '✓ Ton plan actuel', true); }
+  else if (rank === 1) { setCta('ultimate-cta', 'Passer à Ultimate', false); }
+}
+document.addEventListener('DOMContentLoaded', initAccountState);
 
 document.querySelectorAll('.demo-tab').forEach(function(tab) {
 tab.addEventListener('click', function() {
