@@ -27,7 +27,7 @@ export const config = { maxDuration: 60 };
 
 // Longueur maximale de la réponse selon le format. 1500 tokens coupait les fiches et les cartes
 // mentales en plein milieu (branches vides, sections manquantes).
-const MAX_TOKENS = { fiche: 3000, quiz: 2500, flash: 2500, mindmap: 2000, questions: 2500, chrono: 2500, examen: 4000 };
+const MAX_TOKENS = { fiche: 4000, quiz: 3500, flash: 3000, mindmap: 2500, questions: 3500, chrono: 3000, examen: 5000 };
 
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -145,6 +145,8 @@ export default async function handler(req, res) {
 
   const prompts = {
     fiche: `Tu es un expert en pédagogie. À partir du cours ci-dessous, génère une FICHE DE RÉVISION claire, aérée et facile à scanner, que l'étudiant peut relire en quelques minutes avant un contrôle.
+
+COUVERTURE (impérative) : traite TOUTES les parties du cours, dans leur ordre, sans en omettre aucune, même si le cours est long (une sous-partie par chapitre ou par notion). N'ajoute aucune information absente du cours.
 
 RÈGLES DE STRUCTURE (impératives) :
 - JAMAIS de paragraphe de plus de 2 lignes. Une idée = une puce courte (20 mots maximum).
@@ -368,27 +370,44 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
     : '';
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: modelFor(user.plan),
-        max_tokens: (MAX_TOKENS[format] || 2500) + (wantDiagrams ? 900 : 0),
-        system: 'Tu es FicheAI, un assistant pédagogique expert. ' + langInstruction + ' ' + niveauInstruction + ' ' + antiInjectionGuard + ' Sois précis, structuré et pédagogique.',
-        messages: [{
-          role: 'user',
-          content: prompts[format] + '\n\n---COURS---\n' + String(course).substring(0, charLimit) + '\n---FIN COURS---' + instructionsBlock + diagramBlock + '\n\nGénère maintenant le contenu demandé.'
-        }]
-      })
-    });
+    const baseTokens = Math.round(((MAX_TOKENS[format] || 3000) + (wantDiagrams ? 900 : 0)) * (String(course).length > 12000 ? 1.25 : 1));
+    const userContent = prompts[format] + '\n\n---COURS---\n' + String(course).substring(0, charLimit) + '\n---FIN COURS---' + instructionsBlock + diagramBlock + '\n\nGénère maintenant le contenu demandé.';
+    const systemPrompt = 'Tu es FicheAI, un assistant pédagogique expert. ' + langInstruction + ' ' + niveauInstruction + ' ' + antiInjectionGuard + ' Sois précis, structuré et pédagogique.';
+    const callModel = async (maxTok) => {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: modelFor(user.plan),
+          max_tokens: maxTok,
+          system: systemPrompt,
+          messages: [{ role: 'user', content: userContent }]
+        })
+      });
+      const d = await response.json();
+      if (d.error) throw new Error(d.error.message);
+      await logApiUsage(SERVICE_KEY, email, 'generation:' + format, modelFor(user.plan), d.usage && d.usage.input_tokens, d.usage && d.usage.output_tokens);
+      return d;
+    };
+    const extractText = (d) => (Array.isArray(d.content) ? d.content : [])
+      .filter((b) => b && b.type === 'text' && typeof b.text === 'string')
+      .map((b) => b.text)
+      .join('');
 
-    const data = await response.json();
-    if (data.error) throw new Error(data.error.message);
-    await logApiUsage(SERVICE_KEY, email, 'generation:' + format, modelFor(user.plan), data.usage && data.usage.input_tokens, data.usage && data.usage.output_tokens);
+    // Première tentative ; si l'IA ne renvoie aucun texte (budget de sortie épuisé par la réflexion, par exemple),
+    // un second essai est lancé automatiquement avec un budget doublé, sans rien coûter de plus à l'utilisateur.
+    const t0 = Date.now();
+    let data = await callModel(baseTokens);
+    let text = extractText(data);
+    if (!text.trim() && Date.now() - t0 < 22000) { // le second essai n'a lieu que s'il reste assez de temps avant la limite de 60 s
+      console.error('Réponse IA sans texte (essai 1). stop_reason =', data.stop_reason, '| types de blocs =', (data.content || []).map((b) => b && b.type));
+      data = await callModel(Math.min(Math.round(baseTokens * 1.75), 9000));
+      text = extractText(data);
+    }
 
     // ── CORRECTION (03/10/2026) : suppression du PATCH manuel du compteur ──
     // check_and_consume_quota() incrémente DÉJÀ generations_used en base (confirmé dans la RPC SQL).
@@ -398,12 +417,8 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
 
     // Les modèles récents peuvent renvoyer plusieurs blocs (réflexion + texte) : on assemble tous les blocs de texte
     // au lieu de lire seulement le premier (c'était la cause de l'erreur « reading 'split' »).
-    const text = (Array.isArray(data.content) ? data.content : [])
-      .filter((b) => b && b.type === 'text' && typeof b.text === 'string')
-      .map((b) => b.text)
-      .join('');
     if (!text.trim()) {
-      console.error('Réponse IA sans texte. stop_reason =', data.stop_reason, '| types de blocs =', (data.content || []).map((b) => b && b.type));
+      console.error('Réponse IA sans texte (essai 2). stop_reason =', data.stop_reason, '| types de blocs =', (data.content || []).map((b) => b && b.type));
       return res.status(502).json({ error: "L'IA n'a pas renvoyé de texte cette fois. Réessaie dans un instant." });
     }
     return res.status(200).json({ result: text });

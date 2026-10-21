@@ -884,11 +884,14 @@ function handleFileLoad(file){
         var maxPages=Math.min(pdf.numPages,pageLimit);
         var text='';
         for(var i=1;i<=maxPages;i++){var page=await pdf.getPage(i);var content=await page.getTextContent();text+=content.items.map(function(item){return item.str;}).join(' ')+'\n';}
+        var imgPages=0;
+        try{var OPS=pdfjsLib.OPS;for(var j=1;j<=maxPages;j++){var pg=await pdf.getPage(j);var ol=await pg.getOperatorList();if(ol.fnArray.some(function(fn){return fn===OPS.paintImageXObject||fn===OPS.paintInlineImageXObject||fn===OPS.paintImageMaskXObject;}))imgPages++;}}catch(imgErr){}
+        var imgNote=imgPages>0?('ℹ️ '+imgPages+' page'+(imgPages>1?'s':'')+' contiennent des images ou schémas qui ne sont pas lus (seul le texte l’est). Décris-les en quelques mots dans les consignes pour que l’IA en tienne compte.'):PDF_NOTE;
         var usefulChars=text.replace(/\s/g,'').length;
         if(usefulChars<100){setFileBadge('⚠️ Ce PDF semble être un document scanné ou une photo : aucun texte lisible dedans. Copie-colle ton cours en texte à la place (la lecture des scans arrive bientôt !).','error');return;}
         courseContent=text;document.getElementById('course-input').value=text;updateCharCount();
-        if(pdf.numPages>pageLimit){setFileBadge('⚠️ '+file.name+' : '+pdf.numPages+' pages au total, seules les '+pageLimit+' premières ont été lues (limite de ton plan '+plan.charAt(0).toUpperCase()+plan.slice(1)+'). Découpe ton PDF pour traiter la suite. '+PDF_NOTE,'warn');}
-        else{setFileBadge('✅ '+file.name+' — '+maxPages+' page'+(maxPages>1?'s':'')+' lue'+(maxPages>1?'s':'')+' · '+PDF_NOTE,'ok');}
+        if(pdf.numPages>pageLimit){setFileBadge('⚠️ '+file.name+' : '+pdf.numPages+' pages au total, seules les '+pageLimit+' premières ont été lues (limite de ton plan '+plan.charAt(0).toUpperCase()+plan.slice(1)+'). Découpe ton PDF pour traiter la suite. '+imgNote,'warn');}
+        else{setFileBadge('✅ '+file.name+' — '+maxPages+' page'+(maxPages>1?'s':'')+' lue'+(maxPages>1?'s':'')+' · '+imgNote,'ok');}
         updateChatContext(file.name);
       }catch(err){
         var name=(err&&err.name)||'';
@@ -1039,7 +1042,7 @@ document.getElementById('gen-btn').addEventListener('click',async function(){
   generatedResults=[];activeResultIndex=0;renderResultTabs();
   resultCard.style.display='block';spinner.style.display='flex';content.style.display='none';
   resultCard.scrollIntoView({behavior:'smooth',block:'nearest'});
-  var partialError=null;
+  var partialError=null;var failedFormats=[];
   for(var k=0;k<formats.length;k++){
     var f=formats[k],meta=formatMeta(f);
     btn.textContent=formats.length>1?('Génération '+(k+1)+'/'+formats.length+'…'):'Génération en cours…';
@@ -1072,14 +1075,15 @@ document.getElementById('gen-btn').addEventListener('click',async function(){
       renderHistory();
       if(generatedResults.length===1){spinner.style.display='none';content.style.display='block';setActiveResultTab(0);}
       else{renderResultTabs();}
-    }catch(e){partialError=meta.name+' : '+e.message;break;}
+    }catch(e){failedFormats.push(meta.name+' : '+e.message);}
   }
+  if(failedFormats.length){partialError=failedFormats.join(' · ');}
   if(generatedResults.length===0){
     spinner.style.display='none';
     content.innerHTML='<div class="rc-plain">⚠️ Erreur : '+escapeHtmlRc(partialError||'inconnue')+'</div>';
     content.style.display='block';
   } else if(partialError){
-    errBox.textContent='⚠️ '+partialError+' (les formats précédents ont bien été générés).';errBox.style.display='block';
+    errBox.textContent='⚠️ '+partialError+' — les autres formats ont bien été générés. Relance ce format seul dans un instant.';errBox.style.display='block';
   }
   btn.disabled=false;btn.innerHTML=GEN_BTN_HTML;
 });
