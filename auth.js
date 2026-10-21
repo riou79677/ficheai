@@ -62,3 +62,6 @@
     }).catch(function () {});
   })();
 })();
+
+// Permet l'installation de FicheAI comme application sur téléphone (voir sw.js)
+try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(function () {}); } catch (e) {}

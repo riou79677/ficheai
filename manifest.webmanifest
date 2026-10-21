@@ -1,0 +1,16 @@
+{
+  "name": "FicheAI",
+  "short_name": "FicheAI",
+  "description": "Transforme ton cours en fiche de révision, flashcards et quiz en 10 secondes.",
+  "lang": "fr",
+  "start_url": "/home.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#09090f",
+  "theme_color": "#09090f",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
