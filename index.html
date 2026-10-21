@@ -232,7 +232,8 @@ nav{padding:0 1rem;}
 .btn-hero,.btn-hero-ghost{width:100%;justify-content:center;}
 }
 /* Mobile : jamais de texte coupé ni de débordement horizontal */
-html{-webkit-text-size-adjust:100%}body{overflow-wrap:anywhere;max-width:100vw;overflow-x:hidden}img,svg,video,canvas{max-width:100%}pre,code{white-space:pre-wrap;word-break:break-word}button,.btn{white-space:normal}
+html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw;overflow-x:hidden}img,svg,video,canvas{max-width:100%}pre,code{white-space:pre-wrap;word-break:break-word}button,.btn{white-space:normal}
+@media(max-width:560px){.nav-cta{gap:0.4rem}.nav-cta .btn-ghost{display:none}.nav-cta .btn-primary{padding:0.5rem 0.85rem;font-size:0.78rem;white-space:nowrap}.logo{font-size:1.05rem}}
 </style>
 <script src="/auth.js"></script>
 </head>
