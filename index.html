@@ -395,39 +395,36 @@ FicheAI
 </section>
 
 <section class="section" style="padding-top:0">
-<div class="section-eyebrow reveal">Témoignages</div>
-<h2 class="section-title reveal">Ils révisent avec FicheAI</h2>
+<div class="section-eyebrow reveal">Nos engagements</div>
+<h2 class="section-title reveal">Ce que tu peux attendre de FicheAI</h2>
 <div class="testimonials-grid">
 <div class="testimonial reveal">
-<div class="stars">★★★★★</div>
-<div class="testimonial-text">En 15 secondes j'ai une fiche mieux structurée que ce que je ferais en 2 heures. C'est bluffant.</div>
+<div class="testimonial-text">Ton cours est envoyé à l'IA uniquement pour générer ta fiche. FicheAI ne le conserve pas, et tu peux supprimer ton compte et tes fiches à tout moment.</div>
 <div class="testimonial-author">
-<div class="testimonial-avatar">L</div>
+<div class="testimonial-avatar">🔒</div>
 <div>
-<div class="testimonial-name">Lucas M.</div>
-<div class="testimonial-role">Terminale · Bac 2025</div>
+<div class="testimonial-name">Tes données</div>
+<div class="testimonial-role"><a href="confidentialite.html" style="color:inherit">Politique de confidentialité</a></div>
 </div>
 </div>
 </div>
 <div class="testimonial reveal">
-<div class="stars">★★★★★</div>
-<div class="testimonial-text">J'ai importé mon cours de droit de 40 pages et j'ai eu une fiche parfaite. Gain de temps énorme.</div>
+<div class="testimonial-text">FicheAI est créé et développé par Ilan, bachelier (maths et physique-chimie). Chaque retour de testeur est lu et pris en compte pour améliorer l'outil.</div>
 <div class="testimonial-author">
-<div class="testimonial-avatar">S</div>
+<div class="testimonial-avatar">🎓</div>
 <div>
-<div class="testimonial-name">Sarah K.</div>
-<div class="testimonial-role">L1 Droit · Paris</div>
+<div class="testimonial-name">Qui est derrière FicheAI</div>
+<div class="testimonial-role">Un projet indépendant, en amélioration continue</div>
 </div>
 </div>
 </div>
 <div class="testimonial reveal">
-<div class="stars">★★★★★</div>
-<div class="testimonial-text">Les flashcards sont vraiment bien faites. Ça m'a aidé à réviser mon anatomie beaucoup plus vite.</div>
+<div class="testimonial-text">Tu peux résilier à tout moment depuis tes paramètres et tu gardes ton accès jusqu'à la fin de la période déjà payée. Aucun engagement caché.</div>
 <div class="testimonial-author">
-<div class="testimonial-avatar">A</div>
+<div class="testimonial-avatar">✅</div>
 <div>
-<div class="testimonial-name">Amira B.</div>
-<div class="testimonial-role">PACES · Lyon</div>
+<div class="testimonial-name">Sans piège</div>
+<div class="testimonial-role"><a href="cgu.html" style="color:inherit">Voir les conditions</a></div>
 </div>
 </div>
 </div>
@@ -454,7 +451,9 @@ FicheAI
 <div style="background:linear-gradient(180deg,rgba(108,92,231,0.1) 0%,var(--bg2) 100%);border:1px solid rgba(108,92,231,0.45);border-radius:22px;padding:2rem;position:relative" class="reveal">
 <div style="position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--purple),var(--pink));color:white;font-size:0.72rem;font-weight:700;padding:0.28rem 1.1rem;border-radius:100px;white-space:nowrap">⭐ Le plus populaire</div>
 <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--purple2);margin-bottom:0.8rem">Pro</div>
-<div style="font-family:var(--font-h);font-size:2.5rem;font-weight:800;line-height:1;margin-bottom:0.3rem">7,99<span style="font-size:1.2rem;font-weight:500">€</span></div>
+<div style="display:inline-flex;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:100px;padding:3px;margin-bottom:0.9rem;gap:2px"><button type="button" id="pro-btn-monthly" onclick="setProBilling('monthly')" style="padding:0.4rem 0.9rem;border:none;border-radius:100px;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit;background:transparent;color:#9898b8">Mensuel</button><button type="button" id="pro-btn-yearly" onclick="setProBilling('yearly')" style="padding:0.4rem 0.9rem;border:none;border-radius:100px;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit;background:transparent;color:#9898b8">Annuel <span id="pro-save-badge" style="background:#00cec9;color:#04141a;border-radius:100px;padding:1px 7px;font-size:0.68rem;margin-left:3px"></span></button></div>
+<div style="font-family:var(--font-h);font-size:2.5rem;font-weight:800;line-height:1;margin-bottom:0.3rem"><span id="pro-price-num">7,99</span><span style="font-size:1.2rem;font-weight:500">€</span></div>
+<div id="pro-price-note" style="font-size:0.78rem;color:#00cec9;margin-bottom:0.4rem;min-height:1.1rem"></div>
 <div style="font-size:0.78rem;color:var(--text2);margin-bottom:1.5rem">par mois</div>
 <ul style="list-style:none;display:flex;flex-direction:column;gap:0.5rem;font-size:0.83rem;color:var(--text2);margin-bottom:1.5rem">
 <li>✓ 50 générations / mois</li>
@@ -464,7 +463,7 @@ FicheAI
 <li>✓ IA multilingue</li>
 <li>✓ Support prioritaire</li>
 </ul>
-<button onclick="handlePlanClick('pro','monthly')" style="display:block;width:100%;text-align:center;padding:0.8rem;border-radius:100px;background:linear-gradient(135deg,var(--purple),var(--pink));color:white;text-decoration:none;font-weight:700;font-size:0.85rem;box-shadow:0 4px 20px rgba(108,92,231,0.35);border:none;cursor:pointer;font-family:var(--font-b)">Essayer 7 jours gratuits</button>
+<button onclick="handlePlanClick('pro',window.proBilling||'monthly')" style="display:block;width:100%;text-align:center;padding:0.8rem;border-radius:100px;background:linear-gradient(135deg,var(--purple),var(--pink));color:white;text-decoration:none;font-weight:700;font-size:0.85rem;box-shadow:0 4px 20px rgba(108,92,231,0.35);border:none;cursor:pointer;font-family:var(--font-b)">Essayer 7 jours gratuits</button>
 </div>
 <div style="background:linear-gradient(180deg,rgba(253,203,110,0.07) 0%,var(--bg2) 100%);border:1px solid rgba(253,203,110,0.3);border-radius:22px;padding:2rem" class="reveal">
 <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem">Ultimate</div>
@@ -502,7 +501,7 @@ FicheAI
 </div>
 <div class="faq-item reveal">
 <button class="faq-q" onclick="toggleFaq(this)">Mes cours sont-ils confidentiels ? <span>+</span></button>
-<div class="faq-a"><p>Absolument. Tes cours ne sont jamais stockés après la génération ni utilisés pour entraîner des modèles IA. Ta confidentialité est notre priorité.</p></div>
+<div class="faq-a"><p>Ton cours est envoyé à l'IA (Claude, d'Anthropic) uniquement pour générer ta fiche. FicheAI ne conserve pas le texte de ton cours : seules les fiches que tu génères sont enregistrées dans ta bibliothèque, et tu peux les supprimer à tout moment. D'après les conditions de l'API d'Anthropic, ces données ne servent pas à entraîner ses modèles par défaut. Détails dans la politique de confidentialité.</p></div>
 </div>
 <div class="faq-item reveal">
 <button class="faq-q" onclick="toggleFaq(this)">L'essai gratuit nécessite-t-il une carte bancaire ? <span>+</span></button>
@@ -573,6 +572,26 @@ document.querySelectorAll('.faq-item').forEach(function(i) { i.classList.remove(
 if (!isOpen) item.classList.add('open');
 }
 
+var PRO_MONTHLY = 7.99, PRO_YEARLY = 79.90; // Doivent être identiques aux prix Stripe (price pro_monthly / pro_yearly)
+window.proBilling = 'yearly';
+function fmtEur(n){ return n.toFixed(2).replace('.', ','); }
+function setProBilling(b){
+  window.proBilling = b;
+  var save = Math.round((1 - PRO_YEARLY / (PRO_MONTHLY * 12)) * 100);
+  var yearly = b === 'yearly';
+  document.getElementById('pro-price-num').textContent = fmtEur(yearly ? PRO_YEARLY / 12 : PRO_MONTHLY);
+  document.getElementById('pro-save-badge').textContent = '-' + save + '%';
+  document.getElementById('pro-price-note').textContent = yearly
+    ? 'Facturé ' + fmtEur(PRO_YEARLY) + ' € par an · ' + Math.round(PRO_MONTHLY * 12 - PRO_YEARLY) + ' € économisés (2 mois offerts)'
+    : 'Sans engagement · 7 jours d\'essai gratuit';
+  var on = 'background:linear-gradient(135deg,#6c5ce7,#fd79a8);color:#fff', off = 'background:transparent;color:#9898b8';
+  ['monthly','yearly'].forEach(function(k){
+    var el = document.getElementById('pro-btn-' + k);
+    el.style.background = k === b ? '#6c5ce7' : 'transparent';
+    el.style.color = k === b ? '#fff' : '#9898b8';
+  });
+}
+document.addEventListener('DOMContentLoaded', function(){ setProBilling('yearly'); });
 async function handlePlanClick(plan, billing) {
   var userData = null;
   try { userData = JSON.parse(localStorage.getItem('ficheai_user')); } catch(e) {}
