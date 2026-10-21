@@ -139,6 +139,9 @@ textarea::placeholder{color:var(--text3)}
 .rc-item{font-size:0.86rem;line-height:1.75;color:var(--text2);padding:0.3rem 0 0.3rem 1rem;position:relative}
 .rc-item::before{content:'';position:absolute;left:0;top:0.95rem;width:5px;height:5px;border-radius:50%;background:var(--pink)}
 .rc-item strong{color:var(--text);font-weight:700}
+.rc-sub{font-size:0.82rem;line-height:1.65;color:var(--text2);padding:0.12rem 0 0.12rem 2rem;position:relative}
+.rc-sub::before{content:'';position:absolute;left:1.15rem;top:0.78rem;width:6px;height:1.5px;background:var(--purple2);opacity:0.8}
+.rc-sub strong{color:var(--text);font-weight:600}
 .rc-p{font-size:0.86rem;line-height:1.8;color:var(--text2);margin-bottom:0.5rem}
 .rc-p strong{color:var(--purple2);font-weight:700}
 .rc-diagram{background:#0b0b14;border:1px solid var(--border);border-radius:12px;padding:0.8rem;margin:0.6rem 0;overflow-x:auto;text-align:center}.rc-diagram svg{max-width:100%;height:auto}
@@ -964,7 +967,7 @@ function renderResultAsCards(text){
   var diagBase=diagramCodes.length;ex.codes.forEach(function(c){diagramCodes.push(c);});
   var lines=text.split('\n');
   var html='';
-  var inSection=false,inList=false;
+  var inSection=false,inList=false,lastMain=false,inDefs=false;
   var sectionEmojiRe=/^([📚🎯📖⚡❓🔗🃏🧠💬📅✅📝])\s*(.+)/u;
 
   lines.forEach(function(rawLine){
@@ -980,15 +983,20 @@ function renderResultAsCards(text){
     if(sm && sm[2].length<80 && !/^[▸→✦•\-]/.test(sm[2])){
       if(inList){html+='</div>';inList=false;}
       if(inSection)html+='</div>';
+      inDefs=/D[ÉE]FINITION/i.test(sm[2]);lastMain=false;
       html+='<div class="rc-section"><div class="rc-section-title">'+sm[1]+' '+escapeHtmlRc(sm[2])+'</div>';
       inSection=true;
       return;
     }
     var bm=t.match(/^[▸→✦•\-]\s*(.+)/);
     if(bm){
+      var isDash=/^-\s/.test(t);
+      if(isDash&&lastMain&&!inDefs){html+='<div class="rc-sub">'+boldifyRc(bm[1])+'</div>';return;}
+      lastMain=!isDash;
       html+='<div class="rc-item">'+boldifyRc(bm[1])+'</div>';
       return;
     }
+    lastMain=false;
     html+='<div class="rc-p">'+boldifyRc(t)+'</div>';
   });
   if(inSection)html+='</div>';
@@ -1341,17 +1349,20 @@ function boldify(t){return t.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');}
 
 function formatContentForPDF(text){
   var ex=extractMermaid(text);text=ex.text;
-  var lines=text.split('\n'),html='',inList=false;
+  var lines=text.split('\n'),html='',inList=false,pdfLast=false,pdfDefs=false;
   lines.forEach(function(line){
     var t=line.trim();
     if(!t){if(inList){html+='</ul>';inList=false;}return;}
     if(/^[━─=]{3,}$/.test(t)){if(inList){html+='</ul>';inList=false;}html+='<div class="pdf-sep"></div>';return;}
     var dm=t.match(/^§§DIAG(\d+)§§$/);
     if(dm){if(inList){html+='</ul>';inList=false;}var svg=diagramSvgs[ex.codes[parseInt(dm[1],10)]];if(svg)html+='<div class="pdf-diagram">'+svg+'</div>';return;}
-    var sm=t.match(/^([📚🎯📖⚡❓🔗🃏🧠💬📅✅])\s*(.+)/u);
-    if(sm&&sm[2].length<70){if(inList){html+='</ul>';inList=false;}html+='<div class="pdf-section">'+escapePdf(sm[2])+'</div>';return;}
+    var sm=t.match(/^([📚🎯📖⚡❓🔗🃏🧠💬📅✅📝])\s*(.+)/u);
+    if(sm&&sm[2].length<70){if(inList){html+='</ul>';inList=false;}pdfDefs=/D[ÉE]FINITION/i.test(sm[2]);pdfLast=false;html+='<div class="pdf-section">'+escapePdf(sm[2])+'</div>';return;}
     var bm=t.match(/^[▸→✦•\-]\s*(.+)/);
-    if(bm){if(!inList){html+='<ul class="pdf-list">';inList=true;}html+='<li>'+boldify(escapePdf(bm[1]))+'</li>';return;}
+    if(bm){if(!inList){html+='<ul class="pdf-list">';inList=true;}
+      var dash=/^-\s/.test(t);
+      if(dash&&pdfLast&&!pdfDefs){html+='<li style="list-style:none;margin-left:1.2em;font-size:0.95em;opacity:0.9">– '+boldify(escapePdf(bm[1]))+'</li>';return;}
+      pdfLast=!dash;html+='<li>'+boldify(escapePdf(bm[1]))+'</li>';return;}
     if(inList){html+='</ul>';inList=false;}
     html+='<p class="pdf-p">'+boldify(escapePdf(t))+'</p>';
   });

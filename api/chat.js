@@ -1,3 +1,4 @@
+import { rateLimit, clientIp } from './_ratelimit.js';
 const SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
 
 // Modèle IA utilisé selon le plan. Tarifs en $ par million de tokens (entrée / sortie) :
@@ -59,6 +60,17 @@ export default async function handler(req, res) {
     if (!email) return res.status(401).json({ error: 'Session invalide.' });
   } catch(e) {
     return res.status(503).json({ error: 'Service momentanément indisponible' });
+  }
+
+  // Anti-rafale : par compte (15/min) et par adresse IP (40/min)
+  {
+    const rlUser = rateLimit('chat:u:' + email.toLowerCase(), 15, 60000);
+    const rlIp = rateLimit('chat:ip:' + clientIp(req), 40, 60000);
+    const rl = rlUser.limited ? rlUser : rlIp;
+    if (rl.limited) {
+      res.setHeader('Retry-After', String(rl.retryAfter));
+      return res.status(429).json({ error: "Tu envoies trop de messages d'affilée. Attends quelques secondes et réessaie." });
+    }
   }
 
   // ── Mode maintenance ──
