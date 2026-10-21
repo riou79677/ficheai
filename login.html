@@ -142,7 +142,14 @@ async function handleLogin(){
     }));
     successBox.textContent='Connecté ! Redirection...';
     successBox.style.display='block';
+    var pending=null;try{pending=JSON.parse(localStorage.getItem('ficheai_pending_plan')||'null');localStorage.removeItem('ficheai_pending_plan');}catch(e){}
+    if(pending&&pending.plan){
+      successBox.textContent='Connecté ! Redirection vers le paiement…';
+      fetch('/api/create-checkout',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+data.access_token},body:JSON.stringify({plan:pending.plan,billing:pending.billing})})
+        .then(function(r){return r.json();}).then(function(d){window.location.href=d.url||'/home.html';}).catch(function(){window.location.href='/home.html';});
+    } else {
     setTimeout(function(){window.location.href='/home.html';},800);
+    }
   }catch(e){
     errBox.textContent='Erreur réseau. Vérifie ta connexion et réessaie.';
     errBox.style.display='block';
