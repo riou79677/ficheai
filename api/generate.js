@@ -348,7 +348,17 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
     // une seule fiche générée consommait 2 générations du quota au lieu d'1.
     // Rien à faire de plus ici — le quota a déjà été consommé par check_and_consume_quota plus haut.
 
-    return res.status(200).json({ result: data.content[0].text });
+    // Les modèles récents peuvent renvoyer plusieurs blocs (réflexion + texte) : on assemble tous les blocs de texte
+    // au lieu de lire seulement le premier (c'était la cause de l'erreur « reading 'split' »).
+    const text = (Array.isArray(data.content) ? data.content : [])
+      .filter((b) => b && b.type === 'text' && typeof b.text === 'string')
+      .map((b) => b.text)
+      .join('');
+    if (!text.trim()) {
+      console.error('Réponse IA sans texte. stop_reason =', data.stop_reason, '| types de blocs =', (data.content || []).map((b) => b && b.type));
+      return res.status(502).json({ error: "L'IA n'a pas renvoyé de texte cette fois. Réessaie dans un instant." });
+    }
+    return res.status(200).json({ result: text });
 
   } catch (error) {
     console.error('Erreur API:', error);
