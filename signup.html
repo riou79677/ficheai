@@ -107,7 +107,11 @@ FicheAI
 </div>
 <div class="consent-group">
 <input type="checkbox" id="consent-cgu">
-<label for="consent-cgu">J'ai lu et j'accepte les <a href="/cgu.html" target="_blank">CGU</a> et la <a href="/confidentialite.html" target="_blank">politique de confidentialité</a> de FicheAI. Si j'ai moins de 15 ans, je confirme avoir l'autorisation d'un parent ou tuteur légal pour créer ce compte.</label>
+<label for="consent-cgu">J'ai lu et j'accepte les <a href="/cgu.html" target="_blank">CGU</a> et la <a href="/confidentialite.html" target="_blank">politique de confidentialité</a> de FicheAI.</label>
+</div>
+<div class="consent-group">
+<input type="checkbox" id="consent-age">
+<label for="consent-age">J'ai au moins 15 ans, ou j'ai l'accord d'un parent ou tuteur légal pour créer ce compte.</label>
 </div>
 <button class="btn-submit" id="submit-btn" disabled>Créer mon compte →</button>
 </div>
@@ -127,9 +131,11 @@ if(already && already.email) window.location.href='/home.html';
 var isLoading=false;
 
 var consentCheckbox = document.getElementById('consent-cgu');
+var ageCheckbox = document.getElementById('consent-age');
 var submitBtn = document.getElementById('submit-btn');
+ageCheckbox.addEventListener('change', function(){ submitBtn.disabled = !(consentCheckbox.checked && ageCheckbox.checked); });
 consentCheckbox.addEventListener('change', function(){
-submitBtn.disabled = !consentCheckbox.checked;
+submitBtn.disabled = !(consentCheckbox.checked && ageCheckbox.checked);
 });
 
 function translateSignupError(data, status){
@@ -165,6 +171,7 @@ var errBox=document.getElementById('msg-error');var successBox=document.getEleme
 errBox.style.display='none';successBox.style.display='none';
 
 if(!consentCheckbox.checked){errBox.textContent='⚠️ Tu dois accepter les CGU et la politique de confidentialité pour créer un compte.';errBox.style.display='block';return;}
+if(!ageCheckbox.checked){errBox.textContent='⚠️ Tu dois confirmer avoir au moins 15 ans, ou l\'accord d\'un parent ou tuteur.';errBox.style.display='block';return;}
 if(!firstname||!username||!email||!password){errBox.textContent='⚠️ Remplis tous les champs !';errBox.style.display='block';return;}
 if(username.length<3){errBox.textContent='⚠️ Le pseudo doit contenir au moins 3 caractères.';errBox.style.display='block';return;}
 if(!/^[a-zA-Z0-9_]+$/.test(username)){errBox.textContent='⚠️ Le pseudo ne peut contenir que des lettres, chiffres et underscores (_).';errBox.style.display='block';return;}
@@ -177,7 +184,7 @@ try{
 var response=await fetch(SUPABASE_URL+'/auth/v1/signup',{
 method:'POST',
 headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},
-body:JSON.stringify({email:email,password:password,data:{firstname:firstname,username:username}})
+body:JSON.stringify({email:email,password:password,data:{firstname:firstname,username:username,age_confirmed:true}})
 });
 var data=await response.json();
 
