@@ -108,6 +108,20 @@ async function handleLogin(){
     });
     var data=await response.json();
     if(!data.access_token||!data.user){
+      if(data&&data.error_code==='email_not_confirmed'){
+        errBox.innerHTML='📧 Ton adresse email n\'est pas encore confirmée. Ouvre l\'email de confirmation reçu à l\'inscription (pense à regarder dans les spams), puis clique sur le lien. <a href="#" id="resend-link" style="color:#f09595;text-decoration:underline">Renvoyer l\'email de confirmation</a>';
+        errBox.style.display='block';
+        var rl=document.getElementById('resend-link');
+        if(rl)rl.addEventListener('click',async function(ev){
+          ev.preventDefault();rl.textContent='Envoi…';
+          try{
+            var rr=await fetch(SUPABASE_URL+'/auth/v1/resend',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},body:JSON.stringify({type:'signup',email:email})});
+            rl.textContent=rr.ok?'✅ Email renvoyé, vérifie ta boîte (et les spams)':'⚠️ Impossible de renvoyer pour le moment, réessaie dans quelques minutes';
+          }catch(e){rl.textContent='⚠️ Erreur réseau, réessaie';}
+        });
+        isLoading=false;btn.disabled=false;btn.textContent='Se connecter →';
+        return;
+      }
       errBox.textContent='Email ou mot de passe incorrect.';
       errBox.style.display='block';
       isLoading=false;btn.disabled=false;btn.textContent='Se connecter →';
