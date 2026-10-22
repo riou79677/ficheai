@@ -511,6 +511,7 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
     console.error('Erreur API:', error);
     await logApiUsage(SERVICE_KEY, email, 'erreur:generation:' + format + ':' + String((error && error.message) || error).slice(0, 90), modelFor(user.plan), 0, 0);
     await refundGeneration();
-    return res.status(500).json({ error: error.message });
+    // Le détail technique reste dans le journal (api_usage) : l'élève reçoit un message clair, sans information interne.
+    return res.status(500).json({ error: "L'IA est momentanément indisponible. Ta génération t'a été rendue : réessaie dans un instant." });
   }
 }

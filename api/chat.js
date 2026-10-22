@@ -44,6 +44,24 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Paramètres manquants' });
   }
 
+  // Historique nettoyé avant tout appel à l'IA : rôles autorisés, texte seul, longueurs plafonnées.
+  // Sans ce plafond, un script pouvait envoyer une conversation géante facturée à chaque message.
+  const MAX_MSG_CHARS = 16000, MAX_TOTAL_CHARS = 60000;
+  const cleanMessages = messages.slice(-12).map((m) => {
+    if (!m || (m.role !== 'user' && m.role !== 'assistant')) return null;
+    let c = m.content;
+    if (Array.isArray(c)) c = c.filter((b) => b && b.type === 'text' && typeof b.text === 'string').map((b) => b.text).join('\n');
+    if (typeof c !== 'string') return null;
+    c = c.trim();
+    return c ? { role: m.role, content: c.substring(0, MAX_MSG_CHARS) } : null;
+  }).filter(Boolean);
+  let totalChars = cleanMessages.reduce((n, m) => n + m.content.length, 0);
+  while (cleanMessages.length > 1 && totalChars > MAX_TOTAL_CHARS) { totalChars -= cleanMessages[0].content.length; cleanMessages.shift(); }
+  while (cleanMessages.length && cleanMessages[0].role !== 'user') cleanMessages.shift();
+  if (!cleanMessages.length || cleanMessages[cleanMessages.length - 1].role !== 'user') {
+    return res.status(400).json({ error: 'Message vide.' });
+  }
+
   // ── Vérification du token Supabase : on récupère l'email depuis le serveur ──
   // On ne fait jamais confiance à l'email envoyé par le client.
   const authHeader = req.headers['authorization'] || '';
@@ -191,7 +209,7 @@ Style de réponse :
       stream: true,
       max_tokens: 3500, // la réflexion par défaut du modèle consomme une partie de ce plafond
       system: systemPrompt,
-      messages: messages.slice(-12)
+      messages: cleanMessages
     };
     if (thinkingParamSupported) chatPayload.thinking = { type: 'disabled' };
     const sendChat = () => fetch('https://api.anthropic.com/v1/messages', {
@@ -259,6 +277,6 @@ Style de réponse :
     console.error('Erreur API chat:', error);
     await logApiUsage(SERVICE_KEY, email, 'erreur:chat:' + String((error && error.message) || error).slice(0, 90), modelFor(user.plan), 0, 0);
     if (res.headersSent) return res.end();
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: "L'IA est momentanément indisponible. Réessaie dans un instant." });
   }
 }
