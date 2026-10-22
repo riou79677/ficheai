@@ -1,7 +1,7 @@
 {
   "name": "FicheAI",
   "short_name": "FicheAI",
-  "description": "Transforme ton cours en fiche de révision, flashcards et quiz en 10 secondes.",
+  "description": "Transforme ton cours en fiche de révision, flashcards et quiz grâce à l'IA.",
   "lang": "fr",
   "start_url": "/home.html",
   "scope": "/",

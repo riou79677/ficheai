@@ -361,7 +361,7 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
           <span class="course-zone-title"><span class="step-num" style="display:inline-flex;vertical-align:middle;margin-right:4px">3</span>📝 Ton cours</span>
           <span class="char-count" id="char-count">0 caractères</span>
         </div>
-        <textarea id="course-input" placeholder="Colle ici le contenu de ton cours… FicheAI va l'analyser et générer ton outil de révision parfait en quelques secondes."></textarea>
+        <textarea id="course-input" placeholder="Colle ici le contenu de ton cours… FicheAI va l'analyser et générer ton outil de révision."></textarea>
       </div>
       <div class="instr-zone">
         <label for="instructions-input">🎯 Consignes pour l’IA <span>(optionnel)</span></label>
@@ -559,7 +559,7 @@ function updateCharCount(){
 var onboardingSteps=[
   {icon:'🎯',title:'Choisis ton format',text:'Fiche, quiz, flashcards, mind map… Sélectionne dans la colonne de gauche le type de contenu que tu veux générer.'},
   {icon:'📝',title:'Colle ou importe ton cours',text:'Colle directement ton cours dans la zone de texte, ou importe un fichier PDF / TXT depuis tes documents.'},
-  {icon:'⚡',title:'Génère en un clic',text:'Clique sur « Générer avec l’IA » et récupère ta fiche en quelques secondes. Tu peux ensuite la copier, l’exporter en PDF ou la sauvegarder.'}
+  {icon:'⚡',title:'Génère en un clic',text:'Clique sur « Générer avec l’IA » et récupère ta fiche. Tu peux ensuite la copier, l’exporter en PDF ou la sauvegarder.'}
 ];
 
 function showToast(msg){
@@ -699,7 +699,7 @@ if(savedUser&&savedUser.email){
 updateNavUpgradeBtn();
 GEN_BTN_HTML=document.getElementById('gen-btn').innerHTML;
 
-if(/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)){document.getElementById('camera-btn').style.display='flex';}
+/* Bouton photo masqué tant que l'analyse de photos n'existe pas */
 
 async function refreshAccount(){
   if(!savedUser||!savedUser.email)return;

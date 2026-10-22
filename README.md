@@ -12,7 +12,7 @@ Application web de révision pour lycéens et étudiants, propulsée par l'IA. G
 
 ## Fonctionnalités principales
 
-- Génération de fiches de révision à partir de cours (texte ou photo)
+- Génération de fiches de révision à partir de cours (texte ou PDF)
 - Mode Chat IA pour poser des questions sur un cours (plans Pro / Ultimate uniquement)
 - Export PDF des fiches
 - Gestion d'abonnement via Stripe Customer Portal
