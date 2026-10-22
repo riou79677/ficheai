@@ -120,7 +120,7 @@ FicheAI
 <div class="auth-footer">Déjà un compte ? <a href="/login.html">Se connecter</a></div>
 </div>
 </main>
-<footer>FicheAI · Fait pour les étudiants 🎓 · © 2026</footer>
+<footer class="legal-mini" style="text-align:center;font-size:0.78rem;line-height:2;color:#8a88a8;padding:1.5rem 1rem"><a href="/cgu.html" style="color:inherit;text-decoration:underline;text-underline-offset:2px">CGU et CGV</a> · <a href="/confidentialite.html" style="color:inherit;text-decoration:underline;text-underline-offset:2px">Confidentialité</a> · <a href="/mentions-legales.html" style="color:inherit;text-decoration:underline;text-underline-offset:2px">Mentions légales</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;text-underline-offset:2px">Contact</a><br><a href="/renoncer.html" style="color:inherit;text-decoration:underline;text-underline-offset:2px">Renoncer au contrat ici</a> · <a href="/resilier.html" style="color:inherit;text-decoration:underline;text-underline-offset:2px">Résilier votre contrat</a><br>FicheAI · Fait pour les étudiants 🎓 · © 2026</footer>
 <script>
 var SUPABASE_URL='https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
 var SUPABASE_KEY='sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ';
@@ -257,15 +257,10 @@ function choose(plan){
 }
 
 async function startCheckout(plan, bill){
+  // La commande se poursuit sur le récapitulatif (Paramètres) : prix, durée, conditions, puis paiement Stripe.
   var btns=overlay.querySelectorAll('button');btns.forEach(function(b){b.disabled=true;});
-  try{
-    var u=JSON.parse(localStorage.getItem('ficheai_user')||'null');
-    var r=await fetch('/api/create-checkout',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(u&&u.access_token||'')},body:JSON.stringify({plan:plan,billing:bill})});
-    var d=await r.json();
-    if(d.url){window.location.href=d.url;return;}
-    alert((d.error||'Le paiement est momentanément indisponible')+'\nTu peux choisir ton plan plus tard dans Paramètres.');
-  }catch(e){alert('Le paiement est momentanément indisponible. Tu peux choisir ton plan plus tard dans Paramètres.');}
-  window.location.href='/home.html';
+  var offre=plan==='pro'?(bill==='yearly'?'pro_yearly':'pro_monthly'):'ultimate_monthly';
+  window.location.href='/settings.html?offre='+offre;
 }
 
 function render(){
@@ -325,7 +320,6 @@ overlay.scrollTop=0;
 document.getElementById('submit-btn').addEventListener('click',handleSignup);
 document.addEventListener('keydown',function(e){if(e.key==='Enter' && consentCheckbox.checked)handleSignup();});
 </script>
-<script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};</script>
-<script defer src="/_vercel/insights/script.js"></script>
+<script src="/va.js" defer></script>
 </body>
 </html>

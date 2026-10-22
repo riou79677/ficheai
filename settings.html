@@ -105,6 +105,7 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
 @media(max-width:600px){nav{flex-wrap:wrap;gap:0.6rem;padding:0.8rem 1rem !important}.nav-right{flex-wrap:wrap;gap:0.4rem 0.9rem;width:100%;justify-content:flex-start}.nav-link,.logo{white-space:nowrap}}
 </style>
 <script src="/auth.js"></script>
+<script src="/checkout.js"></script>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#09090f">
 <meta name="robots" content="noindex, nofollow">
@@ -297,7 +298,7 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
   </div>
 </div>
 
-<footer>FicheAI · Fait pour les étudiants 🎓 · © 2026</footer>
+<footer class="legal-mini" style="text-align:center;font-size:0.78rem;line-height:2;color:#8a88a8;padding:1.5rem 1rem"><a href="/cgu.html" style="color:inherit;text-decoration:underline;text-underline-offset:2px">CGU et CGV</a> · <a href="/confidentialite.html" style="color:inherit;text-decoration:underline;text-underline-offset:2px">Confidentialité</a> · <a href="/mentions-legales.html" style="color:inherit;text-decoration:underline;text-underline-offset:2px">Mentions légales</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;text-underline-offset:2px">Contact</a><br><a href="/renoncer.html" style="color:inherit;text-decoration:underline;text-underline-offset:2px">Renoncer au contrat ici</a> · <a href="/resilier.html" style="color:inherit;text-decoration:underline;text-underline-offset:2px">Résilier votre contrat</a><br>FicheAI · Fait pour les étudiants 🎓 · © 2026</footer>
 
 <script>
 var SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
@@ -428,12 +429,12 @@ function renderPlanSection(plan) {
       + '<div style="display:flex;gap:0.8rem;flex-wrap:wrap;margin-bottom:1rem;">'
       + '<a href="' + ULT_M + '" target="_blank" class="btn btn-gold">👑 Ultimate — 14,99€/mois</a>'
       + '</div></div>'
-      + '<div class="settings-card"><h3>Gérer mon abonnement</h3><p>Modifie ou annule ton abonnement Pro via le portail Stripe sécurisé.</p><button onclick="openStripePortal()" class="btn btn-secondary">⚙️ Gérer mon abonnement Stripe →</button></div>';
+      + subscriptionCard('Pro');
 
   } else if (plan === 'ultimate') {
     displayZone.innerHTML = '<div class="plan-card ultimate"><div class="plan-card-left"><div class="plan-card-icon">👑</div><div><div class="plan-card-name ultimate">Ultimate</div><div class="plan-card-desc">Le plan le plus puissant · 300 générations par mois</div></div></div></div><div class="plan-feats"><div class="plan-feat highlight"><span>✅</span> 300 générations / mois</div><div class="plan-feat highlight"><span>✅</span> Chat IA (300 messages/mois)</div><div class="plan-feat highlight"><span>✅</span> Import PDF jusqu\'à 50 pages</div><div class="plan-feat highlight"><span>✅</span> Bibliothèque de fiches</div><div class="plan-feat highlight"><span>✅</span> Accès anticipé aux nouvelles fonctionnalités</div></div>';
     actionsZone.innerHTML = '<div class="settings-card"><h3>👑 Tu es au maximum !</h3><p>Tu profites de toutes les fonctionnalités de FicheAI, avec 300 générations et 300 messages de chat par mois. Merci pour ta confiance !</p><div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:0.8rem 1rem;font-size:0.83rem;color:var(--gold);">✨ Toutes les fonctionnalités débloquées</div></div>'
-      + '<div class="settings-card"><h3>Gérer mon abonnement</h3><p>Modifie ou annule ton abonnement Ultimate via le portail Stripe sécurisé.</p><button onclick="openStripePortal()" class="btn btn-secondary">⚙️ Gérer mon abonnement Stripe →</button></div>';
+      + subscriptionCard('Ultimate');
   }
 }
 
@@ -564,22 +565,50 @@ document.getElementById('confirm-ok').addEventListener('click', async function()
   }
 });
 
-async function openStripePortal() {
-  var btn = event.currentTarget;
-  var originalText = btn.textContent;
-  btn.textContent = 'Chargement...';
-  btn.disabled = true;
-  var user = null;
-  try { user = JSON.parse(localStorage.getItem('ficheai_user')); } catch(e) {}
-  var token = user && user.access_token ? user.access_token : '';
+// Carte « Mon abonnement » : gestion (moyen de paiement, factures), résiliation en quelques clics
+// (fonction « Résilier votre contrat », art. L215-1-1) et rétractation (« Renoncer au contrat ici », art. L221-21).
+function subscriptionCard(planName) {
+  return '<div class="settings-card"><h3>Mon abonnement ' + planName + '</h3>'
+    + '<p>Moyen de paiement, factures et historique se gèrent sur le portail sécurisé de Stripe.</p>'
+    + '<div style="display:flex;gap:0.8rem;flex-wrap:wrap;margin-bottom:0.9rem;">'
+    + '<button onclick="openStripePortal(event)" class="btn btn-secondary">⚙️ Gérer mon abonnement</button>'
+    + '<button onclick="openStripePortal(event, true)" class="btn btn-secondary" style="border-color:rgba(244,114,182,0.45);color:#f9a8d4">🛑 Résilier mon abonnement</button>'
+    + '</div>'
+    + '<p style="font-size:0.8rem;color:var(--text3,#8a88a8);margin:0">La résiliation prend effet à la fin de la période déjà payée : tu gardes ton accès jusque-là. '
+    + 'Dans les 14 jours qui suivent ta souscription, tu peux aussi te rétracter : <a href="/renoncer.html" style="color:#b9b1ff">renoncer au contrat ici</a>.</p></div>';
+}
+
+async function openStripePortal(ev, cancel) {
+  var btn = ev && ev.currentTarget ? ev.currentTarget : null;
+  var originalText = btn ? btn.textContent : '';
+  if (btn) { btn.textContent = 'Chargement...'; btn.disabled = true; }
+  function restore() { if (btn) { btn.textContent = originalText; btn.disabled = false; } }
+  var token = '';
+  try { token = (window.ficheaiToken ? await window.ficheaiToken() : '') || ''; } catch(e) {}
+  if (!token) { try { var u0 = JSON.parse(localStorage.getItem('ficheai_user')); token = (u0 && u0.access_token) || ''; } catch(e) {} }
   try {
-    var res = await fetch('/api/customer-portal', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token } });
+    var res = await fetch('/api/customer-portal', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify(cancel ? { flow: 'cancel' } : {}) });
     var data = await res.json();
     if (data.url) { window.location.href = data.url; }
-    else if (data.code === 'NO_SUBSCRIPTION') { alert('Aucun abonnement actif trouvé. Si tu viens de souscrire, attends quelques minutes et réessaie.'); btn.textContent = originalText; btn.disabled = false; }
-    else { alert('Erreur : ' + (data.error || 'inconnue')); btn.textContent = originalText; btn.disabled = false; }
-  } catch(e) { alert('Erreur réseau. Réessaie dans quelques instants.'); btn.textContent = originalText; btn.disabled = false; }
+    else if (data.already_canceled) { alert('Ton abonnement est déjà résilié' + (data.ends_at ? ' : il prend fin le ' + new Date(data.ends_at).toLocaleDateString('fr-FR') + '.' : '.')); restore(); }
+    else if (data.code === 'NO_SUBSCRIPTION') { alert('Aucun abonnement payant en cours sur ce compte. Si ton accès t\'a été offert, il s\'arrête tout seul à sa date de fin. Si tu viens de souscrire, attends quelques minutes et réessaie.'); restore(); }
+    else { alert(data.error || 'Le portail de gestion est momentanément indisponible.'); restore(); }
+  } catch(e) { alert('Erreur réseau. Réessaie dans quelques instants.'); restore(); }
 }
+
+(function(){
+  try {
+    if (new URLSearchParams(location.search).get('resiliation') === 'ok') {
+      history.replaceState(null, '', location.pathname);
+      var b = document.createElement('div');
+      b.setAttribute('role', 'status');
+      b.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);top:16px;z-index:9999;max-width:min(560px,calc(100% - 32px));background:#132a1f;border:1px solid rgba(52,211,153,0.45);color:#d1fae5;padding:0.9rem 1.1rem;border-radius:14px;font-size:0.88rem;line-height:1.5;box-shadow:0 10px 30px rgba(0,0,0,0.4)';
+      b.textContent = '✅ Ta résiliation est enregistrée. Tu gardes ton accès jusqu\'à la fin de la période déjà payée, puis ton compte repasse en Starter (gratuit). La confirmation avec la date de fin t\'est envoyée par e-mail.';
+      document.body.appendChild(b);
+      setTimeout(function(){ b.remove(); }, 12000);
+    }
+  } catch(e) {}
+})();
 </script>
 </body>
 </html>

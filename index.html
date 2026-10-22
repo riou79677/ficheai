@@ -242,6 +242,7 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
 @media(max-width:560px){.nav-cta{gap:0.4rem}.nav-cta .btn-ghost{display:none}.nav-cta .btn-primary{padding:0.5rem 0.85rem;font-size:0.78rem;white-space:nowrap}.logo{font-size:1.05rem}}
 </style>
 <script src="/auth.js"></script>
+<script src="/checkout.js"></script>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#09090f">
 <link rel="canonical" href="https://studyai-kappa-swart.vercel.app/">
@@ -482,8 +483,8 @@ FicheAI
 <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--purple2);margin-bottom:0.8rem">Pro</div>
 <div style="display:inline-flex;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:100px;padding:3px;margin-bottom:0.9rem;gap:2px"><button type="button" id="pro-btn-monthly" onclick="setProBilling('monthly')" style="padding:0.4rem 0.9rem;border:none;border-radius:100px;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit;background:transparent;color:#9898b8">Mensuel</button><button type="button" id="pro-btn-yearly" onclick="setProBilling('yearly')" style="padding:0.4rem 0.9rem;border:none;border-radius:100px;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit;background:transparent;color:#9898b8">Annuel <span id="pro-save-badge" style="background:#00cec9;color:#04141a;border-radius:100px;padding:1px 7px;font-size:0.68rem;margin-left:3px"></span></button></div>
 <div style="font-family:var(--font-h);font-size:2.5rem;font-weight:800;line-height:1;margin-bottom:0.3rem"><span id="pro-price-num">7,99</span><span style="font-size:1.2rem;font-weight:500">€</span></div>
-<div id="pro-price-note" style="font-size:0.78rem;color:#00cec9;margin-bottom:0.4rem;min-height:1.1rem"></div>
-<div style="font-size:0.78rem;color:var(--text2);margin-bottom:1.5rem">par mois</div>
+<div id="pro-price-per" style="font-size:0.78rem;color:var(--text2);margin-bottom:0.3rem">par mois</div>
+<div id="pro-price-note" style="font-size:0.78rem;color:#00cec9;margin-bottom:1.5rem;min-height:1.1rem"></div>
 <ul style="list-style:none;display:flex;flex-direction:column;gap:0.5rem;font-size:0.83rem;color:var(--text2);margin-bottom:1.5rem">
 <li>✓ 50 générations / mois</li>
 <li>✓ Import PDF 40 pages</li>
@@ -511,6 +512,7 @@ FicheAI
 </div>
 </section>
 
+<p style="text-align:center;font-size:0.78rem;color:var(--text3);margin:-1rem auto 3rem;max-width:640px;padding:0 1rem">Prix TTC en euros · TVA non applicable, article 293 B du CGI · Abonnements sans engagement pour les formules mensuelles, résiliables en quelques clics · Voir les <a href="/cgu.html#cgv" style="color:var(--text2)">conditions générales de vente</a></p>
 <section class="section" id="faq" style="padding-top:0">
 <div class="section-eyebrow reveal">FAQ</div>
 <h2 class="section-title reveal">Questions fréquentes</h2>
@@ -574,9 +576,12 @@ FicheAI
 </div>
 <div class="footer-col">
 <h4>Légal</h4>
-<a href="/cgu.html">CGU</a>
+<a href="/cgu.html">CGU et CGV</a>
 <a href="/confidentialite.html">Confidentialité</a>
 <a href="/mentions-legales.html">Mentions légales</a>
+<a href="/renoncer.html">Renoncer au contrat ici</a>
+<a href="/resilier.html">Résilier votre contrat</a>
+<a href="/confidentialite.html#audience">Mesure d'audience</a>
 </div>
 </div>
 <div class="footer-bottom">
@@ -607,11 +612,13 @@ function setProBilling(b){
   window.proBilling = b;
   var save = Math.round((1 - PRO_YEARLY / (PRO_MONTHLY * 12)) * 100);
   var yearly = b === 'yearly';
-  document.getElementById('pro-price-num').textContent = fmtEur(yearly ? PRO_YEARLY / 12 : PRO_MONTHLY);
+  // Formule annuelle : le prix total payé (79,90 € par an) est affiché en grand, l'équivalent mensuel en petit.
+  document.getElementById('pro-price-num').textContent = fmtEur(yearly ? PRO_YEARLY : PRO_MONTHLY);
+  document.getElementById('pro-price-per').textContent = yearly ? 'par an, payé en une fois' : 'par mois';
   document.getElementById('pro-save-badge').textContent = '-' + save + '%';
   document.getElementById('pro-price-note').textContent = yearly
-    ? 'Facturé ' + fmtEur(PRO_YEARLY) + ' € par an · ' + Math.round(PRO_MONTHLY * 12 - PRO_YEARLY) + ' € économisés (2 mois offerts)'
-    : 'Sans engagement · 7 jours d\'essai gratuit';
+    ? 'Soit ' + fmtEur(PRO_YEARLY / 12) + ' € par mois · ' + Math.round(PRO_MONTHLY * 12 - PRO_YEARLY) + ' € économisés par rapport au mensuel'
+    : 'Sans engagement · 7 jours d\'essai gratuit pour un premier abonnement, puis ' + fmtEur(PRO_MONTHLY) + ' € par mois';
   var _c = document.getElementById('pro-cta'); if (_c && !_c.disabled) _c.textContent = yearly ? 'S\'abonner à l\'année' : 'Essayer 7 jours gratuits';
   var on = 'background:linear-gradient(135deg,#6c5ce7,#fd79a8);color:#fff', off = 'background:transparent;color:#9898b8';
   ['monthly','yearly'].forEach(function(k){
@@ -628,24 +635,9 @@ async function handlePlanClick(plan, billing) {
     window.location.href = '/signup.html?plan=' + plan + '&billing=' + billing;
     return;
   }
-  var btn = event.currentTarget;
-  var originalText = btn.textContent;
-  btn.textContent = 'Chargement...';
-  btn.disabled = true;
-  function fail(msg) { alert(msg || 'Une erreur est survenue. Réessaie ou contacte le support.'); btn.textContent = originalText; btn.disabled = false; }
-  try {
-    var token = window.ficheaiToken ? await window.ficheaiToken() : null;
-    if (!token) { window.location.href = '/login.html'; return; }
-    var response = await fetch('/api/create-checkout', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ plan: plan, billing: billing })
-    });
-    var data = {};
-    try { data = await response.json(); } catch(e) {}
-    if (data.url) { window.location.href = data.url; }
-    else { fail((data.error || '') + (data.detail ? ' (' + data.detail + ')' : '') || null); }
-  } catch(e) { fail(); }
+  // Récapitulatif de commande (checkout.js) : prix, durée, résiliation, rétractation, CGV, puis paiement Stripe.
+  var key = plan === 'pro' ? (billing === 'yearly' ? 'pro_yearly' : 'pro_monthly') : 'ultimate_monthly';
+  if (window.ficheaiBuy) window.ficheaiBuy(key);
 }
 
 // ── Affichage selon l'état de connexion et le plan réel (lu en base) ──
@@ -686,7 +678,6 @@ this.classList.add('active');
 });
 });
 </script>
-<script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};</script>
-<script defer src="/_vercel/insights/script.js"></script>
+<script src="/va.js" defer></script>
 </body>
 </html>

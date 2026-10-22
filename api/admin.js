@@ -228,6 +228,28 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true });
     }
 
+    // ── Déclarations de rétractation et de résiliation (à traiter rapidement : remboursement sous 14 jours) ──
+    if (action === 'get_legal_requests') {
+      const r = await fetch(SUPABASE_URL + '/rest/v1/legal_requests?select=*&order=created_at.desc&limit=100', { headers: sb });
+      const rows = await r.json();
+      return res.status(200).json({ requests: Array.isArray(rows) ? rows : [] });
+    }
+
+    if (action === 'set_legal_request_status') {
+      const id = String((payload && payload.id) || '');
+      const status = String((payload && payload.status) || '');
+      if (!/^[0-9a-f-]{36}$/i.test(id) || !['recue', 'traitee', 'refusee'].includes(status)) {
+        return res.status(400).json({ error: 'Paramètres invalides' });
+      }
+      const note = typeof (payload && payload.note) === 'string' ? payload.note.slice(0, 2000) : null;
+      await fetch(SUPABASE_URL + '/rest/v1/legal_requests?id=eq.' + encodeURIComponent(id), {
+        method: 'PATCH',
+        headers: { ...sb, 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ status, admin_note: note, processed_at: status === 'recue' ? null : new Date().toISOString() })
+      });
+      return res.status(200).json({ success: true });
+    }
+
     return res.status(400).json({ error: 'Action inconnue' });
 
   } catch (error) {

@@ -33,12 +33,12 @@ footer{padding:1.5rem;text-align:center;font-size:0.78rem;color:var(--text3);bor
 ul{margin:0.4rem 0 1rem 1.3rem}li{margin-bottom:0.4rem;line-height:1.7;color:var(--text2,#a0a0c0)}</style>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#09090f">
-<meta name="description" content="Comment FicheAI collecte, utilise et protège tes données personnelles.">
+<meta name="description" content="Politique de confidentialité de FicheAI : données collectées, intelligence artificielle, durées de conservation, mesure d'audience, droits.">
 <link rel="canonical" href="https://studyai-kappa-swart.vercel.app/confidentialite.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="FicheAI">
 <meta property="og:title" content="Politique de confidentialité — FicheAI">
-<meta property="og:description" content="Comment FicheAI collecte, utilise et protège tes données personnelles.">
+<meta property="og:description" content="Politique de confidentialité de FicheAI : données collectées, intelligence artificielle, durées de conservation, mesure d'audience, droits.">
 <meta property="og:url" content="https://studyai-kappa-swart.vercel.app/confidentialite.html">
 <meta property="og:image" content="https://studyai-kappa-swart.vercel.app/og-image-v2.png">
 <meta property="og:image:alt" content="FicheAI : fiches de révision, flashcards et quiz générés par IA">
@@ -49,6 +49,19 @@ ul{margin:0.4rem 0 1rem 1.3rem}li{margin-bottom:0.4rem;line-height:1.7;color:var
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="FicheAI">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+.legal-footer nav{display:block;padding:0;border:none;margin-bottom:0.4rem;line-height:2}
+.legal-footer a{color:var(--text2);text-decoration:none}.legal-footer a:hover{color:var(--text);text-decoration:underline}
+.legal-footer p{font-size:0.78rem;color:var(--text3);margin:0}
+.toc{display:block;padding:1rem 1.2rem;border:1px solid var(--border2);border-radius:12px;background:var(--bg2);margin:1.2rem 0 2rem}
+.toc ol{margin:0.5rem 0 0 1.2rem}.toc li{margin-bottom:0.15rem;font-size:0.88rem}
+.encadre{border-color:rgba(167,139,250,0.45)}.encadre p{font-size:0.86rem}
+.formulaire p{margin-bottom:0.6rem}
+.btn-alt{display:inline-block;padding:0.6rem 1rem;border-radius:10px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font:inherit;font-size:0.86rem;cursor:pointer}
+.btn-alt[disabled]{opacity:0.6;cursor:not-allowed}
+h2{scroll-margin-top:1rem}
+@media print{nav:not(.toc),.legal-footer,.btn-alt{display:none!important}body{background:#fff;color:#000}p,li{color:#000}h2{color:#000}.note{border:1px solid #000}}
+</style>
 </head>
 <body>
 <nav>
@@ -60,70 +73,105 @@ FicheAI
 </nav>
 <main>
   <h1>Politique de confidentialité</h1>
-  <p class="subtitle">Dernière mise à jour : octobre 2026</p>
+  <p class="updated">Version du 22 octobre 2026</p>
+
+  <div class="note"><strong>En bref.</strong> FicheAI collecte le minimum nécessaire pour faire fonctionner ton compte et générer tes fiches. Tes cours sont envoyés à l'intelligence artificielle uniquement pour produire le résultat demandé, et ne sont pas conservés. Pas de publicité, pas de revente de données, pas de profilage. Tu peux tout supprimer depuis Paramètres.</div>
 
   <h2>1. Responsable du traitement</h2>
-  <p>Le responsable du traitement est FicheAI (Ilan M., micro-entreprise), contact : <a href="contact.html">contact@ficheai.fr</a>. La présente politique explique quelles données sont collectées, pourquoi, à qui elles sont confiées et quels sont tes droits.</p>
+  <p>Le responsable du traitement est l'éditeur de FicheAI, entrepreneur individuel dont l'identité et les coordonnées figurent dans les <a href="/mentions-legales.html">mentions légales</a>. Pour toute question sur tes données : <a href="/contact.html">formulaire de contact</a>, sujet « Mes données personnelles ».</p>
 
   <h2>2. Données collectées</h2>
   <ul>
-    <li><strong>Compte :</strong> adresse email, mot de passe (géré par le système d'authentification, jamais conservé en clair), pseudo, niveau scolaire, date d'inscription et, si tu choisis de l'indiquer, la façon dont tu as connu FicheAI.</li>
-    <li><strong>Utilisation :</strong> formule souscrite, compteurs de générations et de messages de chat, état éventuel de suspension du compte.</li>
-    <li><strong>Contenus :</strong> les fiches, quiz et autres contenus générés et enregistrés dans ta bibliothèque.</li>
-    <li><strong>Paiement :</strong> les paiements sont traités par Stripe. FicheAI conserve uniquement l'identifiant client Stripe et l'état de ton abonnement, jamais ton numéro de carte.</li>
-    <li><strong>Données techniques :</strong> journaux de connexion et d'erreur nécessaires au fonctionnement et à la sécurité du service.</li>
+    <li><strong>Compte</strong> : adresse e-mail, mot de passe (géré par le système d'authentification, jamais conservé en clair), pseudo, prénom indiqué à l'inscription, niveau scolaire, date d'inscription, confirmation de l'âge (15 ans ou accord parental) et, si tu choisis de l'indiquer, la façon dont tu as connu FicheAI.</li>
+    <li><strong>Utilisation</strong> : formule, compteurs de générations et de messages, journal d'utilisation de l'IA (date, type d'action, volume traité, coût), état éventuel de suspension du compte et son motif.</li>
+    <li><strong>Contenus</strong> : les fiches et contenus que tu enregistres dans ta bibliothèque, tes cartes de révision et, avec les formules Pro et Ultimate, l'historique de tes conversations du Chat IA.</li>
+    <li><strong>Paiement</strong> : identifiant client Stripe, état de l'abonnement, preuve de tes consentements lors de la commande (version des conditions acceptée, date). FicheAI ne voit jamais ton numéro de carte.</li>
+    <li><strong>Demandes</strong> : messages du formulaire de contact, signalements, déclarations de rétractation et de résiliation.</li>
+    <li><strong>Données techniques</strong> : journaux de connexion et d'erreur nécessaires au fonctionnement et à la sécurité.</li>
   </ul>
 
   <h2>3. Finalités et bases légales</h2>
   <ul>
-    <li>Fournir le service, gérer ton compte, tes quotas et ta bibliothèque : exécution du contrat.</li>
-    <li>Gérer les abonnements, paiements et obligations comptables : exécution du contrat et obligation légale.</li>
-    <li>Assurer la sécurité du service, prévenir les abus et la fraude : intérêt légitime.</li>
-    <li>Répondre à tes messages et demandes d'assistance : intérêt légitime.</li>
+    <li>Fournir le service, gérer ton compte, tes quotas, ta bibliothèque et ton historique : exécution du contrat.</li>
+    <li>Gérer les abonnements, paiements, factures, rétractations, résiliations et réclamations : exécution du contrat et obligations légales (Code de la consommation, obligations comptables).</li>
+    <li>Assurer la sécurité, prévenir les abus et la fraude, traiter les signalements : intérêt légitime et obligations légales (règlement européen sur les services numériques).</li>
+    <li>Répondre à tes messages : intérêt légitime.</li>
+    <li>Mesurer la fréquentation du site de façon anonyme : intérêt légitime, avec possibilité de t'y opposer (article 8).</li>
   </ul>
-  <p>FicheAI ne vend pas tes données et ne les utilise pas à des fins publicitaires.</p>
+  <p>FicheAI ne vend pas tes données, ne les utilise pas à des fins publicitaires et ne prend aucune décision automatisée produisant des effets juridiques à ton égard.</p>
 
   <h2>4. Tes cours et l'intelligence artificielle</h2>
-  <p>Lorsque tu génères un contenu ou que tu utilises le chat, le texte de ton cours (et tes messages de chat) est transmis à notre prestataire d'intelligence artificielle, Anthropic, uniquement pour produire le résultat demandé. Avec les formules Pro et Ultimate, lorsque tu importes un PDF qui contient des schémas ou des images, une image des pages concernées (4 pages au maximum en Pro, 8 en Ultimate) est également transmise, pour que l'IA puisse en tenir compte. FicheAI ne conserve ni le texte de ton cours ni ces images : seul le contenu généré que tu enregistres est stocké dans ta bibliothèque. Selon les conditions d'Anthropic applicables à son interface professionnelle (API), les contenus transmis ne sont pas utilisés pour entraîner ses modèles par défaut.</p>
-  <p><strong>Historique du Chat IA :</strong> pour les abonnés Pro et Ultimate, tes messages avec le Chat IA et les réponses de l'assistant sont enregistrés dans ton compte afin que tu puisses retrouver tes conversations (les 5 dernières en Pro, l'ensemble en Ultimate). Le texte de ton cours chargé dans le chat n'est pas enregistré. Tu peux renommer ou supprimer une conversation à tout moment depuis le Chat IA, et elles sont toutes supprimées avec ton compte.</p>
+  <p>Quand tu génères un contenu ou que tu utilises le Chat IA, le texte de ton cours et tes messages sont transmis à notre fournisseur d'intelligence artificielle, Anthropic, uniquement pour produire le résultat demandé. Avec les formules Pro et Ultimate, si tu importes un PDF qui contient des schémas ou des images, une image des pages concernées (4 pages au maximum en Pro, 8 en Ultimate) est aussi transmise. FicheAI ne conserve ni le texte de ton cours ni ces images : seul le contenu que tu enregistres est stocké. Selon les conditions d'Anthropic applicables à son interface professionnelle (API), ces contenus ne servent pas à entraîner ses modèles.</p>
+  <p>Historique du Chat IA (Pro et Ultimate) : tes messages et les réponses de l'assistant sont enregistrés pour que tu retrouves tes conversations (les 5 dernières en Pro, toutes en Ultimate). Tu peux les supprimer à tout moment ; elles sont toutes effacées avec ton compte.</p>
   <p>Évite de saisir dans tes cours des informations sensibles te concernant ou concernant d'autres personnes.</p>
 
   <h2>5. Destinataires et sous-traitants</h2>
   <ul>
-    <li><strong>Supabase</strong> : base de données et authentification (données hébergées en Irlande, dans l'Union européenne).</li>
-    <li><strong>Vercel</strong> : hébergement du site (les fonctions serveur s'exécutent à Paris).</li>
-    <li><strong>Anthropic</strong> : intelligence artificielle générant les contenus (traitement principalement aux États-Unis, c'est le transfert hors UE visé ci-dessous).</li>
-    <li><strong>Stripe</strong> : paiement des abonnements et recharges.</li>
+    <li><strong>Supabase</strong> : base de données et authentification. Données hébergées dans l'Union européenne (Irlande).</li>
+    <li><strong>Vercel</strong> : hébergement du site (fonctions serveur exécutées à Paris) et mesure d'audience anonyme.</li>
+    <li><strong>Anthropic</strong> : intelligence artificielle qui génère les contenus (traitement aux États-Unis).</li>
+    <li><strong>Stripe</strong> : paiement des abonnements et recharges, factures. Stripe agit aussi comme responsable de traitement distinct pour ses obligations propres (lutte contre la fraude, obligations financières).</li>
+    <li><strong>Cloudflare (cdnjs) et jsDelivr</strong> : réseaux de diffusion qui fournissent à ton navigateur les outils de lecture des PDF et d'affichage des schémas ; ils reçoivent ton adresse IP lors de ce chargement.</li>
   </ul>
-  <p>Ces prestataires n'agissent que sur nos instructions pour fournir le service. Tes données ne sont pas partagées avec d'autres tiers, sauf obligation légale.</p>
+  <p>Ces prestataires agissent sur nos instructions dans le cadre de contrats conformes à l'article 28 du RGPD. Tes données ne sont communiquées à aucun autre tiers, sauf obligation légale (demande d'une autorité). L'éditeur accède aux données de compte et aux titres des fiches uniquement pour l'assistance, la sécurité et la modération.</p>
 
   <h2>6. Transferts hors de l'Union européenne</h2>
-  <p>Certains de ces prestataires sont établis ou traitent des données hors de l'Union européenne, notamment aux États-Unis. Ces transferts sont encadrés par des garanties appropriées prévues par le RGPD (clauses contractuelles types de la Commission européenne ou décision d'adéquation).</p>
+  <p>Anthropic, Vercel, Stripe, Cloudflare et Supabase sont des sociétés américaines ou disposent d'équipes hors de l'Union européenne. Les transferts de données vers les États-Unis sont encadrés par la décision d'adéquation de la Commission européenne relative au cadre de protection des données UE–États-Unis lorsque le prestataire y adhère, et sinon par les clauses contractuelles types de la Commission européenne.</p>
 
   <h2>7. Durées de conservation</h2>
   <ul>
-    <li>Données de compte, fiches et conversations du Chat IA : pendant la durée de vie du compte, puis supprimées à la suppression du compte.</li>
-    <li>Données de facturation : 10 ans à compter de la clôture de l'exercice, conformément aux obligations comptables.</li>
-    <li>Messages envoyés via le formulaire de contact : 3 ans maximum.</li>
-    <li>Journaux techniques : durée limitée, strictement nécessaire à la sécurité.</li>
+    <li>Compte, fiches, cartes de révision et conversations : pendant toute la durée de vie du compte, puis supprimés avec lui.</li>
+    <li>Journal d'utilisation de l'IA : 13 mois, puis effacé automatiquement.</li>
+    <li>Messages du formulaire de contact et signalements : 3 ans maximum, puis effacés automatiquement.</li>
+    <li>Déclarations de rétractation et de résiliation, preuves de consentement lors des commandes : 5 ans (délai de prescription), puis effacées automatiquement.</li>
+    <li>Factures et pièces comptables : 10 ans, conformément aux obligations comptables.</li>
+    <li>Journaux techniques de l'hébergeur : quelques jours à quelques semaines, selon les durées de nos prestataires.</li>
   </ul>
 
-  <h2>8. Cookies et stockage dans ton navigateur</h2>
-  <p>FicheAI utilise uniquement le stockage de ton navigateur nécessaire au fonctionnement du service (maintien de ta connexion, préférences d'affichage). Aucun cookie publicitaire ni outil de suivi publicitaire n'est utilisé. Ces éléments strictement nécessaires ne requièrent pas ton consentement. La fréquentation du site peut être mesurée avec Vercel Web Analytics, une mesure d'audience anonyme qui n'utilise aucun cookie et ne te suit pas d'un site à l'autre.</p>
+  <h2 id="audience">8. Stockage dans ton navigateur et mesure d'audience</h2>
+  <p>FicheAI utilise le stockage de ton navigateur strictement nécessaire au service (maintien de ta connexion, préférences d'affichage). Ces éléments ne demandent pas ton consentement. Aucun cookie publicitaire ni traceur de suivi n'est utilisé.</p>
+  <p>La fréquentation est mesurée avec Vercel Web Analytics : une mesure d'audience anonyme, sans cookie, limitée à ce site, qui ne te suit pas d'un site à l'autre et ne sert qu'à produire des statistiques. Tu peux t'y opposer à tout moment avec le bouton ci-dessous (ton choix est enregistré dans ce navigateur). Le signal « Global Privacy Control » de ton navigateur est aussi respecté.</p>
+  <p><button type="button" id="audience-btn" class="btn-alt">…</button> <span id="audience-state" role="status" style="font-size:0.85rem"></span></p>
 
   <h2>9. Sécurité</h2>
-  <p>Les échanges sont chiffrés (HTTPS). L'accès aux données est restreint par des règles d'authentification : chaque utilisateur ne peut consulter que ses propres fiches. Aucun système n'étant infaillible, nous t'informerons en cas de violation de données, conformément à la loi.</p>
+  <p>Les échanges sont chiffrés (HTTPS). L'accès aux données est limité par des règles d'authentification : chaque utilisateur ne peut consulter que ses propres données. Les paiements sont traités par Stripe. En cas de violation de données présentant un risque, la CNIL est notifiée dans les 72 heures et, si le risque est élevé, les personnes concernées sont informées.</p>
 
   <h2>10. Mineurs</h2>
-  <p>Le service est destiné aux personnes de 15 ans et plus. Un mineur de moins de 15 ans ne peut utiliser FicheAI qu'avec l'accord du titulaire de l'autorité parentale. Si tu penses qu'un enfant de moins de 15 ans s'est inscrit sans cet accord, écris-nous et nous supprimerons le compte.</p>
+  <p>Le service s'adresse aux personnes de 15 ans et plus ; une personne de moins de 15 ans ne peut l'utiliser qu'avec l'accord du titulaire de l'autorité parentale. Si tu penses qu'un enfant de moins de 15 ans s'est inscrit sans cet accord, écris-nous et nous supprimerons le compte.</p>
+  <p>Parce que beaucoup d'utilisateurs sont mineurs, FicheAI applique des mesures de protection : aucune publicité ni profilage, informations présentées simplement, consignes données à l'intelligence artificielle pour qu'elle produise uniquement des contenus adaptés à l'âge des élèves et oriente vers une aide adaptée (3114, 3018, 119) en cas de détresse, et rappel que le Chat IA est une intelligence artificielle et non un humain. FicheAI respecte les règles de protection des données des mineurs prévues par le RGPD et la loi Informatique et Libertés.</p>
 
   <h2>11. Tes droits</h2>
-  <p>Tu disposes d'un droit d'accès, de rectification, d'effacement, de limitation, d'opposition et de portabilité de tes données, ainsi que du droit de définir des directives sur leur sort après ton décès. Tu peux supprimer ton compte et tes fiches depuis la page Paramètres, ou exercer tes droits en écrivant à <a href="contact.html">contact@ficheai.fr</a> (une réponse te sera apportée sous un mois). En cas de désaccord, tu peux saisir la CNIL (cnil.fr).</p>
+  <p>Tu disposes d'un droit d'accès, de rectification, d'effacement, de limitation, d'opposition et de portabilité de tes données, ainsi que du droit de définir des directives sur leur sort après ton décès. Tu peux supprimer tes fiches et ton compte depuis Paramètres, ou exercer tes droits par le <a href="/contact.html">formulaire de contact</a> (sujet « Mes données personnelles ») ; une réponse t'est apportée sous un mois. Si tu estimes que tes droits ne sont pas respectés, tu peux saisir la CNIL (cnil.fr).</p>
 
   <h2>12. Modifications</h2>
-  <p>Cette politique peut évoluer. La date de dernière mise à jour figure en haut de la page ; les changements importants te seront signalés.</p>
-
+  <p>Cette politique peut évoluer. La date de la version figure en haut de la page ; les changements importants te sont signalés.</p>
 </main>
-<footer>FicheAI · Fait pour les étudiants 🎓 · © 2026</footer>
+
+<footer class="legal-footer">
+<nav aria-label="Informations légales">
+<a href="/cgu.html">CGU et CGV</a> · <a href="/confidentialite.html">Confidentialité</a> · <a href="/mentions-legales.html">Mentions légales</a> · <a href="/contact.html">Contact</a><br>
+<a href="/renoncer.html">Renoncer au contrat ici</a> · <a href="/resilier.html">Résilier votre contrat</a> · <a href="/confidentialite.html#audience">Mesure d'audience</a>
+</nav>
+<p>FicheAI · Fait pour les étudiants 🎓 · © 2026</p>
+</footer>
+<script>
+(function () {
+  var btn = document.getElementById('audience-btn'), st = document.getElementById('audience-state');
+  function isOff() { try { return localStorage.getItem('ficheai_audience') === 'off'; } catch (e) { return false; } }
+  var gpc = false; try { gpc = navigator.globalPrivacyControl === true; } catch (e) {}
+  function render() {
+    var off = isOff() || gpc;
+    btn.textContent = off ? 'Réactiver la mesure d\'audience' : 'Refuser la mesure d\'audience';
+    st.textContent = gpc ? 'Mesure d\'audience désactivée par le signal Global Privacy Control de ton navigateur.'
+      : (off ? 'Mesure d\'audience désactivée dans ce navigateur.' : 'Mesure d\'audience active dans ce navigateur.');
+    btn.disabled = gpc;
+  }
+  btn.addEventListener('click', function () {
+    try { if (isOff()) localStorage.removeItem('ficheai_audience'); else localStorage.setItem('ficheai_audience', 'off'); } catch (e) {}
+    render();
+  });
+  render();
+})();
+</script>
 </body>
 </html>

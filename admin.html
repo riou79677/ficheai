@@ -155,6 +155,21 @@ tr.clickable-row:hover{background:rgba(108,92,231,0.08)}
 </div>
 
 <div class="section">
+<h2>⚖️ Rétractations, résiliations et messages</h2>
+<p class="mini-note">Déclarations déposées avec « Renoncer au contrat ici » et « Résilier votre contrat ». Rétractation : arrêter l'abonnement dans Stripe et rembourser sous 14 jours maximum (au prorata du service déjà fourni). Résiliation : programmer l'arrêt en fin de période dans Stripe.</p>
+<table>
+<thead><tr><th>Reçue le</th><th>Type</th><th>Nom</th><th>Compte</th><th>Contrat</th><th>Connecté</th><th>Statut</th><th>Actions</th></tr></thead>
+<tbody id="legal-table"></tbody>
+</table>
+<div class="msg" id="legal-msg"></div>
+<h3 style="margin:1.2rem 0 0.5rem;font-size:0.95rem">Derniers messages du formulaire de contact</h3>
+<table>
+<thead><tr><th>Reçu le</th><th>E-mail</th><th>Sujet</th><th>Message</th></tr></thead>
+<tbody id="contact-table"></tbody>
+</table>
+</div>
+
+<div class="section">
 <h2>💸 Consommation de crédit IA (30 derniers jours)</h2>
 <p class="mini-note" id="usage-total">Chargement...</p>
 <table>
@@ -323,10 +338,37 @@ async function unlock(){
 function showDashboard(){
   document.getElementById('lock-screen').style.display='none';
   document.getElementById('dashboard').style.display='block';
-  Promise.all([loadStats(),loadFiches(),loadUsage()]).catch(function(){});
+  Promise.all([loadStats(),loadFiches(),loadUsage(),loadLegal()]).catch(function(){});
 }
 
-function refreshDashboard(){Promise.all([loadStats(),loadFiches(),loadUsage()]).catch(function(){});}
+function refreshDashboard(){Promise.all([loadStats(),loadFiches(),loadUsage(),loadLegal()]).catch(function(){});}
+
+// ── Rétractations, résiliations et messages de contact ──
+async function loadLegal(){
+  try{
+    var d=await callAdmin('get_legal_requests');
+    var labels={recue:'⏳ À traiter',traitee:'✅ Traitée',refusee:'⛔ Refusée'};
+    var rows=(d.requests||[]).map(function(r){
+      var when=new Date(r.created_at).toLocaleString('fr-FR');
+      var acts=r.status==='recue'
+        ?'<button class="btn-sm" onclick="setLegalStatus('+jsArg(r.id)+',\'traitee\')">Marquer traitée</button><button class="btn-sm warn" onclick="setLegalStatus('+jsArg(r.id)+',\'refusee\')">Refuser</button>'
+        :'<button class="btn-sm" onclick="setLegalStatus('+jsArg(r.id)+',\'recue\')">Rouvrir</button>';
+      return '<tr><td>'+escH(when)+'</td><td>'+(r.kind==='retractation'?'↩️ Rétractation':'🛑 Résiliation')+'</td><td>'+escH(r.full_name)+'</td><td>'+escH(r.account_email)+(r.ack_email&&r.ack_email!==r.account_email?'<br><span class="mini-note">accusé à '+escH(r.ack_email)+'</span>':'')+'</td><td>'+escH(r.contract)+(r.contract_date?'<br><span class="mini-note">'+escH(r.contract_date)+'</span>':'')+(r.details?'<br><span class="mini-note">'+escH(r.details)+'</span>':'')+'</td><td>'+(r.user_verified?'oui':'non')+'</td><td>'+escH(labels[r.status]||r.status)+'</td><td>'+acts+'</td></tr>';
+    }).join('');
+    document.getElementById('legal-table').innerHTML=rows||'<tr><td colspan="8" style="color:var(--text3)">Aucune déclaration pour l\'instant.</td></tr>';
+  }catch(e){if(e.message!=='WRONG_SECRET'){var m=document.getElementById('legal-msg');m.textContent='⚠️ Impossible de charger les déclarations : '+e.message;m.className='msg error';m.style.display='block';}}
+  try{
+    var c=await callAdmin('get_contact_messages',{limit:30});
+    var msgs=(c.messages||[]).map(function(x){
+      return '<tr><td>'+escH(new Date(x.created_at).toLocaleString('fr-FR'))+'</td><td>'+escH(x.email)+'</td><td>'+escH(x.subject)+'</td><td style="max-width:420px;white-space:pre-wrap">'+escH(String(x.message||'').slice(0,600))+'</td></tr>';
+    }).join('');
+    document.getElementById('contact-table').innerHTML=msgs||'<tr><td colspan="4" style="color:var(--text3)">Aucun message.</td></tr>';
+  }catch(e){}
+}
+async function setLegalStatus(id,status){
+  try{await callAdmin('set_legal_request_status',{id:id,status:status});showMsg('legal-msg','✅ Statut mis à jour.','ok');await loadLegal();}
+  catch(e){if(e.message!=='WRONG_SECRET')showMsg('legal-msg','⚠️ Erreur : '+e.message,'error');}
+}
 
 document.getElementById('admin-password').addEventListener('keydown',function(e){if(e.key==='Enter')unlock();});
 document.getElementById('admin-email').addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('admin-password').focus();});

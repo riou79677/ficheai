@@ -1,3 +1,4 @@
+import { banMessage } from './_ban.js';
 const SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
 
 // La création des cartes appelle l'IA : 10 s (valeur par défaut de Vercel) ne suffisent pas toujours.
@@ -149,9 +150,10 @@ export default async function handler(req, res) {
   } catch (e) { /* si la vérification échoue, on laisse passer */ }
 
   // Vérifie qu'un compte existe pour cet email, et qu'il n'est pas banni
+  let banMsg = 'Ce compte a été suspendu.';
   async function requireUser(email) {
     if (!email) return null;
-    const r = await fetch(SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=email', { headers: sb });
+    const r = await fetch(SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=email,banned_reason,banned_until', { headers: sb });
     const u = await r.json();
     const found = (Array.isArray(u) && u[0]) ? u[0] : null;
     if (!found) return null;
@@ -160,7 +162,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({ p_email: email })
     });
     const isBanned = await banCheck.json();
-    if (isBanned === true) return 'BANNED';
+    if (isBanned === true) { banMsg = banMessage(found); return 'BANNED'; }
     return found;
   }
 
@@ -187,7 +189,7 @@ export default async function handler(req, res) {
     const email = verifiedEmail;
     if (!email) return res.status(401).json({ error: 'Non connecté' });
     const checkUser = await requireUser(email);
-    if (checkUser === 'BANNED') return res.status(403).json({ error: 'Ce compte a été suspendu.' });
+    if (checkUser === 'BANNED') return res.status(403).json({ error: banMsg });
 
     // Mode "file de révision" : les cartes à réviser maintenant
     if (req.query.due === '1') {
@@ -245,7 +247,7 @@ export default async function handler(req, res) {
     const body = req.body || {};
     const email = verifiedEmail;
     const user = await requireUser(email);
-    if (user === 'BANNED') return res.status(403).json({ error: 'Ce compte a été suspendu.' });
+    if (user === 'BANNED') return res.status(403).json({ error: banMsg });
     if (!user) return res.status(403).json({ error: 'Compte introuvable. Reconnecte-toi.' });
 
     // ── Noter une carte après révision ──

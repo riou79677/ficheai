@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Résilier votre contrat — FicheAI</title>
+<link rel="preload" href="/fonts/syne-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/fonts/dm-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/fonts/fonts.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#09090f;--bg2:#0f0f1a;--bg3:#13131f;--surface:#1a1a2e;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);--purple:#7c6dfa;--purple2:#a78bfa;--pink:#f472b6;--text:#f1f0ff;--text2:#a0a0c0;--text3:#82829f;--font-h:'Syne',sans-serif;--font-b:'DM Sans',sans-serif;}
+body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh;line-height:1.7}
+nav{padding:1.2rem 2rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+.logo{font-family:var(--font-h);font-size:1.3rem;font-weight:800;background:linear-gradient(135deg,var(--purple2),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-decoration:none;display:flex;align-items:center;gap:10px;}
+.logo-icon{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--purple),var(--pink));display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.logo-icon svg{width:16px;height:16px;}
+.nav-link{color:var(--text2);text-decoration:none;font-size:0.88rem;}
+.nav-link:hover{color:var(--text);}
+main{max-width:800px;margin:0 auto;padding:3rem 1.5rem 5rem}
+h1{font-family:var(--font-h);font-size:clamp(1.5rem,7.5vw,2rem);overflow-wrap:normal;font-weight:800;margin-bottom:0.5rem}
+.updated{font-size:0.85rem;color:var(--text3);margin-bottom:2.5rem}
+h2{font-family:var(--font-h);font-size:1.25rem;font-weight:700;margin-top:2.2rem;margin-bottom:0.8rem;color:var(--purple2)}
+p, li{font-size:0.92rem;color:var(--text2);margin-bottom:0.8rem}
+ul, ol{padding-left:1.4rem;margin-bottom:1rem}
+strong{color:var(--text)}
+a{color:var(--purple2)}
+.note{background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:1rem 1.2rem;margin:1.5rem 0;font-size:0.85rem}
+footer{padding:1.5rem;text-align:center;font-size:0.78rem;color:var(--text3);border-top:1px solid var(--border);}
+ul{margin:0.4rem 0 1rem 1.3rem}li{margin-bottom:0.4rem;line-height:1.7;color:var(--text2,#a0a0c0)}</style>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#09090f">
+<meta name="description" content="Résilie ton abonnement FicheAI en ligne, sans frais, à tout moment.">
+<link rel="canonical" href="https://studyai-kappa-swart.vercel.app/resilier.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="FicheAI">
+<meta property="og:title" content="Résilier votre contrat — FicheAI">
+<meta property="og:description" content="Résilie ton abonnement FicheAI en ligne, sans frais, à tout moment.">
+<meta property="og:url" content="https://studyai-kappa-swart.vercel.app/resilier.html">
+<meta property="og:image" content="https://studyai-kappa-swart.vercel.app/og-image-v2.png">
+<meta property="og:image:alt" content="FicheAI : fiches de révision, flashcards et quiz générés par IA">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="FicheAI">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+.legal-footer nav{display:block;padding:0;border:none;margin-bottom:0.4rem;line-height:2}
+.legal-footer a{color:var(--text2);text-decoration:none}.legal-footer a:hover{color:var(--text);text-decoration:underline}
+.legal-footer p{font-size:0.78rem;color:var(--text3);margin:0}
+.lf{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:1.3rem 1.2rem;margin:1.5rem 0}
+.lf .field{margin-bottom:1rem}
+.lf label{display:block;font-size:0.86rem;color:var(--text);font-weight:600;margin-bottom:0.35rem}
+.lf .hint{font-weight:400;color:var(--text3);font-size:0.8rem}
+.lf input,.lf select,.lf textarea{width:100%;background:var(--bg3);border:1.5px solid var(--border2);border-radius:10px;padding:0.7rem 0.85rem;color:var(--text);font:inherit;font-size:0.92rem}
+.lf input:focus,.lf select:focus,.lf textarea:focus{outline:2px solid var(--purple);outline-offset:1px}
+.lf textarea{min-height:80px;resize:vertical}
+.btn-main{width:100%;padding:0.9rem;border:none;border-radius:12px;background:linear-gradient(135deg,#6c5ce7,#f472b6);color:#fff;font-weight:800;font-size:0.98rem;cursor:pointer}
+.btn-main[disabled]{opacity:0.55;cursor:wait}
+.btn-alt{display:inline-block;padding:0.6rem 1rem;border-radius:10px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-size:0.86rem;cursor:pointer;text-decoration:none;margin:0.3rem 0.4rem 0 0}
+.err{display:none;color:#ff9db4;font-size:0.86rem;margin:0.6rem 0 0}
+.ack{white-space:pre-wrap;background:var(--bg3);border:1px solid rgba(52,211,153,0.4);border-radius:12px;padding:1rem;font-size:0.85rem;color:var(--text);line-height:1.6;margin:0.8rem 0}
+@media print{nav,footer,.no-print{display:none!important}body{background:#fff;color:#000}.ack{border:1px solid #000;color:#000}}
+</style>
+</head>
+<body>
+<nav>
+<a href="/" class="logo">
+<div class="logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
+FicheAI
+</a>
+<a href="/" class="nav-link">← Retour à l'accueil</a>
+</nav>
+<main>
+  <h1>Résilier votre contrat</h1>
+  <p class="updated">Fonction prévue par le Code de la consommation (art. L215-1-1). Gratuite et sans connexion.</p>
+  <p>Tu peux résilier ton abonnement FicheAI à tout moment, gratuitement. La résiliation prend effet à la fin de la période déjà payée : tu gardes ton accès jusque-là, puis ton compte repasse en Starter (gratuit). Tes fiches restent dans ta bibliothèque.</p>
+  <div class="note"><strong>Le plus rapide si tu es connecté :</strong> <a href="/settings.html">Paramètres</a> → « Résilier mon abonnement » (résiliation immédiate sur le portail sécurisé de Stripe). Sinon, remplis le formulaire ci-dessous : il fonctionne sans connexion.</div>
+  <form class="lf no-print" id="lf" novalidate>
+    <div class="field"><label for="full_name">Nom et prénom</label><input id="full_name" autocomplete="name" required maxlength="200"></div>
+    <div class="field"><label for="account_email">Adresse e-mail de ton compte FicheAI</label><input id="account_email" type="email" autocomplete="email" required maxlength="254"></div>
+    <div class="field"><label for="contract">Contrat concerné</label>
+      <select id="contract" required>
+        <option value="">Choisir…</option>
+        <option>Abonnement Pro mensuel</option>
+        <option>Abonnement Pro annuel</option>
+        <option>Abonnement Ultimate mensuel</option>
+        
+        <option>Je ne sais pas</option>
+      </select></div>
+    <div class="field"><label for="contract_date">Date de souscription <span class="hint">(facultatif)</span></label><input id="contract_date" type="date"></div>
+    <div class="field"><label for="ack_email">Adresse où recevoir l'accusé de réception <span class="hint">(si différente de celle du compte)</span></label><input id="ack_email" type="email" autocomplete="email" maxlength="254"></div>
+    <div class="field"><label for="details">Précisions <span class="hint">(facultatif)</span></label><textarea id="details" maxlength="2000"></textarea></div>
+    <button type="submit" class="btn-main" id="go">Confirmer la résiliation</button>
+    <p class="err" id="err" role="alert"></p>
+  </form>
+  <section id="done" hidden>
+    <h2>✅ Ta demande de résiliation est enregistrée</h2>
+    <p>Voici ton accusé de réception, horodaté. Garde-le : télécharge-le ou imprime-le.</p>
+    <div class="ack" id="ack"></div>
+    <p id="mailnote"></p>
+    <div class="no-print"><button class="btn-alt" id="dl" type="button">⬇️ Télécharger l'accusé de réception</button><button class="btn-alt" type="button" onclick="window.print()">🖨️ Imprimer</button><a class="btn-alt" href="/">Retour à l'accueil</a></div>
+  </section>
+</main>
+<footer class="legal-footer">
+<nav aria-label="Informations légales">
+<a href="/cgu.html">CGU et CGV</a> · <a href="/confidentialite.html">Confidentialité</a> · <a href="/mentions-legales.html">Mentions légales</a> · <a href="/contact.html">Contact</a><br>
+<a href="/renoncer.html">Renoncer au contrat ici</a> · <a href="/resilier.html">Résilier votre contrat</a> · <a href="/confidentialite.html#audience">Mesure d'audience</a>
+</nav>
+<p>FicheAI · Fait pour les étudiants 🎓 · © 2026</p>
+</footer>
+<script src="/auth.js"></script>
+<script>
+(function () {
+  var KIND = 'resiliation';
+  var u = null; try { u = JSON.parse(localStorage.getItem('ficheai_user') || 'null'); } catch (e) {}
+  if (u && u.email) document.getElementById('account_email').value = u.email;
+  var form = document.getElementById('lf'), go = document.getElementById('go'), err = document.getElementById('err');
+  function show(msg) { err.textContent = '⚠️ ' + msg; err.style.display = 'block'; }
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault(); err.style.display = 'none';
+    var data = {
+      kind: KIND, confirm: true,
+      full_name: document.getElementById('full_name').value.trim(),
+      account_email: document.getElementById('account_email').value.trim(),
+      contract: document.getElementById('contract').value,
+      contract_date: document.getElementById('contract_date').value ? new Date(document.getElementById('contract_date').value + 'T12:00:00').toLocaleDateString('fr-FR') : '',
+      ack_email: document.getElementById('ack_email').value.trim(),
+      details: document.getElementById('details').value.trim()
+    };
+    if (data.full_name.length < 2) return show('Indique ton nom et ton prénom.');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.account_email)) return show('Indique l\'adresse e-mail de ton compte FicheAI.');
+    if (!data.contract) return show('Choisis le contrat concerné.');
+    if (data.ack_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.ack_email)) return show('L\'adresse de réception de l\'accusé n\'est pas valide.');
+    go.disabled = true; go.textContent = 'Envoi…';
+    try {
+      var headers = { 'Content-Type': 'application/json' };
+      try { var t = window.ficheaiToken ? await window.ficheaiToken() : null; if (t) headers.Authorization = 'Bearer ' + t; } catch (e2) {}
+      var r = await fetch('/api/legal-request', { method: 'POST', headers: headers, body: JSON.stringify(data) });
+      var d = {}; try { d = await r.json(); } catch (e3) {}
+      if (!r.ok || !d.id) throw new Error(d.error || 'La déclaration n\'a pas pu être envoyée. Réessaie dans un instant.');
+      document.getElementById('ack').textContent = d.ack_text;
+      document.getElementById('mailnote').textContent = d.email_sent
+        ? 'Une copie de cet accusé de réception vient de t\'être envoyée par e-mail.'
+        : 'Pense à télécharger cet accusé de réception : il prouve la date et l\'heure de ta déclaration.';
+      document.getElementById('dl').onclick = function () {
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([d.ack_text + '\n'], { type: 'text/plain;charset=utf-8' }));
+        a.download = 'FicheAI-accuse-de-reception-' + d.id.slice(0, 8) + '.txt'; a.click();
+      };
+      form.hidden = true; document.getElementById('done').hidden = false;
+      document.getElementById('done').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (e4) { show(e4.message); go.disabled = false; go.textContent = 'Confirmer la résiliation'; }
+  });
+})();
+</script>
+</body>
+</html>

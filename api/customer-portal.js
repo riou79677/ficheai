@@ -56,30 +56,57 @@ export default async function handler(req, res) {
     });
   }
 
-  // 4. Créer une session portail Stripe dynamique
-  const BASE_URL = 'https://studyai-kappa-swart.vercel.app';
-  const params = new URLSearchParams();
-  params.append('customer', customerId);
-  params.append('return_url', BASE_URL + '/settings.html');
+  // 4. Créer une session portail Stripe dynamique.
+  // Avec { flow: 'cancel' } (bouton « Résilier mon abonnement »), le portail s'ouvre directement sur la
+  // résiliation de l'abonnement en cours (fonction de résiliation « en trois clics », art. L215-1-1).
+  const SITE_ORIGINS = ['https://studyai-kappa-swart.vercel.app', 'https://ficheai.fr', 'https://www.ficheai.fr'];
+  const BASE_URL = SITE_ORIGINS.includes(req.headers.origin) ? req.headers.origin : SITE_ORIGINS[0];
+  const sh = { 'Authorization': 'Bearer ' + STRIPE_SECRET_KEY, 'Content-Type': 'application/x-www-form-urlencoded' };
+  const wantsCancel = !!(req.body && req.body.flow === 'cancel');
+
+  const createPortal = async (subscriptionId) => {
+    const params = new URLSearchParams();
+    params.append('customer', customerId);
+    params.append('return_url', BASE_URL + '/settings.html');
+    params.append('locale', 'fr');
+    if (subscriptionId) {
+      params.append('flow_data[type]', 'subscription_cancel');
+      params.append('flow_data[subscription_cancel][subscription]', subscriptionId);
+      params.append('flow_data[after_completion][type]', 'redirect');
+      params.append('flow_data[after_completion][redirect][return_url]', BASE_URL + '/settings.html?resiliation=ok');
+    }
+    const r = await fetch('https://api.stripe.com/v1/billing_portal/sessions', { method: 'POST', headers: sh, body: params.toString() });
+    return { ok: r.ok, data: await r.json() };
+  };
 
   try {
-    const portalRes = await fetch('https://api.stripe.com/v1/billing_portal/sessions', {
-      method: 'POST',
-      headers: {
-        'Authorization': 'Bearer ' + STRIPE_SECRET_KEY,
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      body: params.toString()
-    });
-
-    const session = await portalRes.json();
-
-    if (!portalRes.ok) {
-      console.error('Stripe portal error:', session);
-      return res.status(500).json({ error: 'Erreur Stripe : ' + (session.error?.message || 'inconnue') });
+    let subscriptionId = null;
+    if (wantsCancel) {
+      const subsRes = await fetch('https://api.stripe.com/v1/subscriptions?customer=' + encodeURIComponent(customerId) + '&status=all&limit=10', { headers: sh });
+      const subs = await subsRes.json();
+      const sub = (subs.data || []).find(x => (x.status === 'active' || x.status === 'trialing' || x.status === 'past_due') && !x.cancel_at_period_end);
+      if (!sub) {
+        const already = (subs.data || []).find(x => (x.status === 'active' || x.status === 'trialing') && x.cancel_at_period_end);
+        if (already) {
+          const end = new Date((already.cancel_at || already.current_period_end || already.items?.data?.[0]?.current_period_end || 0) * 1000);
+          return res.status(200).json({ already_canceled: true, ends_at: isNaN(end) ? null : end.toISOString() });
+        }
+        return res.status(404).json({ error: 'Aucun abonnement en cours à résilier sur ce compte.', code: 'NO_SUBSCRIPTION' });
+      }
+      subscriptionId = sub.id;
     }
 
-    return res.status(200).json({ url: session.url });
+    let out = await createPortal(subscriptionId);
+    if (!out.ok && subscriptionId) {
+      // Portail configuré sans résiliation directe : on ouvre le portail classique (la résiliation y reste possible).
+      console.error('Portail (résiliation directe) refusé :', out.data && out.data.error && out.data.error.message);
+      out = await createPortal(null);
+    }
+    if (!out.ok) {
+      console.error('Stripe portal error:', out.data);
+      return res.status(500).json({ error: 'Le portail de gestion est momentanément indisponible. Réessaie dans un instant.' });
+    }
+    return res.status(200).json({ url: out.data.url });
 
   } catch(e) {
     return res.status(500).json({ error: 'Service momentanément indisponible' });

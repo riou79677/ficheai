@@ -1,4 +1,5 @@
 import { rateLimit, clientIp } from './_ratelimit.js';
+import { banMessage } from './_ban.js';
 const SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
 
 // Modèle IA utilisé selon le plan. Tarifs en $ par million de tokens (entrée / sortie) :
@@ -97,7 +98,7 @@ export default async function handler(req, res) {
   let user;
   try {
     const userRes = await fetch(
-      SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=plan,niveau_scolaire,banned,generations_used',
+      SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=plan,niveau_scolaire,banned,banned_reason,banned_until,generations_used',
       { headers: { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY } }
     );
     const users = await userRes.json();
@@ -109,7 +110,7 @@ export default async function handler(req, res) {
       });
       const isBanned = await banCheck.json();
       if (isBanned === true) {
-        return res.status(403).json({ error: 'Ce compte a été suspendu. Contacte le support si tu penses qu\'il s\'agit d\'une erreur.' });
+        return res.status(403).json({ error: banMessage(user) });
       }
     }
   } catch (e) {
@@ -427,7 +428,7 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
         .map((im) => ({ type: 'image', source: { type: 'base64', media_type: im.media_type, data: im.data } }))
         .concat([{ type: 'text', text: userBody + imagesNote + finalLine }]);
     };
-    const systemPrompt = 'Tu es FicheAI, un assistant pédagogique expert. ' + langInstruction + ' ' + niveauInstruction + ' ' + antiInjectionGuard + ' Sois précis, structuré et pédagogique.';
+    const systemPrompt = 'Tu es FicheAI, un assistant pédagogique expert. ' + langInstruction + ' ' + niveauInstruction + ' ' + antiInjectionGuard + ' Les utilisateurs sont souvent des collégiens et des lycéens, parfois mineurs : produis uniquement un contenu adapté à leur âge (aucun contenu sexuel, aucune violence gratuite, aucun propos haineux, aucune instruction dangereuse ou illégale), et traite les sujets sensibles du programme de façon factuelle et pédagogique. Sois précis, structuré et pédagogique.';
     const callModel = async (maxTok, withImages) => {
       const payload = {
         model: modelFor(user.plan),
