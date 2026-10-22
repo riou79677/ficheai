@@ -164,7 +164,14 @@ h1{font-family:var(--font-h);font-size:2.1rem;font-weight:800;margin-bottom:6px}
   </div>
 </div>
 
+<script src="/auth.js"></script>
 <script>
+// Jeton de connexion toujours valide (renouvelé par auth.js avant expiration).
+async function authToken(){
+  try { if (window.ficheaiToken) { var t = await window.ficheaiToken(); if (t) return t; } } catch(e) {}
+  var u = null; try { u = JSON.parse(localStorage.getItem('ficheai_user')); } catch(e) {}
+  return (u && u.access_token) ? u.access_token : '';
+}
 function getEmail(){
   try{ var u = JSON.parse(localStorage.getItem('ficheai_user')); return u && u.email ? u.email : null; }
   catch(e){ return null; }
@@ -197,8 +204,7 @@ async function loadDashboard(){
   }
   box.innerHTML = '<div class="spinner"></div>';
   try{
-    var user3 = null; try { user3 = JSON.parse(localStorage.getItem('ficheai_user')); } catch(e) {}
-    var token3 = user3 && user3.access_token ? user3.access_token : '';
+    var token3 = await authToken();
     var r = await fetch('/api/flashcards', { headers: {'Authorization':'Bearer '+token3} });
     var data = await r.json();
     var html = '';
@@ -275,8 +281,8 @@ async function createCards(ficheId, btn){
   btn.textContent = '⏳ Création…';
   try{
     var r = await fetch('/api/flashcards', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ action:'generate', email:EMAIL, fiche_id:ficheId })
+      method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+(await authToken())},
+      body: JSON.stringify({ action:'generate', fiche_id:ficheId })
     });
     var data = await r.json();
     if(data.error){
@@ -297,8 +303,7 @@ var queue = [], idx = 0, total = 0;
 async function startReview(ficheId){
   var url = '/api/flashcards?due=1';
   if(ficheId) url += '&fiche_id=' + encodeURIComponent(ficheId);
-  var userQ = null; try { userQ = JSON.parse(localStorage.getItem('ficheai_user')); } catch(e2) {}
-  var tokenQ = userQ && userQ.access_token ? userQ.access_token : '';
+  var tokenQ = await authToken();
   try{
     var r = await fetch(url, { headers: {'Authorization':'Bearer '+tokenQ} });
     queue = await r.json();
@@ -362,15 +367,18 @@ function revealAnswer(){
 
 async function rate(quality){
   var c = queue[idx];
-  var user = null;
-  try { user = JSON.parse(localStorage.getItem('ficheai_user')); } catch(e) {}
-  var token = user && user.access_token ? user.access_token : '';
-  // On enregistre en arrière-plan (sans bloquer)
-  fetch('/api/flashcards', {
-    method:'POST',
-    headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
-    body: JSON.stringify({ action:'review', card_id:c.id, quality:quality })
-  }).catch(function(){});
+  if(!c) return;
+  // On enregistre en arrière-plan (sans bloquer l'affichage de la carte suivante)
+  (async function(){
+    try {
+      var token = await authToken();
+      await fetch('/api/flashcards', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+        body: JSON.stringify({ action:'review', card_id:c.id, quality:quality })
+      });
+    } catch(e) {}
+  })();
 
   // "Oubli" (rating 1) → on remet la carte à la fin de la file
   if(quality === 1){ queue.push(c); }

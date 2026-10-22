@@ -82,7 +82,7 @@ export default async function handler(req, res) {
 
     // ── Fiches générées récemment — pseudo affiché à la place de l'email ──
     if (action === 'get_recent_fiches') {
-      const limit = (payload && payload.limit) || 30;
+      const limit = Math.min(Math.max(parseInt(payload && payload.limit, 10) || 30, 1), 200);
       // Jointure avec users pour récupérer le username via la foreign key user_email
       const fichesR = await fetch(
         SUPABASE_URL + '/rest/v1/fiches?select=created_at,user_email,format,format_icon,titre,users!fiches_user_email_fkey(username)&order=created_at.desc&limit=' + limit,
@@ -198,7 +198,7 @@ export default async function handler(req, res) {
     }
 
     if (action === 'get_contact_messages') {
-      const limit = payload?.limit || 50;
+      const limit = Math.min(Math.max(parseInt(payload?.limit, 10) || 50, 1), 200);
       const onlyUnread = payload?.unread_only || false;
       let url = SUPABASE_URL + '/rest/v1/contact_messages?select=*&order=created_at.desc&limit=' + limit;
       if (onlyUnread) url += '&read=eq.false';
@@ -208,9 +208,9 @@ export default async function handler(req, res) {
     }
 
     if (action === 'mark_contact_read') {
-      const { id } = payload || {};
-      if (!id) return res.status(400).json({ error: 'ID manquant' });
-      await fetch(SUPABASE_URL + '/rest/v1/contact_messages?id=eq.' + id, {
+      const id = String((payload && payload.id) || '');
+      if (!/^[0-9a-f-]{1,36}$/i.test(id)) return res.status(400).json({ error: 'ID manquant' });
+      await fetch(SUPABASE_URL + '/rest/v1/contact_messages?id=eq.' + encodeURIComponent(id), {
         method: 'PATCH',
         headers: { ...sb, 'Prefer': 'return=minimal' },
         body: JSON.stringify({ read: true })
@@ -219,9 +219,9 @@ export default async function handler(req, res) {
     }
 
     if (action === 'delete_contact_message') {
-      const { id } = payload || {};
-      if (!id) return res.status(400).json({ error: 'ID manquant' });
-      await fetch(SUPABASE_URL + '/rest/v1/contact_messages?id=eq.' + id, {
+      const id = String((payload && payload.id) || '');
+      if (!/^[0-9a-f-]{1,36}$/i.test(id)) return res.status(400).json({ error: 'ID manquant' });
+      await fetch(SUPABASE_URL + '/rest/v1/contact_messages?id=eq.' + encodeURIComponent(id), {
         method: 'DELETE',
         headers: { ...sb, 'Prefer': 'return=minimal' }
       });
@@ -232,6 +232,6 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.error('Erreur admin:', error);
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: 'Erreur serveur' });
   }
 }

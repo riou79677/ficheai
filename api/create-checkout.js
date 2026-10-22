@@ -69,9 +69,10 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Plan invalide' });
   }
 
-  const BASE_URL = process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : 'https://studyai-kappa-swart.vercel.app';
+  // Adresse de retour après paiement : toujours un domaine public du site. VERCEL_URL désignait l'adresse
+  // technique du déploiement, qui peut exiger une connexion Vercel : le client payait puis tombait sur une page bloquée.
+  const SITE_ORIGINS = ['https://studyai-kappa-swart.vercel.app', 'https://ficheai.fr', 'https://www.ficheai.fr'];
+  const BASE_URL = SITE_ORIGINS.includes(req.headers.origin) ? req.headers.origin : SITE_ORIGINS[0];
 
   // Essai gratuit uniquement pour Pro mensuel
   const trialDays = (plan === 'pro' && billing !== 'yearly' && !dbUser.has_used_trial) ? 7 : 0;

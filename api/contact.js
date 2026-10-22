@@ -1,3 +1,4 @@
+import { rateLimit, clientIp } from './_ratelimit.js';
 const SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
 
 export default async function handler(req, res) {
@@ -12,12 +13,16 @@ export default async function handler(req, res) {
   // Anti-spam : champ piège (invisible pour un humain). Un robot le remplit : on fait semblant de réussir.
   if (website) return res.status(200).json({ success: true });
 
-  if (!email || !subject || !message) {
+  if (!email || !subject || !message || typeof email !== 'string' || typeof subject !== 'string' || typeof message !== 'string') {
     return res.status(400).json({ error: 'Paramètres manquants' });
+  }
+  // Anti-spam par adresse IP (meilleur effort, par instance) : la limite par e-mail se contournait en changeant d'adresse.
+  if (rateLimit('contact:ip:' + clientIp(req), 5, 3600 * 1000).limited) {
+    return res.status(429).json({ error: 'Trop de messages envoyés. Réessaie dans une heure.' });
   }
 
   // Validation basique
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return res.status(400).json({ error: 'Email invalide' });
   }
   if (String(subject).length > 200) {

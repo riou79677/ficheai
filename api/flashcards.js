@@ -1,5 +1,27 @@
 const SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
 
+// La création des cartes appelle l'IA : 10 s (valeur par défaut de Vercel) ne suffisent pas toujours.
+export const config = { maxDuration: 60 };
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// Même modèle que generate.js et chat.js. Réglages de réflexion essayés dans l'ordre (voir generate.js).
+const FLASH_MODEL = 'claude-sonnet-5-5';
+const THINKING_OPTIONS = [{ type: 'disabled' }, { type: 'enabled', budget_tokens: 1024 }, null];
+let thinkingOpt = 0;
+
+// Suivi de consommation (même table que generate.js) : tarif Sonnet 5.5, 2 $ / 10 $ par million de tokens.
+async function logApiUsage(SERVICE_KEY, email, kind, model, inTok, outTok) {
+  try {
+    const cost = ((inTok || 0) * 2 + (outTok || 0) * 10) / 1e6;
+    await fetch(SUPABASE_URL + '/rest/v1/api_usage', {
+      method: 'POST',
+      headers: { apikey: SERVICE_KEY, Authorization: 'Bearer ' + SERVICE_KEY, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+      body: JSON.stringify({ user_email: email, kind: kind, model: model, input_tokens: inTok || 0, output_tokens: outTok || 0, cost_usd: cost })
+    });
+  } catch (e) { console.error('Log usage:', e && e.message); }
+}
+
 // ── Algorithme FSRS-5 (Free Spaced Repetition Scheduler) ──
 // rating : 1=Oubli, 2=Difficile, 3=Bien, 4=Facile
 // Paramètres FSRS-5 par défaut (optimisés sur 20M+ révisions)
@@ -14,24 +36,31 @@ function fsrsInitialStability(rating) {
   return Math.max(FSRS_W[rating - 1], 0.1);
 }
 
+// Formules FSRS-5 (corrigées le 22/10 : l'ancienne mise à jour de la difficulté ajoutait ~7 points à chaque
+// révision, la difficulté montait à 10 et les intervalles grandissaient beaucoup trop lentement).
+const FSRS_DECAY = -0.5;
+const FSRS_FACTOR = 19 / 81;
+
+function fsrsInitialDifficulty(rating) {
+  return Math.min(Math.max(FSRS_W[4] - Math.exp(FSRS_W[5] * (rating - 1)) + 1, 1), 10);
+}
+
 function fsrsDifficulty(d, rating) {
-  const deltaD = FSRS_W[4] - (rating - 3) * FSRS_W[5];
-  const newD = d + deltaD * (10 - d) / 9;
+  const deltaD = -FSRS_W[6] * (rating - 3);
+  const dPrime = d + deltaD * (10 - d) / 9;
+  const newD = FSRS_W[7] * fsrsInitialDifficulty(4) + (1 - FSRS_W[7]) * dPrime;
   return Math.min(Math.max(newD, 1), 10);
 }
 
-function fsrsInitialDifficulty(rating) {
-  return Math.min(Math.max(FSRS_W[4] - (rating - 3) * FSRS_W[5], 1), 10);
-}
-
 function fsrsRetrievability(elapsedDays, stability) {
-  return Math.pow(1 + elapsedDays / (9 * stability), -1);
+  return Math.pow(1 + FSRS_FACTOR * elapsedDays / stability, FSRS_DECAY);
 }
 
 function fsrsNextStability(d, s, r, rating) {
   if (rating === 1) {
     // Oubli : stabilité de rappel
-    return FSRS_W[11] * Math.pow(d, -FSRS_W[12]) * (Math.pow(s + 1, FSRS_W[13]) - 1) * Math.exp((1 - r) * FSRS_W[14]);
+    const sf = FSRS_W[11] * Math.pow(d, -FSRS_W[12]) * (Math.pow(s + 1, FSRS_W[13]) - 1) * Math.exp((1 - r) * FSRS_W[14]);
+    return Math.min(sf, s);
   }
   // Rappel réussi
   const hardPenalty = rating === 2 ? FSRS_W[15] : 1;
@@ -41,7 +70,7 @@ function fsrsNextStability(d, s, r, rating) {
 
 function fsrsNextInterval(stability, requestedRetention) {
   const rr = requestedRetention || 0.9;
-  const interval = Math.round(9 * stability * (1 / rr - 1));
+  const interval = Math.round((stability / FSRS_FACTOR) * (Math.pow(rr, 1 / FSRS_DECAY) - 1));
   return Math.min(Math.max(interval, 1), 36500);
 }
 
@@ -165,7 +194,7 @@ export default async function handler(req, res) {
       const nowIso = new Date().toISOString();
       let url = SUPABASE_URL + '/rest/v1/flashcards?user_email=eq.' + encodeURIComponent(email)
         + '&due_date=lte.' + encodeURIComponent(nowIso)
-        + '&select=id,question,answer,fiche_id&order=due_date.asc&limit=100';
+        + '&select=id,question,answer,fiche_id,stability&order=due_date.asc&limit=100';
       if (req.query.fiche_id) url += '&fiche_id=eq.' + encodeURIComponent(req.query.fiche_id);
       try {
         const r = await fetch(url, { headers: sb });
@@ -221,21 +250,28 @@ export default async function handler(req, res) {
 
     // ── Noter une carte après révision ──
     if (body.action === 'review') {
-      const cardId = body.card_id;
+      const cardId = String(body.card_id || '');
       const quality = Number(body.quality);
-      if (!cardId || !quality) return res.status(400).json({ error: 'Paramètres manquants' });
+      // Note entière : 1 (Oubli) à 4 (Facile) ; 5 reste accepté pour les anciennes versions de la page.
+      if (!UUID_RE.test(cardId) || ![1, 2, 3, 4, 5].includes(quality)) return res.status(400).json({ error: 'Paramètres manquants' });
       try {
-        const r = await fetch(SUPABASE_URL + '/rest/v1/flashcards?id=eq.' + encodeURIComponent(cardId) + '&user_email=eq.' + encodeURIComponent(email) + '&select=interval_days,ease,repetitions', { headers: sb });
+        // stability et last_review sont indispensables au calcul FSRS : sans eux, chaque révision repartait de zéro.
+        const r = await fetch(SUPABASE_URL + '/rest/v1/flashcards?id=eq.' + encodeURIComponent(cardId) + '&user_email=eq.' + encodeURIComponent(email) + '&select=interval_days,ease,repetitions,stability,last_review', { headers: sb });
         const rows = await r.json();
         const card = Array.isArray(rows) ? rows[0] : null;
         if (!card) return res.status(404).json({ error: 'Carte introuvable' });
 
         const next = schedule(card, quality);
-        await fetch(SUPABASE_URL + '/rest/v1/flashcards?id=eq.' + encodeURIComponent(cardId), {
+        // Double filtre (identifiant + propriétaire) : une carte ne peut être modifiée que par son propriétaire.
+        const up = await fetch(SUPABASE_URL + '/rest/v1/flashcards?id=eq.' + encodeURIComponent(cardId) + '&user_email=eq.' + encodeURIComponent(email), {
           method: 'PATCH',
           headers: { ...sb, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
           body: JSON.stringify(next)
         });
+        if (!up.ok) {
+          console.error('Mise à jour de carte échouée:', up.status, await up.text());
+          return res.status(500).json({ error: 'Erreur lors de l\'enregistrement' });
+        }
         return res.status(200).json({ ok: true });
       } catch (e) {
         console.error('Erreur review:', e);
@@ -245,11 +281,29 @@ export default async function handler(req, res) {
 
     // ── Générer les flashcards d'une fiche (via l'IA) ──
     if (body.action === 'generate') {
-      const ficheId = body.fiche_id;
-      if (!ficheId) return res.status(400).json({ error: 'Fiche manquante' });
+      const ficheId = String(body.fiche_id || '');
+      if (!UUID_RE.test(ficheId)) return res.status(400).json({ error: 'Fiche manquante' });
 
-      // Vérification et décompte du quota (le Mode Révision est réservé aux plans Pro/Ultimate,
-      // et limité même en Ultimate pour éviter un usage abusif coûteux)
+      // 1) La fiche doit exister, appartenir à l'utilisateur et ne pas déjà avoir de cartes.
+      //    On le vérifie AVANT de décompter le quota : une demande refusée ne coûte rien.
+      let fiche = null;
+      try {
+        const existR = await fetch(SUPABASE_URL + '/rest/v1/flashcards?fiche_id=eq.' + encodeURIComponent(ficheId) + '&user_email=eq.' + encodeURIComponent(email) + '&select=id', { headers: sb });
+        const exist = await existR.json();
+        if (Array.isArray(exist) && exist.length > 0) {
+          return res.status(200).json({ already: true, count: exist.length });
+        }
+        const fr = await fetch(SUPABASE_URL + '/rest/v1/fiches?id=eq.' + encodeURIComponent(ficheId) + '&user_email=eq.' + encodeURIComponent(email) + '&select=titre,contenu', { headers: sb });
+        const frows = await fr.json();
+        fiche = Array.isArray(frows) ? frows[0] : null;
+      } catch (e) {
+        console.error('Erreur lecture fiche:', e);
+        return res.status(503).json({ error: 'Service momentanément indisponible' });
+      }
+      if (!fiche) return res.status(404).json({ error: 'Fiche introuvable' });
+
+      // 2) Vérification et décompte du quota (le Mode Révision est réservé aux plans Pro/Ultimate,
+      //    et limité même en Ultimate pour éviter un usage abusif coûteux)
       try {
         const quotaRes = await fetch(
           SUPABASE_URL + '/rest/v1/rpc/check_and_consume_quota',
@@ -270,20 +324,26 @@ export default async function handler(req, res) {
         return res.status(503).json({ error: 'Service momentanément indisponible' });
       }
 
+      // En cas d'échec après le décompte, on rend la carte de quota à l'utilisateur.
+      const refundFlashcard = async () => {
+        try {
+          const q = SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email);
+          const r = await fetch(q + '&select=flashcards_used,flashcards_used_today', { headers: sb });
+          const rows = await r.json();
+          const u = Array.isArray(rows) ? rows[0] : null;
+          if (!u) return;
+          await fetch(q, {
+            method: 'PATCH',
+            headers: { ...sb, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+            body: JSON.stringify({
+              flashcards_used: Math.max(0, (u.flashcards_used || 0) - 1),
+              flashcards_used_today: Math.max(0, (u.flashcards_used_today || 0) - 1)
+            })
+          });
+        } catch (e) { console.error('Remboursement flashcards:', e && e.message); }
+      };
+
       try {
-        // On refuse de recréer des cartes si la fiche en a déjà
-        const existR = await fetch(SUPABASE_URL + '/rest/v1/flashcards?fiche_id=eq.' + encodeURIComponent(ficheId) + '&user_email=eq.' + encodeURIComponent(email) + '&select=id', { headers: sb });
-        const exist = await existR.json();
-        if (Array.isArray(exist) && exist.length > 0) {
-          return res.status(200).json({ already: true, count: exist.length });
-        }
-
-        // On récupère le contenu de la fiche (et on vérifie qu'elle appartient bien à l'utilisateur)
-        const fr = await fetch(SUPABASE_URL + '/rest/v1/fiches?id=eq.' + encodeURIComponent(ficheId) + '&user_email=eq.' + encodeURIComponent(email) + '&select=titre,contenu', { headers: sb });
-        const frows = await fr.json();
-        const fiche = Array.isArray(frows) ? frows[0] : null;
-        if (!fiche) return res.status(404).json({ error: 'Fiche introuvable' });
-
         // Niveau scolaire de l'utilisateur, pour adapter le vocabulaire des flashcards
         const niveauMap = {
           college: "L'utilisateur est au COLLÈGE (11-15 ans). Utilise un vocabulaire simple et accessible, des phrases courtes, et des exemples concrets du quotidien.",
@@ -300,26 +360,42 @@ export default async function handler(req, res) {
           }
         } catch (e) { console.error('Erreur lecture niveau:', e); }
 
-        // On demande à Claude d'extraire des flashcards
-        const aiRes = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-          body: JSON.stringify({
-            model: 'claude-sonnet-4-6',
-            max_tokens: 1500,
-            system: 'Tu es un expert en pédagogie et en mémorisation active. Tu crées des flashcards de révision de qualité. ' + niveauInstruction,
-            messages: [{
-              role: 'user',
-              content: 'Voici une fiche de révision intitulée "' + (fiche.titre || 'Fiche') + '" :\n\n' + String(fiche.contenu).substring(0, 6000) + '\n\n---\nCrée 8 à 10 flashcards question/réponse à partir de cette fiche.\nRègles :\n- Question courte et précise (le recto).\n- Réponse concise, 1 à 2 phrases maximum (le verso).\n- Couvre les points les plus importants.\nRéponds UNIQUEMENT avec un tableau JSON valide, sans aucun texte autour ni balise Markdown. Format exact :\n[{"question":"...","answer":"..."}]'
-            }]
-          })
-        });
-        const aiData = await aiRes.json();
-        if (aiData.error) throw new Error(aiData.error.message);
+        // On demande à l'IA d'extraire des flashcards (même modèle et même gestion de la réflexion que generate.js)
+        const payload = {
+          model: FLASH_MODEL,
+          max_tokens: 3000,
+          system: 'Tu es un expert en pédagogie et en mémorisation active. Tu crées des flashcards de révision de qualité. ' + niveauInstruction,
+          messages: [{
+            role: 'user',
+            content: 'Voici une fiche de révision intitulée "' + (fiche.titre || 'Fiche') + '" :\n\n' + String(fiche.contenu).substring(0, 6000) + '\n\n---\nCrée 8 à 10 flashcards question/réponse à partir de cette fiche.\nRègles :\n- Question courte et précise (le recto).\n- Réponse concise, 1 à 2 phrases maximum (le verso).\n- Couvre les points les plus importants.\nRéponds UNIQUEMENT avec un tableau JSON valide, sans aucun texte autour ni balise Markdown. Format exact :\n[{"question":"...","answer":"..."}]'
+          }]
+        };
+        const applyThinking = () => { const o = THINKING_OPTIONS[thinkingOpt]; if (o) payload.thinking = o; else delete payload.thinking; };
+        const send = async () => {
+          const aiRes = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
+            body: JSON.stringify(payload)
+          });
+          return aiRes.json();
+        };
+        applyThinking();
+        let aiData = await send();
+        // Si l'API refuse le réglage de réflexion, on passe au suivant (désactivée → limitée → par défaut).
+        while (aiData && aiData.error && payload.thinking && /thinking|budget/i.test(String(aiData.error.message || '')) && thinkingOpt < THINKING_OPTIONS.length - 1) {
+          console.error('Réglage de réflexion refusé (flashcards) :', JSON.stringify(payload.thinking), aiData.error.message);
+          thinkingOpt++;
+          applyThinking();
+          aiData = await send();
+        }
+        if (!aiData || aiData.error) throw new Error((aiData && aiData.error && aiData.error.message) || 'Réponse IA vide');
+        if (aiData.usage) await logApiUsage(SERVICE_KEY, email, 'flashcards', FLASH_MODEL, aiData.usage.input_tokens, aiData.usage.output_tokens);
 
         // On assemble les blocs de texte : le premier bloc peut être une « réflexion » sans texte.
         let text = (Array.isArray(aiData.content) ? aiData.content : []).filter((b) => b && b.type === 'text' && typeof b.text === 'string').map((b) => b.text).join('').trim();
         text = text.replace(/```json/gi, '').replace(/```/g, '').trim();
+        const a = text.indexOf('['), z = text.lastIndexOf(']');
+        if (a !== -1 && z > a) text = text.slice(a, z + 1);
         let cards;
         try { cards = JSON.parse(text); } catch (e) { throw new Error('Réponse IA illisible'); }
         if (!Array.isArray(cards) || cards.length === 0) throw new Error('Aucune carte générée');
@@ -346,7 +422,9 @@ export default async function handler(req, res) {
         return res.status(200).json({ created: rows.length });
       } catch (e) {
         console.error('Erreur génération flashcards:', e);
-        return res.status(500).json({ error: e.message || 'Erreur de génération' });
+        await logApiUsage(SERVICE_KEY, email, 'erreur:flashcards:' + String((e && e.message) || e).slice(0, 120), FLASH_MODEL, 0, 0);
+        await refundFlashcard();
+        return res.status(500).json({ error: 'La création des cartes a échoué. Réessaie dans un instant : ton quota n\'a pas été décompté.' });
       }
     }
 

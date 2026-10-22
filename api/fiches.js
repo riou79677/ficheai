@@ -1,4 +1,10 @@
+import { rateLimit } from './_ratelimit.js';
 const SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
+
+// Formats acceptés et leur icône : l'icône est déduite du format côté serveur, jamais reprise du navigateur.
+const FORMAT_ICONS = { fiche: '📄', quiz: '✅', flash: '🃏', mindmap: '🧠', questions: '💬', chrono: '📅', examen: '📝' };
+// Plafond de la bibliothèque par compte (protège la base contre un remplissage par script).
+const MAX_FICHES_PER_USER = 1500;
 
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -47,8 +53,14 @@ export default async function handler(req, res) {
   // ── Sauvegarder une fiche pour l'utilisateur connecté ──
   if (req.method === 'POST') {
     const b = req.body || {};
-    if (!b.contenu) return res.status(400).json({ error: 'Paramètres manquants' });
-    if (String(b.contenu).length > 50000) return res.status(400).json({ error: 'Contenu trop volumineux.' });
+    if (!b.contenu || typeof b.contenu !== 'string') return res.status(400).json({ error: 'Paramètres manquants' });
+    if (b.contenu.length > 50000) return res.status(400).json({ error: 'Contenu trop volumineux.' });
+    // Anti-rafale (meilleur effort, par instance) : 60 enregistrements par tranche de 10 minutes.
+    if (rateLimit('fiches:u:' + email.toLowerCase(), 60, 10 * 60 * 1000).limited) {
+      return res.status(429).json({ error: 'Trop d\'enregistrements d\'un coup. Patiente quelques minutes.' });
+    }
+    const format = Object.prototype.hasOwnProperty.call(FORMAT_ICONS, b.format) ? b.format : 'fiche';
+    const titre = String(b.titre || '').replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().substring(0, 120) || 'Sans titre';
     try {
       const checkRes = await fetch(
         SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=id',
@@ -57,6 +69,14 @@ export default async function handler(req, res) {
       const checkData = await checkRes.json();
       if (!Array.isArray(checkData) || checkData.length === 0) {
         return res.status(403).json({ error: 'Compte introuvable.' });
+      }
+      const countRes = await fetch(
+        SUPABASE_URL + '/rest/v1/fiches?user_email=eq.' + encodeURIComponent(email) + '&select=id&limit=1',
+        { headers: { ...headers, 'Prefer': 'count=exact' } }
+      );
+      const total = parseInt((countRes.headers.get('content-range') || '').split('/')[1], 10);
+      if (total >= MAX_FICHES_PER_USER) {
+        return res.status(403).json({ error: 'Ta bibliothèque est pleine (' + MAX_FICHES_PER_USER + ' fiches). Supprime d\'anciennes fiches pour en ajouter.' });
       }
     } catch (e) {
       console.error('Erreur vérification compte:', e);
@@ -68,9 +88,9 @@ export default async function handler(req, res) {
         headers: { ...headers, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
         body: JSON.stringify({
           user_email: email,
-          format: b.format || null,
-          format_icon: b.format_icon || null,
-          titre: (b.titre || 'Sans titre').substring(0, 120),
+          format: format,
+          format_icon: FORMAT_ICONS[format],
+          titre: titre,
           contenu: b.contenu
         })
       });
