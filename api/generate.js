@@ -433,9 +433,9 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
         .concat([{ type: 'text', text: userBody + imagesNote + finalLine }]);
     };
     const systemPrompt = 'Tu es FicheAI, un assistant pédagogique expert. ' + langInstruction + ' ' + niveauInstruction + ' ' + antiInjectionGuard + ' Les utilisateurs sont souvent des collégiens et des lycéens, parfois mineurs : produis uniquement un contenu adapté à leur âge (aucun contenu sexuel, aucune violence gratuite, aucun propos haineux, aucune instruction dangereuse ou illégale), et traite les sujets sensibles du programme de façon factuelle et pédagogique. Sois précis, structuré et pédagogique.';
-    const callModel = async (maxTok, withImages) => {
+    const callModel = async (maxTok, withImages, forceModel) => {
       const payload = {
-        model: modelFor(user.plan),
+        model: forceModel || modelFor(user.plan),
         max_tokens: maxTok,
         system: systemPrompt,
         messages: [{ role: 'user', content: buildContent(withImages) }]
@@ -473,6 +473,7 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
       }
       if (d.error) throw new Error(d.error.message);
       await logApiUsage(SERVICE_KEY, email, 'generation:' + format, payload.model, d.usage && d.usage.input_tokens, d.usage && d.usage.output_tokens);
+      d._model = payload.model;
       return d;
     };
     const extractText = (d) => (Array.isArray(d.content) ? d.content : [])
@@ -503,6 +504,33 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
       logApiUsage(SERVICE_KEY, email, 'info:generation:' + format + ':vide-essai-1:' + (data.stop_reason || '?'), modelFor(user.plan), 0, 0);
       data = await callModel(Math.min(Math.round(baseTokens * 1.75), 9000), imagesUsed > 0);
       text = extractText(data);
+    }
+
+    // ── Contrôle qualité des fiches gratuites (Haiku 5.5) ──
+    // Les consignes sont identiques pour tous les forfaits. Si la réponse de Haiku est incomplète (coupée, sections
+    // obligatoires absentes, nettement trop courte pour la taille du cours), elle est refaite avec Sonnet 5.5 :
+    // l'élève reçoit toujours une fiche complète, et ce cas reste rare (environ 6 centimes quand il arrive).
+    if (text.trim() && data._model !== FALLBACK_MODEL && Date.now() - t0 < 25000) {
+      const count = (re) => (text.match(re) || []).length;
+      const courseLen = String(course).length;
+      const checks = {
+        fiche: () => /🎯/.test(text) && /🧠/.test(text) && /⚡/.test(text) && text.length >= Math.min(2500, courseLen * 0.25),
+        quiz: () => count(/❓\s*Question/gi) >= 6 && count(/✅/g) >= 6,
+        flash: () => count(/🃏/g) >= 10 && count(/VERSO/gi) >= 10,
+        mindmap: () => count(/BRANCHE/gi) >= 4,
+        questions: () => count(/💬/g) >= 6,
+        chrono: () => /📅/.test(text) && /⚡/.test(text),
+        examen: () => text.length >= 2000
+      };
+      const ok = data.stop_reason !== 'max_tokens' && (!checks[format] || checks[format]());
+      if (!ok) {
+        logApiUsage(SERVICE_KEY, email, 'info:qualite-haiku-insuffisante:' + format + ':' + (data.stop_reason || '?'), data._model, 0, 0);
+        try {
+          const d2 = await callModel(baseTokens, false, FALLBACK_MODEL);
+          const t2 = extractText(d2);
+          if (t2.trim()) { data = d2; text = t2; }
+        } catch (e) { console.error('Reprise Sonnet échouée, réponse Haiku conservée :', e.message); }
+      }
     }
 
     // ── CORRECTION (03/10/2026) : suppression du PATCH manuel du compteur ──
