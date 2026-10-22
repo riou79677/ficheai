@@ -235,7 +235,7 @@ else{
 html+='<div class="fiches-grid">';
 filtered.forEach(function(fiche){
 var date=new Date(fiche.created_at);var dateStr=date.toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'});
-html+='<div class="fiche-card" onclick="openFiche(\''+fiche.id+'\')"><div class="fiche-icon">'+(fiche.format_icon||'📄')+'</div><div class="fiche-format">'+fiche.format+'</div><div class="fiche-titre">'+escapePdf(String(fiche.titre||'Fiche du '+dateStr))+'</div><div class="fiche-preview">'+previewText(fiche.contenu)+'…</div><div class="fiche-date">'+dateStr+'</div>';
+html+='<div class="fiche-card" onclick="openFiche(\''+fiche.id+'\')"><div class="fiche-icon">'+escapePdf(String(fiche.format_icon||'📄'))+'</div><div class="fiche-format">'+escapePdf(String(fiche.format||''))+'</div><div class="fiche-titre">'+escapePdf(String(fiche.titre||'Fiche du '+dateStr))+'</div><div class="fiche-preview">'+previewText(fiche.contenu)+'…</div><div class="fiche-date">'+dateStr+'</div>';
 html+='<div class="fiche-actions" onclick="event.stopPropagation()"><button class="fiche-btn" onclick="copierFiche(\''+fiche.id+'\')">📋 Copier</button><button class="fiche-btn" onclick="telechargerFiche(\''+fiche.id+'\')">⬇️ Télécharger</button><button class="fiche-btn delete" onclick="confirmerSuppression(\''+fiche.id+'\')">🗑️ Supprimer</button></div></div>';
 });
 html+='</div>';
