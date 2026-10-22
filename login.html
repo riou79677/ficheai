@@ -4,16 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Connexion — FicheAI</title>
+<link rel="preload" href="/fonts/syne-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/fonts/dm-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/fonts/fonts.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#09090f;--bg2:#0f0f1a;--bg3:#13131f;--surface:#1a1a2e;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);--purple:#7c6dfa;--purple2:#a78bfa;--pink:#f472b6;--cyan:#22d3ee;--text:#f1f0ff;--text2:#a0a0c0;--text3:#5a5a7a;--font-h:'Syne',sans-serif;--font-b:'DM Sans',sans-serif;}
+:root{--bg:#09090f;--bg2:#0f0f1a;--bg3:#13131f;--surface:#1a1a2e;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);--purple:#7c6dfa;--purple2:#a78bfa;--pink:#f472b6;--cyan:#22d3ee;--text:#f1f0ff;--text2:#a0a0c0;--text3:#82829f;--font-h:'Syne',sans-serif;--font-b:'DM Sans',sans-serif;}
 body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
 nav{padding:1.2rem 2rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
 .logo{font-family:var(--font-h);font-size:1.3rem;font-weight:800;background:linear-gradient(135deg,var(--purple2),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-decoration:none;display:flex;align-items:center;gap:10px;}
 .logo-icon{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--purple),var(--pink));display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .logo-icon svg{width:16px;height:16px;}
 .nav-link{color:var(--text2);text-decoration:none;font-size:0.88rem;}
+@media(max-width:480px){nav{padding:1rem 1.1rem;gap:14px}.nav-link{font-size:0.8rem;text-align:right;line-height:1.35}}
 .nav-link:hover{color:var(--text);}
 main{flex:1;display:flex;align-items:center;justify-content:center;padding:2rem 1.5rem;}
 .auth-container{width:100%;max-width:440px;}
