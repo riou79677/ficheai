@@ -28,7 +28,8 @@ main{flex:1;max-width:900px;margin:0 auto;padding:2.5rem 1.5rem;width:100%;}
 .page-header h1{font-family:var(--font-h);font-size:1.8rem;font-weight:800;margin-bottom:0.4rem;}
 .page-header p{color:var(--text2);font-size:0.9rem;}
 .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2rem;}
-.stat-card{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:1.2rem;text-align:center;}
+.stat-card{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:1.2rem;text-align:center;min-width:0;}
+@media(max-width:520px){.stats-row{grid-template-columns:1fr 1fr;gap:0.7rem}.stats-row .stat-card:nth-child(3){grid-column:1/-1}.stat-val{font-size:1.5rem}}
 .stat-val{font-family:var(--font-h);font-size:1.8rem;font-weight:800;background:linear-gradient(135deg,var(--purple2),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .stat-label{font-size:0.78rem;color:var(--text3);margin-top:2px;}
 .filters{display:flex;gap:0.5rem;margin-bottom:1.5rem;flex-wrap:wrap;}
@@ -137,7 +138,7 @@ FicheAI
 </div>
 </div>
 </div>
-<footer>FicheAI · Fait pour les étudiants 🎓 · © 2025</footer>
+<footer>FicheAI · Fait pour les étudiants 🎓 · © 2026</footer>
 <script>
 var SUPABASE_URL='https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
 var SUPABASE_KEY='sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ';
