@@ -3,19 +3,23 @@ import { banMessage } from './_ban.js';
 const SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
 
 // Modèle IA utilisé selon le plan. Tarifs en $ par million de tokens (entrée / sortie) :
-// Haiku 4.5 = 1 / 5 · Sonnet 5.5 = 2 / 10 · Opus 5.5 = 4 / 20 · Fable 5.1 = 10 / 50.
-// Sonnet 5.5 est à la fois plus récent et moins cher que Sonnet 4.5 (3 / 15). Pour changer de modèle, modifier une ligne ci-dessous.
-const MODEL_BY_PLAN = { starter: 'claude-sonnet-5-5', pro: 'claude-sonnet-5-5', ultimate: 'claude-sonnet-5-5' };
+// Haiku 5.5 = 0,10 / 0,50 · Sonnet 5.5 = 2 / 10 · Opus 5.5 = 4 / 20 · Fable 5.1 = 10 / 50.
+// 22/10/2026 : le plan gratuit (Starter) passe sur Haiku 5.5, 20 fois moins cher ; Pro et Ultimate restent sur Sonnet 5.5.
+// Pour changer de modèle, modifier une ligne ci-dessous.
+const MODEL_BY_PLAN = { starter: 'claude-haiku-5-5', pro: 'claude-sonnet-5-5', ultimate: 'claude-sonnet-5-5' };
+const FALLBACK_MODEL = 'claude-sonnet-5-5'; // utilisé si un modèle venait à être refusé par l'API
 const modelFor = (plan) => MODEL_BY_PLAN[plan] || MODEL_BY_PLAN.starter;
+const PRICES = { 'claude-haiku-5-5': [0.10, 0.50], 'claude-sonnet-5-5': [2, 10] }; // $ par million de tokens (entrée, sortie)
 
 // Vercel coupe les fonctions à 10 s par défaut. Une génération sur un cours long dépasse ce délai,
 // ce qui produisait l'erreur « problème temporaire ». 60 s est accepté sur tous les plans Vercel.
 
 // ── Suivi de consommation API : une ligne par appel IA (tokens + coût estimé en $) ──
-// Tarif Sonnet 5.5 : 2 $ / million de tokens en entrée, 10 $ / million en sortie.
+// Coût calculé selon le modèle réellement utilisé (tableau PRICES ; Sonnet 5.5 par défaut).
 async function logApiUsage(SERVICE_KEY, email, kind, model, inTok, outTok) {
   try {
-    const cost = ((inTok || 0) * 2 + (outTok || 0) * 10) / 1e6;
+    const pr = PRICES[model] || PRICES['claude-sonnet-5-5'];
+    const cost = ((inTok || 0) * pr[0] + (outTok || 0) * pr[1]) / 1e6;
     await fetch('https://qyjqtjrqnlbgtxvnjvnk.supabase.co/rest/v1/api_usage', {
       method: 'POST',
       headers: { apikey: SERVICE_KEY, Authorization: 'Bearer ' + SERVICE_KEY, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
@@ -37,7 +41,7 @@ const MAX_TOKENS = { fiche: 7000, quiz: 6000, flash: 5000, mindmap: 4500, questi
 // On désactive donc la réflexion. Si l'API refusait ce paramètre, on le retire automatiquement.
 // Réglages essayés dans l'ordre : réflexion désactivée, puis réflexion limitée à 1 024 unités, puis réglage par défaut.
 const THINKING_OPTIONS = [{ type: 'disabled' }, { type: 'enabled', budget_tokens: 1024 }, null];
-let thinkingOpt = 0;
+const thinkingOptBy = {}; // réglage de réflexion retenu, mémorisé séparément pour chaque modèle
 
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -436,7 +440,8 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
         system: systemPrompt,
         messages: [{ role: 'user', content: buildContent(withImages) }]
       };
-      const applyThinking = () => { const o = THINKING_OPTIONS[thinkingOpt]; if (o) payload.thinking = o; else delete payload.thinking; };
+      const optIdx = () => thinkingOptBy[payload.model] || 0;
+      const applyThinking = () => { const o = THINKING_OPTIONS[optIdx()]; if (o) payload.thinking = o; else delete payload.thinking; };
       applyThinking();
       const send = async () => {
         const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -451,15 +456,23 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
         return response.json();
       };
       let d = await send();
-      while (d.error && payload.thinking && /thinking|budget/i.test(String(d.error.message || '')) && thinkingOpt < THINKING_OPTIONS.length - 1) {
+      // Modèle refusé (introuvable ou indisponible) : on bascule une fois sur le modèle de secours.
+      if (d.error && payload.model !== FALLBACK_MODEL && (d.error.type === 'not_found_error' || /model/i.test(String(d.error.message || '')))) {
+        console.error('Modèle refusé, bascule sur ' + FALLBACK_MODEL + ' :', payload.model, d.error.message);
+        logApiUsage(SERVICE_KEY, email, 'info:modele-refuse:' + payload.model + ':' + String(d.error.message || '').slice(0, 80), payload.model, 0, 0);
+        payload.model = FALLBACK_MODEL;
+        applyThinking();
+        d = await send();
+      }
+      while (d.error && payload.thinking && /thinking|budget/i.test(String(d.error.message || '')) && optIdx() < THINKING_OPTIONS.length - 1) {
         console.error('Réglage de réflexion refusé :', JSON.stringify(payload.thinking), d.error.message);
-        logApiUsage(SERVICE_KEY, email, 'info:reflexion-refusee:' + payload.thinking.type + ':' + String(d.error.message || '').slice(0, 80), modelFor(user.plan), 0, 0);
-        thinkingOpt++;
+        logApiUsage(SERVICE_KEY, email, 'info:reflexion-refusee:' + payload.thinking.type + ':' + String(d.error.message || '').slice(0, 80), payload.model, 0, 0);
+        thinkingOptBy[payload.model] = optIdx() + 1;
         applyThinking();
         d = await send();
       }
       if (d.error) throw new Error(d.error.message);
-      await logApiUsage(SERVICE_KEY, email, 'generation:' + format, modelFor(user.plan), d.usage && d.usage.input_tokens, d.usage && d.usage.output_tokens);
+      await logApiUsage(SERVICE_KEY, email, 'generation:' + format, payload.model, d.usage && d.usage.input_tokens, d.usage && d.usage.output_tokens);
       return d;
     };
     const extractText = (d) => (Array.isArray(d.content) ? d.content : [])
