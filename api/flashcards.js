@@ -317,7 +317,8 @@ export default async function handler(req, res) {
         const aiData = await aiRes.json();
         if (aiData.error) throw new Error(aiData.error.message);
 
-        let text = aiData.content[0].text.trim();
+        // On assemble les blocs de texte : le premier bloc peut être une « réflexion » sans texte.
+        let text = (Array.isArray(aiData.content) ? aiData.content : []).filter((b) => b && b.type === 'text' && typeof b.text === 'string').map((b) => b.text).join('').trim();
         text = text.replace(/```json/gi, '').replace(/```/g, '').trim();
         let cards;
         try { cards = JSON.parse(text); } catch (e) { throw new Error('Réponse IA illisible'); }

@@ -24,6 +24,9 @@ async function logApiUsage(SERVICE_KEY, email, kind, model, inTok, outTok) {
 
 export const config = { maxDuration: 60 };
 
+// Réflexion désactivée : elle consommait la place de réponse du chat (voir generate.js). Repli automatique si refusée.
+let thinkingParamSupported = true;
+
 export default async function handler(req, res) {
   // Same-origin uniquement : pas de CORS ouvert au monde entier.
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -183,25 +186,40 @@ Style de réponse :
 - Tu peux terminer par une courte question ou proposition pour vérifier la compréhension, mais pas à chaque message.`;
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const chatPayload = {
+      model: modelFor(user.plan),
+      stream: true,
+      max_tokens: 1800,
+      system: systemPrompt,
+      messages: messages.slice(-12)
+    };
+    if (thinkingParamSupported) chatPayload.thinking = { type: 'disabled' };
+    const sendChat = () => fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': process.env.ANTHROPIC_API_KEY,
         'anthropic-version': '2023-06-01'
       },
-      body: JSON.stringify({
-        model: modelFor(user.plan),
-        stream: true,
-        max_tokens: 1800,
-        system: systemPrompt,
-        messages: messages.slice(-12)
-      })
+      body: JSON.stringify(chatPayload)
     });
+    let response = await sendChat();
 
     if (!response.ok) {
       const errData = await response.json().catch(() => ({}));
-      throw new Error((errData.error && errData.error.message) || 'Erreur du service IA');
+      const errMsg = (errData.error && errData.error.message) || '';
+      if (chatPayload.thinking && /thinking/i.test(errMsg)) {
+        console.error('Paramètre thinking refusé (chat), on le retire :', errMsg);
+        thinkingParamSupported = false;
+        delete chatPayload.thinking;
+        response = await sendChat();
+        if (!response.ok) {
+          const errData2 = await response.json().catch(() => ({}));
+          throw new Error((errData2.error && errData2.error.message) || 'Erreur du service IA');
+        }
+      } else {
+        throw new Error(errMsg || 'Erreur du service IA');
+      }
     }
 
     // Réponse en streaming : le texte est envoyé au navigateur au fur et à mesure,

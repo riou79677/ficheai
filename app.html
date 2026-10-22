@@ -540,6 +540,9 @@ var generatedResults=[];
 var activeResultIndex=0;
 var GEN_BTN_HTML='';
 var PDF_NOTE='ℹ️ Seul le texte est lu : les schémas, images et formules ne sont pas pris en compte.';
+// Pages du PDF qui contiennent des schémas ou images, converties en JPEG (plans Pro et Ultimate) et envoyées à l'IA.
+var pdfImages=[],pdfImagesKey='';
+function pdfImagesFor(txt){if(!pdfImages.length||!pdfImagesKey)return [];return String(txt||'').replace(/\s+/g,'').slice(0,120)===pdfImagesKey?pdfImages:[];}
 function formatMeta(f){var el=document.querySelector('.fmt[data-fmt="'+f+'"]');return el?{name:el.dataset.name,icon:el.dataset.icon}:{name:f,icon:'📄'};}
 function updateGenCostNote(){
   var el=document.getElementById('multi-note');var n=selectedFormats.length;
@@ -884,11 +887,37 @@ function handleFileLoad(file){
         var maxPages=Math.min(pdf.numPages,pageLimit);
         var text='';
         for(var i=1;i<=maxPages;i++){var page=await pdf.getPage(i);var content=await page.getTextContent();text+=content.items.map(function(item){return item.str;}).join(' ')+'\n';}
-        var imgPages=0;
-        try{var OPS=pdfjsLib.OPS;for(var j=1;j<=maxPages;j++){var pg=await pdf.getPage(j);var ol=await pg.getOperatorList();if(ol.fnArray.some(function(fn){return fn===OPS.paintImageXObject||fn===OPS.paintInlineImageXObject||fn===OPS.paintImageMaskXObject;}))imgPages++;}}catch(imgErr){}
-        var imgNote=imgPages>0?('ℹ️ '+imgPages+' page'+(imgPages>1?'s':'')+' contiennent des images ou schémas qui ne sont pas lus (seul le texte l’est). Décris-les en quelques mots dans les consignes pour que l’IA en tienne compte.'):PDF_NOTE;
         var usefulChars=text.replace(/\s/g,'').length;
         if(usefulChars<100){setFileBadge('⚠️ Ce PDF semble être un document scanné ou une photo : aucun texte lisible dedans. Copie-colle ton cours en texte à la place (la lecture des scans arrive bientôt !).','error');return;}
+        // Pages avec images (photos, figures) ou beaucoup de tracés (schémas dessinés) : repérées pour tous les plans.
+        var visualPages=[];
+        try{var OPS=pdfjsLib.OPS;for(var j=1;j<=maxPages;j++){var pg=await pdf.getPage(j);var ol=await pg.getOperatorList();var raster=false,paths=0;for(var q=0;q<ol.fnArray.length;q++){var fn=ol.fnArray[q];if(fn===OPS.paintImageXObject||fn===OPS.paintInlineImageXObject||fn===OPS.paintImageMaskXObject)raster=true;else if(fn===OPS.constructPath)paths++;}if(raster||paths>=40)visualPages.push({n:j,raster:raster?1:0,paths:paths});}}catch(imgErr){}
+        var imgPages=visualPages.length;
+        var imgCap=plan==='ultimate'?8:plan==='pro'?4:0;
+        pdfImages=[];pdfImagesKey='';
+        if(imgCap>0&&imgPages>0){
+          setFileBadge('⏳ Préparation des schémas pour l’IA...','ok');
+          var chosen=visualPages.slice().sort(function(a,b){return (b.raster-a.raster)||(b.paths-a.paths);}).slice(0,imgCap).sort(function(a,b){return a.n-b.n;});
+          var totalLen=0;
+          for(var k2=0;k2<chosen.length;k2++){
+            try{
+              var p2=await pdf.getPage(chosen[k2].n);var v1=p2.getViewport({scale:1});var vp=p2.getViewport({scale:1240/Math.max(v1.width,v1.height)});
+              var cv=document.createElement('canvas');cv.width=Math.round(vp.width);cv.height=Math.round(vp.height);
+              var cx=cv.getContext('2d');cx.fillStyle='#ffffff';cx.fillRect(0,0,cv.width,cv.height);
+              await p2.render({canvasContext:cx,viewport:vp}).promise;
+              var b64=cv.toDataURL('image/jpeg',0.72).split(',')[1]||'';
+              cv.width=0;cv.height=0;
+              if(b64.length<100||b64.length>1150000||totalLen+b64.length>3300000)continue;
+              totalLen+=b64.length;pdfImages.push({page:chosen[k2].n,media_type:'image/jpeg',data:b64});
+            }catch(rErr){}
+          }
+          if(pdfImages.length)pdfImagesKey=text.replace(/\s+/g,'').slice(0,120);
+        }
+        var imgNote;
+        if(pdfImages.length){var pl=pdfImages.length>1;imgNote='📊 '+pdfImages.length+' page'+(pl?'s':'')+' avec schémas ou images ser'+(pl?'ont':'a')+' aussi analysée'+(pl?'s':'')+' par l’IA'+(imgPages>pdfImages.length?' (les plus riches en schémas, limite de ton plan)':'')+'.';}
+        else if(imgPages>0&&imgCap===0){imgNote='ℹ️ '+imgPages+' page'+(imgPages>1?'s':'')+' contien'+(imgPages>1?'nent':'t')+' des images ou schémas que le plan Starter ne lit pas (la lecture des schémas est incluse dans Pro et Ultimate). Décris-les en quelques mots dans les consignes pour que l’IA en tienne compte.';}
+        else if(imgPages>0){imgNote='ℹ️ '+imgPages+' page'+(imgPages>1?'s':'')+' avec images ou schémas n’'+(imgPages>1?'ont':'a')+' pas pu être préparée'+(imgPages>1?'s':'')+' : décris-les en quelques mots dans les consignes.';}
+        else{imgNote=PDF_NOTE;}
         courseContent=text;document.getElementById('course-input').value=text;updateCharCount();
         if(pdf.numPages>pageLimit){setFileBadge('⚠️ '+file.name+' : '+pdf.numPages+' pages au total, seules les '+pageLimit+' premières ont été lues (limite de ton plan '+plan.charAt(0).toUpperCase()+plan.slice(1)+'). Découpe ton PDF pour traiter la suite. '+imgNote,'warn');}
         else{setFileBadge('✅ '+file.name+' — '+maxPages+' page'+(maxPages>1?'s':'')+' lue'+(maxPages>1?'s':'')+' · '+imgNote,'ok');}
@@ -1042,12 +1071,12 @@ document.getElementById('gen-btn').addEventListener('click',async function(){
   generatedResults=[];activeResultIndex=0;renderResultTabs();
   resultCard.style.display='block';spinner.style.display='flex';content.style.display='none';
   resultCard.scrollIntoView({behavior:'smooth',block:'nearest'});
-  var partialError=null;var failedFormats=[];
+  var partialError=null;var failedFormats=[];var imgToastShown=false;
   for(var k=0;k<formats.length;k++){
     var f=formats[k],meta=formatMeta(f);
     btn.textContent=formats.length>1?('Génération '+(k+1)+'/'+formats.length+'…'):'Génération en cours…';
     try{
-      var response=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+((await ficheaiToken())||'')},body:JSON.stringify({course:input,format:f,language:langSel,instructions:instructions,diagrams:!!(document.getElementById('diagrams-input')&&document.getElementById('diagrams-input').checked)})});
+      var response=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+((await ficheaiToken())||'')},body:JSON.stringify({course:input,format:f,language:langSel,instructions:instructions,diagrams:!!(document.getElementById('diagrams-input')&&document.getElementById('diagrams-input').checked),images:pdfImagesFor(input)})});
       var data=await readResponseSafely(response,'génération');
       if(data.error){
         if(response.status===403&&/limite/i.test(data.error||'')&&generatedResults.length===0){
@@ -1058,6 +1087,8 @@ document.getElementById('gen-btn').addEventListener('click',async function(){
       if(!data.result||typeof data.result!=='string'){throw new Error("L’IA n’a renvoyé aucun texte, réessaie dans un instant.");}
       if(!data.result)throw new Error('Réponse vide du service, réessaie dans un instant.');
       generatedResults.push({fmt:f,name:meta.name,icon:meta.icon,result:data.result});
+      if(!imgToastShown&&data.imagesUsed>0){imgToastShown=true;showToast('📊 Schémas analysés : '+data.imagesUsed+' page'+(data.imagesUsed>1?'s':''));}
+      else if(!imgToastShown&&data.imagesDropped){imgToastShown=true;showToast('⚠️ Les schémas n’ont pas pu être analysés cette fois : contenu basé sur le texte');}
       if(tokensLeft!==999999){
         tokensLeft--;
         document.getElementById('tok-nav').textContent=tokensLeft;
@@ -1097,7 +1128,7 @@ document.getElementById('download-btn').addEventListener('click',function(){
 });
 document.getElementById('reset-btn').addEventListener('click',function(){
   document.getElementById('result-card').style.display='none';
-  document.getElementById('course-input').value='';
+  document.getElementById('course-input').value='';pdfImages=[];pdfImagesKey='';
   updateCharCount();
   document.getElementById('file-badge').style.display='none';
   window.scrollTo({top:0,behavior:'smooth'});
