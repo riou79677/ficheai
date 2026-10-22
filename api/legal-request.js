@@ -122,7 +122,18 @@ export default async function handler(req, res) {
     return res.status(503).json({ error: 'Service momentanément indisponible. Réessaie dans un instant.' });
   }
 
-  const email_sent = await sendAckEmail(row);
+  // L'accusé est envoyé par e-mail seulement à l'adresse d'un compte FicheAI existant (celle du compte, ou une autre
+  // adresse si la personne est connectée) : le formulaire, accessible sans connexion, ne doit pas pouvoir servir à
+  // envoyer des e-mails à n'importe qui. Dans tous les cas, l'accusé reste affiché et téléchargeable.
+  let canMail = user_verified;
+  if (!canMail && ack_email === account_email && process.env.RESEND_API_KEY) {
+    try {
+      const u = await fetch(SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(account_email) + '&select=id', { headers: { apikey: SERVICE_KEY, Authorization: 'Bearer ' + SERVICE_KEY } });
+      const arr = await u.json();
+      canMail = Array.isArray(arr) && arr.length > 0;
+    } catch (e) { canMail = false; }
+  }
+  const email_sent = canMail ? await sendAckEmail(row) : false;
   return res.status(200).json({
     id: row.id,
     received_at: row.created_at,
