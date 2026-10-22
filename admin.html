@@ -453,16 +453,18 @@ function filterUsers(query){
 function escH(t){return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 // Argument sûr pour un attribut onclick="f(…)" : chaîne JavaScript, elle-même neutralisée pour le HTML.
 function jsArg(v){return escH(JSON.stringify(String(v==null?'':v)));}
+// E-mail du compte connecté, lu dans son jeton de session (aucune adresse écrite dans le code public de la page).
+function myEmail(){try{var p=String(SECRET||'').split('.')[1].replace(/-/g,'+').replace(/_/g,'/');while(p.length%4)p+='=';return String(JSON.parse(atob(p)).email||'').toLowerCase();}catch(e){return '';}}
 function renderUsers(users){
-  var DEV_EMAIL='ilanmoh228@gmail.com';
+  var DEV_EMAIL=myEmail();
   users.sort(function(a,b){return new Date(b.created_at)-new Date(a.created_at);});
-  var adminUser=users.find(function(u){return u.email===DEV_EMAIL;});
+  var adminUser=DEV_EMAIL?users.find(function(u){return String(u.email).toLowerCase()===DEV_EMAIL;}):null;
   if(adminUser){
     var s=document.getElementById('admin-account-section');
     if(s)s.innerHTML='<div style="background:linear-gradient(135deg,rgba(253,203,110,0.08),rgba(225,112,85,0.05));border:1px solid rgba(253,203,110,0.25);border-radius:12px;padding:1rem 1.2rem;display:flex;align-items:center;gap:12px"><span style="font-size:1.5rem">👑</span><div><div style="font-weight:700;color:#fdcb6e;font-size:0.95rem">'+escH(adminUser.username?'@'+adminUser.username:adminUser.email)+'</div><div style="font-size:0.78rem;color:#9898b8;margin-top:2px">'+escH(adminUser.email)+' — Compte administrateur</div></div></div>';
   }
   var html='';
-  users.filter(function(u){return u.email!==DEV_EMAIL;}).forEach(function(u){
+  users.filter(function(u){return !DEV_EMAIL||String(u.email).toLowerCase()!==DEV_EMAIL;}).forEach(function(u){
     var banInfo='';
     if(u.banned){banInfo=' 🚫';if(u.banned_until)banInfo+=' (jusqu\'au '+new Date(u.banned_until).toLocaleDateString('fr-FR')+')';else banInfo+=' (indéfini)';}
     var displayName=u.username?('<b>@'+escH(u.username)+'</b> <span style="color:var(--text3);font-size:0.75rem">('+escH(u.email)+')</span>'):'<span style="color:var(--text3)">Sans pseudo — '+escH(u.email)+'</span>';
@@ -484,7 +486,7 @@ function openUserModal(email){
   var user=allUsersData.find(function(u){return u.email===email;});
   if(!user)return;
   currentModalUser=user;
-  var isMe=user.email==='ilanmoh228@gmail.com';
+  var isMe=!!myEmail()&&String(user.email).toLowerCase()===myEmail();
   document.getElementById('modal-title').innerHTML=(isMe?'👑 ':'👤 ')+escH(user.username?'@'+user.username:user.email);
   var niveaux={college:'Collège',lycee:'Lycée',prepa:'Prépa',superieur:'Supérieur'};
   var planColors={starter:'#9898b8',pro:'#a29bfe',ultimate:'#fdcb6e'};
