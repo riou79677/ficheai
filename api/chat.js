@@ -277,6 +277,21 @@ Style de réponse :
     console.error('Erreur API chat:', error);
     await logApiUsage(SERVICE_KEY, email, 'erreur:chat:' + String((error && error.message) || error).slice(0, 90), modelFor(user.plan), 0, 0);
     if (res.headersSent) return res.end();
+    // Aucune réponse n'a été envoyée : le message n'est pas décompté (même principe que pour les générations).
+    try {
+      const hdr = { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY };
+      const q = SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email);
+      const rr = await fetch(q + '&select=chat_messages_used,chat_used_today', { headers: hdr });
+      const rows = await rr.json();
+      const u = Array.isArray(rows) ? rows[0] : null;
+      if (u) {
+        await fetch(q, {
+          method: 'PATCH',
+          headers: Object.assign({ 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }, hdr),
+          body: JSON.stringify({ chat_messages_used: Math.max(0, (u.chat_messages_used || 0) - 1), chat_used_today: Math.max(0, (u.chat_used_today || 0) - 1) })
+        });
+      }
+    } catch (e) { console.error('Remboursement chat:', e && e.message); }
     return res.status(500).json({ error: "L'IA est momentanément indisponible. Réessaie dans un instant." });
   }
 }
