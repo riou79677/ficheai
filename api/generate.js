@@ -27,12 +27,16 @@ export const config = { maxDuration: 60 };
 
 // Longueur maximale de la réponse selon le format. 1500 tokens coupait les fiches et les cartes
 // mentales en plein milieu (branches vides, sections manquantes).
-const MAX_TOKENS = { fiche: 4000, quiz: 3500, flash: 3000, mindmap: 2500, questions: 3500, chrono: 3000, examen: 5000 };
+// Le 22/10, le modèle a refusé la désactivation de la réflexion : la fiche (4 000) et le quiz (3 500) ont été coupés net.
+// Plafonds relevés : on ne paie que ce qui est réellement écrit.
+const MAX_TOKENS = { fiche: 7000, quiz: 6000, flash: 5000, mindmap: 4500, questions: 6000, chrono: 5500, examen: 8000 };
 
 // L'IA « réfléchit » par défaut avant d'écrire, et cette réflexion consommait toute la place de réponse :
 // le 21/10, un quiz a utilisé 2 500 unités sur 2 500 sans écrire une ligne, et une fiche 3 000 sur 3 000 (coupée).
 // On désactive donc la réflexion. Si l'API refusait ce paramètre, on le retire automatiquement.
-let thinkingParamSupported = true;
+// Réglages essayés dans l'ordre : réflexion désactivée, puis réflexion limitée à 1 024 unités, puis réglage par défaut.
+const THINKING_OPTIONS = [{ type: 'disabled' }, { type: 'enabled', budget_tokens: 1024 }, null];
+let thinkingOpt = 0;
 
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -431,7 +435,8 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
         system: systemPrompt,
         messages: [{ role: 'user', content: buildContent(withImages) }]
       };
-      if (thinkingParamSupported) payload.thinking = { type: 'disabled' };
+      const applyThinking = () => { const o = THINKING_OPTIONS[thinkingOpt]; if (o) payload.thinking = o; else delete payload.thinking; };
+      applyThinking();
       const send = async () => {
         const response = await fetch('https://api.anthropic.com/v1/messages', {
           method: 'POST',
@@ -445,11 +450,11 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
         return response.json();
       };
       let d = await send();
-      if (d.error && payload.thinking && /thinking/i.test(String(d.error.message || ''))) {
-        console.error('Paramètre thinking refusé, on le retire :', d.error.message);
-        thinkingParamSupported = false;
-        delete payload.thinking;
-        logApiUsage(SERVICE_KEY, email, 'info:reflexion-refusee', modelFor(user.plan), 0, 0);
+      while (d.error && payload.thinking && /thinking|budget/i.test(String(d.error.message || '')) && thinkingOpt < THINKING_OPTIONS.length - 1) {
+        console.error('Réglage de réflexion refusé :', JSON.stringify(payload.thinking), d.error.message);
+        logApiUsage(SERVICE_KEY, email, 'info:reflexion-refusee:' + payload.thinking.type + ':' + String(d.error.message || '').slice(0, 80), modelFor(user.plan), 0, 0);
+        thinkingOpt++;
+        applyThinking();
         d = await send();
       }
       if (d.error) throw new Error(d.error.message);

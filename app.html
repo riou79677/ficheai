@@ -1005,13 +1005,23 @@ function renderResultAsCards(text){
 
   lines.forEach(function(rawLine){
     var t=rawLine.trim();
+    // Titres Markdown (# …) parfois produits par l'IA : affichés comme titres de carte, sans les #
+    var mdHead=/^#{1,4}\s+/.test(t);if(mdHead)t=t.replace(/^#{1,4}\s+/,'').replace(/\*\*/g,'');
     if(!t){
       if(inList){html+='';inList=false;}
       return;
     }
     var dm=t.match(/^§§DIAG(\d+)§§$/);
     if(dm){if(inSection){html+='<div class="rc-diagram" data-i="'+(diagBase+parseInt(dm[1],10))+'"></div>';}else{html+='<div class="rc-section"><div class="rc-diagram" data-i="'+(diagBase+parseInt(dm[1],10))+'"></div></div>';}return;}
-    if(/^[━─=]{3,}$/.test(t))return; // séparateurs ignorés, remplacés par les cartes elles-mêmes
+    if(/^([━─=_*-]\s*){3,}$/.test(t))return; // séparateurs ignorés (y compris --- et ***), remplacés par les cartes elles-mêmes
+    if(mdHead&&t.length<90){
+      if(inList){html+='</div>';inList=false;}
+      if(inSection)html+='</div>';
+      inDefs=/D[ÉE]FINITION/i.test(t);lastMain=false;
+      html+='<div class="rc-section"><div class="rc-section-title">'+escapeHtmlRc(t)+'</div>';
+      inSection=true;
+      return;
+    }
     var sm=t.match(sectionEmojiRe);
     if(sm && sm[2].length<80 && !/^[▸→✦•\-]/.test(sm[2])){
       if(inList){html+='</div>';inList=false;}
@@ -1388,8 +1398,10 @@ function formatContentForPDF(text){
   var lines=text.split('\n'),html='',inList=false,pdfLast=false,pdfDefs=false;
   lines.forEach(function(line){
     var t=line.trim();
+    var mdHead=/^#{1,4}\s+/.test(t);if(mdHead)t=t.replace(/^#{1,4}\s+/,'').replace(/\*\*/g,'');
     if(!t){if(inList){html+='</ul>';inList=false;}return;}
-    if(/^[━─=]{3,}$/.test(t)){if(inList){html+='</ul>';inList=false;}html+='<div class="pdf-sep"></div>';return;}
+    if(mdHead&&t.length<90){if(inList){html+='</ul>';inList=false;}pdfDefs=/D[ÉE]FINITION/i.test(t);pdfLast=false;html+='<div class="pdf-section">'+escapePdf(t)+'</div>';return;}
+    if(/^([━─=_*-]\s*){3,}$/.test(t)){if(inList){html+='</ul>';inList=false;}html+='<div class="pdf-sep"></div>';return;}
     var dm=t.match(/^§§DIAG(\d+)§§$/);
     if(dm){if(inList){html+='</ul>';inList=false;}var svg=diagramSvgs[ex.codes[parseInt(dm[1],10)]];if(svg)html+='<div class="pdf-diagram">'+svg+'</div>';return;}
     var sm=t.match(/^([📚🎯📖⚡❓🔗🃏🧠💬📅✅📝])\s*(.+)/u);

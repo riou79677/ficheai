@@ -189,7 +189,7 @@ Style de réponse :
     const chatPayload = {
       model: modelFor(user.plan),
       stream: true,
-      max_tokens: 1800,
+      max_tokens: 3500, // la réflexion par défaut du modèle consomme une partie de ce plafond
       system: systemPrompt,
       messages: messages.slice(-12)
     };
