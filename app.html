@@ -882,7 +882,7 @@ function handleFileLoad(file){
       try{
         var pdfjsLib=window['pdfjs-dist/build/pdf'];
         pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-        var pdf=await pdfjsLib.getDocument({data:ev.target.result}).promise;
+        var pdf=await pdfjsLib.getDocument({data:ev.target.result,isEvalSupported:false}).promise;
         var plan=savedUser?(savedUser.plan||'starter'):'starter';
         var pageLimit=plan==='ultimate'?50:plan==='pro'?40:15;
         var maxPages=Math.min(pdf.numPages,pageLimit);
@@ -958,7 +958,7 @@ function loadMermaid(){
   if(window.mermaid)return Promise.resolve(window.mermaid);
   if(mermaidPromise)return mermaidPromise;
   mermaidPromise=new Promise(function(resolve,reject){
-    var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js';
+    var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/mermaid@10.9.8/dist/mermaid.min.js';s.integrity='sha384-N3QqR/7q+xm3BGX+CBbNI8AUmRRqcsDzToy+0z1NLDI0QmTKW8zvwLvqulJgk3dP';s.crossOrigin='anonymous';
     s.onload=function(){try{window.mermaid.initialize({startOnLoad:false,theme:'dark',securityLevel:'strict',themeVariables:{fontFamily:'DM Sans, sans-serif'}});resolve(window.mermaid);}catch(e){reject(e);}};
     s.onerror=function(){mermaidPromise=null;reject(new Error('mermaid'));};
     document.head.appendChild(s);
