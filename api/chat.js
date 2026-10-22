@@ -212,6 +212,7 @@ Style de réponse :
         console.error('Paramètre thinking refusé (chat), on le retire :', errMsg);
         thinkingParamSupported = false;
         delete chatPayload.thinking;
+        logApiUsage(SERVICE_KEY, email, 'info:reflexion-refusee-chat', modelFor(user.plan), 0, 0);
         response = await sendChat();
         if (!response.ok) {
           const errData2 = await response.json().catch(() => ({}));
@@ -256,6 +257,7 @@ Style de réponse :
 
   } catch (error) {
     console.error('Erreur API chat:', error);
+    await logApiUsage(SERVICE_KEY, email, 'erreur:chat:' + String((error && error.message) || error).slice(0, 90), modelFor(user.plan), 0, 0);
     if (res.headersSent) return res.end();
     return res.status(500).json({ error: error.message });
   }

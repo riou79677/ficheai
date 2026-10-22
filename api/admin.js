@@ -183,7 +183,9 @@ export default async function handler(req, res) {
       const list = Array.isArray(rows) ? rows : [];
       const byUser = {};
       list.forEach(x => {
-        const u = byUser[x.user_email] || (byUser[x.user_email] = { email: x.user_email, generations: 0, chats: 0, cost_usd: 0, input_tokens: 0, output_tokens: 0 });
+        const u = byUser[x.user_email] || (byUser[x.user_email] = { email: x.user_email, generations: 0, chats: 0, errors: 0, cost_usd: 0, input_tokens: 0, output_tokens: 0 });
+        // Les lignes « erreur:… » et « info:… » sont des événements (échecs, replis), pas des appels facturés.
+        if (/^(erreur|info):/.test(String(x.kind))) { u.errors++; return; }
         if (String(x.kind).startsWith('chat')) u.chats++; else u.generations++;
         u.cost_usd += Number(x.cost_usd) || 0; u.input_tokens += x.input_tokens || 0; u.output_tokens += x.output_tokens || 0;
       });

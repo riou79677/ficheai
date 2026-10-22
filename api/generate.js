@@ -449,6 +449,7 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
         console.error('Paramètre thinking refusé, on le retire :', d.error.message);
         thinkingParamSupported = false;
         delete payload.thinking;
+        logApiUsage(SERVICE_KEY, email, 'info:reflexion-refusee', modelFor(user.plan), 0, 0);
         d = await send();
       }
       if (d.error) throw new Error(d.error.message);
@@ -472,6 +473,7 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
       if (!images.length) throw e;
       // Si l'IA refuse les images (taille, format...), la génération continue avec le texte seul.
       console.error('Images du PDF refusées, nouvel essai avec le texte seul :', e.message);
+      logApiUsage(SERVICE_KEY, email, 'info:images-refusees:' + String(e.message || '').slice(0, 90), modelFor(user.plan), 0, 0);
       imagesDropped = true;
       imagesUsed = 0;
       data = await callModel(baseTokens, false);
@@ -479,6 +481,7 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
     let text = extractText(data);
     if (!text.trim() && Date.now() - t0 < 22000) { // le second essai n'a lieu que s'il reste assez de temps avant la limite de 60 s
       console.error('Réponse IA sans texte (essai 1). stop_reason =', data.stop_reason, '| types de blocs =', (data.content || []).map((b) => b && b.type));
+      logApiUsage(SERVICE_KEY, email, 'info:generation:' + format + ':vide-essai-1:' + (data.stop_reason || '?'), modelFor(user.plan), 0, 0);
       data = await callModel(Math.min(Math.round(baseTokens * 1.75), 9000), imagesUsed > 0);
       text = extractText(data);
     }
@@ -493,6 +496,7 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
     // au lieu de lire seulement le premier (c'était la cause de l'erreur « reading 'split' »).
     if (!text.trim()) {
       console.error('Réponse IA sans texte (essai 2). stop_reason =', data.stop_reason, '| types de blocs =', (data.content || []).map((b) => b && b.type));
+      await logApiUsage(SERVICE_KEY, email, 'erreur:generation:' + format + ':vide:' + (data.stop_reason || '?'), modelFor(user.plan), 0, 0);
       await refundGeneration();
       return res.status(502).json({ error: "L'IA n'a pas renvoyé de texte cette fois, ta génération t'a été rendue. Réessaie dans un instant." });
     }
@@ -500,6 +504,7 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
 
   } catch (error) {
     console.error('Erreur API:', error);
+    await logApiUsage(SERVICE_KEY, email, 'erreur:generation:' + format + ':' + String((error && error.message) || error).slice(0, 90), modelFor(user.plan), 0, 0);
     await refundGeneration();
     return res.status(500).json({ error: error.message });
   }
