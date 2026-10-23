@@ -94,33 +94,6 @@ tr.clickable-row:hover{background:rgba(108,92,231,0.08)}
 .ban-reason-input{width:100%;background:var(--bg3);border:1.5px solid var(--border2);border-radius:10px;padding:0.65rem 0.9rem;font-size:0.85rem;color:var(--text);font-family:inherit;outline:none;margin-top:0.6rem}
 .ban-reason-input:focus{border-color:var(--red)}
 .ban-reason-input::placeholder{color:var(--text3)}
-.cmp-intro{font-size:0.85rem;color:var(--text2);margin-bottom:1rem;line-height:1.5}
-.cmp-drop{border:1.5px dashed var(--border2);border-radius:14px;padding:1.3rem;text-align:center;cursor:pointer;background:var(--bg3);transition:border .2s,background .2s}
-.cmp-drop:hover,.cmp-drop.over{border-color:var(--purple);background:rgba(124,109,250,0.07)}
-.cmp-drop-ico{font-size:1.6rem}.cmp-drop-t{font-weight:700;margin-top:0.3rem}.cmp-drop-s{font-size:0.78rem;color:var(--text3);margin-top:0.2rem}
-.cmp-ta{width:100%;box-sizing:border-box;margin-top:0.8rem;background:var(--bg3);border:1px solid var(--border2);border-radius:12px;color:var(--text);padding:0.8rem;font-family:inherit;font-size:0.85rem;resize:vertical}
-.cmp-ta:focus{outline:none;border-color:var(--purple)}
-.cmp-bar{display:flex;flex-wrap:wrap;gap:0.7rem;align-items:center;justify-content:space-between;margin-top:0.8rem}
-.cmp-seg{display:inline-flex;background:var(--bg3);border:1px solid var(--border2);border-radius:100px;padding:3px}
-.cmp-seg button{border:none;background:none;color:var(--text2);padding:0.45rem 1rem;border-radius:100px;font-family:inherit;font-size:0.82rem;font-weight:600;cursor:pointer}
-.cmp-seg button.on{background:var(--purple);color:#fff}
-.cmp-go{border:none;border-radius:10px;padding:0.7rem 1.4rem;background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff;font-weight:700;font-family:inherit;cursor:pointer}
-.cmp-go:disabled{opacity:.5;cursor:wait}
-.cmp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem;margin-top:1.2rem}
-.cmp-card{background:var(--bg3);border:1.5px solid var(--border2);border-radius:16px;display:flex;flex-direction:column;overflow:hidden}
-.cmp-card.win{border-color:var(--green);box-shadow:0 0 0 3px rgba(74,222,128,0.15)}
-.cmp-head{display:flex;align-items:center;gap:0.6rem;padding:0.8rem 1rem;border-bottom:1px solid var(--border)}
-.cmp-tag{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-weight:800;background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff}
-.cmp-meta{font-size:0.78rem;color:var(--text2)}
-.cmp-body{padding:1rem 1.1rem;max-height:560px;overflow:auto;font-size:0.88rem;line-height:1.6;color:var(--text)}
-.cmp-body h3,.cmp-body h4{font-family:var(--font-h);margin:1rem 0 0.4rem;color:var(--purple2)}
-.cmp-body h3{font-size:1.05rem}.cmp-body h4{font-size:0.95rem}
-.cmp-body p{margin:0.35rem 0}.cmp-body ul{margin:0.3rem 0 0.3rem 1.1rem;padding:0}.cmp-body li{margin:0.2rem 0}
-.cmp-body strong{color:#fff}.cmp-body code{background:var(--surface);padding:1px 5px;border-radius:5px}
-.cmp-pick{margin:0.8rem 1rem 1rem;border:1px solid var(--border2);background:var(--surface);color:var(--text);border-radius:10px;padding:0.6rem;font-family:inherit;font-weight:600;cursor:pointer}
-.cmp-pick:hover{border-color:var(--purple2)}
-.cmp-foot{text-align:center}.cmp-foot .cmp-pick{margin:0.8rem 0 0;padding:0.6rem 1.4rem}
-.cmp-reveal{margin-top:1rem;font-size:0.9rem;line-height:1.7}
 </style>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#09090f">
@@ -198,31 +171,6 @@ tr.clickable-row:hover{background:rgba(108,92,231,0.08)}
 </table>
 </div>
 
-<div class="section cmp">
-<h2>🧪 Comparer Haiku 5.5 et Sonnet 5.5 à l'aveugle</h2>
-<p class="cmp-intro">Importe un cours, choisis le format : la même demande part vers les deux modèles. Les réponses s'affichent en A et B sans le nom du modèle. Choisis ta préférée, puis révèle. Environ 0,05 $ par test.</p>
-<div class="cmp-drop" id="cmp-drop" onclick="document.getElementById('cmp-file').click()">
-<div class="cmp-drop-ico">📄</div>
-<div class="cmp-drop-t" id="cmp-drop-t">Importer un PDF ou un fichier texte</div>
-<div class="cmp-drop-s">Clique ou glisse le fichier ici · ou colle le cours en dessous</div>
-<input type="file" id="cmp-file" accept=".pdf,.txt,.md" style="display:none" onchange="cmpLoadFile(this.files[0])">
-</div>
-<textarea id="cmp-course" class="cmp-ta" rows="6" placeholder="…ou colle ton cours ici"></textarea>
-<div class="cmp-bar">
-<div class="cmp-seg" id="cmp-seg"><button class="on" data-f="fiche">Fiche</button><button data-f="quiz">Quiz</button><button data-f="flash">Flashcards</button></div>
-<button class="cmp-go" id="cmp-go" onclick="runCompare()">Lancer la comparaison</button>
-</div>
-<div class="msg" id="cmp-msg"></div>
-<div id="cmp-out" style="display:none">
-<div class="cmp-grid">
-<div class="cmp-card" id="cmp-card-a"><div class="cmp-head"><span class="cmp-tag">A</span><span class="cmp-meta" id="cmp-meta-a"></span></div><div class="cmp-body" id="cmp-a"></div><button class="cmp-pick" onclick="cmpPick('a')">Je préfère A</button></div>
-<div class="cmp-card" id="cmp-card-b"><div class="cmp-head"><span class="cmp-tag">B</span><span class="cmp-meta" id="cmp-meta-b"></span></div><div class="cmp-body" id="cmp-b"></div><button class="cmp-pick" onclick="cmpPick('b')">Je préfère B</button></div>
-</div>
-<div class="cmp-foot"><button class="cmp-pick" onclick="cmpPick('egal')">Pas de différence</button></div>
-<div class="cmp-reveal" id="cmp-reveal"></div>
-</div>
-</div>
-
 <div class="section">
 <h2>✉️ Écrire à un élève dans FicheAI</h2>
 <p class="mini-note">Le message s'affiche dans une fenêtre la prochaine fois que l'élève ouvre FicheAI (application, accueil, bibliothèque, révision ou réglages). Tu vois ensuite s'il l'a lu.</p>
@@ -242,11 +190,7 @@ tr.clickable-row:hover{background:rgba(108,92,231,0.08)}
 <tbody id="usage-table"></tbody>
 </table>
 <p class="mini-note">* Estimation à partir du journal de l'IA : Rapide 1, Approfondi 2, chat 1, révision 1. Une fiche Approfondi offerte compte ici 2 sans avoir rien coûté à l'élève. Le solde exact de chaque élève est dans « Utilisateurs ».</p>
-<h3 style="margin:1.2rem 0 0.5rem;font-size:0.95rem">Dernières activités</h3>
-<table>
-<thead><tr><th>Date</th><th>Utilisateur</th><th>Action</th><th>Tokens</th><th>Coût</th></tr></thead>
-<tbody id="usage-recent"></tbody>
-</table>
+
 <div class="msg" id="usage-msg"></div>
 <p class="mini-note">Coût calculé à partir des tokens réellement facturés par Anthropic (2 $ / M en entrée, 10 $ / M en sortie). Seuls les appels faits après la mise en ligne de cette version sont comptés.</p>
 </div>
@@ -408,77 +352,6 @@ function showDashboard(){
 }
 
 
-// ── Comparaison à l'aveugle Haiku / Sonnet ──
-var cmpResult=null,cmpFormat='fiche';
-function cmpMsg(t,type){var el=document.getElementById('cmp-msg');el.textContent=t;el.className='msg '+type;el.style.display=t?'block':'none';}
-document.addEventListener('DOMContentLoaded',function(){
-  document.querySelectorAll('#cmp-seg button').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('#cmp-seg button').forEach(function(x){x.classList.remove('on');});b.classList.add('on');cmpFormat=b.getAttribute('data-f');});});
-  var d=document.getElementById('cmp-drop');if(!d)return;
-  ['dragenter','dragover'].forEach(function(e){d.addEventListener(e,function(ev){ev.preventDefault();d.classList.add('over');});});
-  ['dragleave','drop'].forEach(function(e){d.addEventListener(e,function(ev){ev.preventDefault();d.classList.remove('over');});});
-  d.addEventListener('drop',function(ev){var f=ev.dataTransfer.files&&ev.dataTransfer.files[0];if(f)cmpLoadFile(f);});
-});
-function cmpLoadScript(src){return new Promise(function(ok,ko){var s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=function(){ko(new Error('Lecteur PDF indisponible'));};document.head.appendChild(s);});}
-async function cmpLoadFile(f){
-  if(!f)return;var t=document.getElementById('cmp-drop-t');
-  try{
-    var text='';
-    if(/\.pdf$/i.test(f.name)||f.type==='application/pdf'){
-      t.textContent='⏳ Lecture de '+f.name+'…';
-      if(!window['pdfjs-dist/build/pdf'])await cmpLoadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
-      var lib=window['pdfjs-dist/build/pdf'];lib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-      var pdf=await lib.getDocument({data:await f.arrayBuffer(),isEvalSupported:false}).promise;
-      var n=Math.min(pdf.numPages,30);
-      for(var i=1;i<=n;i++){var pg=await pdf.getPage(i);var c=await pg.getTextContent();text+=c.items.map(function(x){return x.str;}).join(' ')+'\n';}
-    }else{text=await f.text();}
-    text=text.replace(/[ \t]+/g,' ').trim();
-    if(text.length<50)throw new Error('Aucun texte lisible dans ce fichier (PDF scanné ?)');
-    document.getElementById('cmp-course').value=text;
-    t.textContent='✅ '+f.name+' · '+text.length.toLocaleString('fr-FR')+' caractères';
-  }catch(e){t.textContent='Importer un PDF ou un fichier texte';cmpMsg('⚠️ '+e.message,'error');}
-}
-function cmpRender(md){
-  var e=function(x){return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
-  var inl=function(x){return e(x).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/`([^`]+)`/g,'<code>$1</code>').replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<em>$2</em>');};
-  var out=[],inList=false;
-  String(md).split('\n').forEach(function(l){
-    var m;
-    if((m=l.match(/^\s*([-*•▸]|\d+[.)])\s+(.*)$/))){if(!inList){out.push('<ul>');inList=true;}out.push('<li>'+inl(m[2])+'</li>');return;}
-    if(inList){out.push('</ul>');inList=false;}
-    if((m=l.match(/^#{1,2}\s+(.*)$/)))out.push('<h3>'+inl(m[1])+'</h3>');
-    else if((m=l.match(/^#{3,6}\s+(.*)$/)))out.push('<h4>'+inl(m[1])+'</h4>');
-    else if(/^\s*(---+|```\w*)\s*$/.test(l))out.push('');
-    else if(l.trim())out.push('<p>'+inl(l)+'</p>');
-  });
-  if(inList)out.push('</ul>');
-  return out.join('');
-}
-async function runCompare(){
-  var course=document.getElementById('cmp-course').value.trim();
-  if(course.length<200){cmpMsg('⚠️ Importe ou colle un cours plus long (200 caractères minimum).','error');return;}
-  var btn=document.getElementById('cmp-go');btn.disabled=true;btn.textContent='⏳ Génération en cours…';
-  cmpMsg('Les deux modèles travaillent en parallèle, compte 20 à 40 secondes.','ok');
-  document.getElementById('cmp-out').style.display='none';
-  try{
-    var rs=await Promise.all(['claude-haiku-5-5','claude-sonnet-5-5'].map(function(m){
-      return fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SECRET},body:JSON.stringify({course:course,format:cmpFormat,language:'fr',compareModel:m})}).then(function(r){return r.json();});
-    }));
-    rs.forEach(function(r){if(!r.result)throw new Error(r.error||'Réponse vide');if(!r.compare)throw new Error('Ce compte n\'est pas reconnu comme admin.');});
-    var swap=Math.random()<0.5;cmpResult={a:swap?rs[1]:rs[0],b:swap?rs[0]:rs[1]};
-    ['a','b'].forEach(function(k){var c=cmpResult[k].compare;document.getElementById('cmp-'+k).innerHTML=cmpRender(cmpResult[k].result);document.getElementById('cmp-meta-'+k).textContent=cmpResult[k].result.length.toLocaleString('fr-FR')+' caractères'+(c.stop==='max_tokens'?' · ⚠️ coupée':'');document.getElementById('cmp-card-'+k).classList.remove('win');});
-    document.getElementById('cmp-reveal').innerHTML='';
-    document.getElementById('cmp-out').style.display='block';cmpMsg('','ok');
-  }catch(e){cmpMsg('⚠️ '+e.message,'error');}
-  btn.disabled=false;btn.textContent='Lancer la comparaison';
-}
-function cmpPick(k){
-  if(!cmpResult)return;
-  ['a','b'].forEach(function(x){document.getElementById('cmp-card-'+x).classList.toggle('win',x===k);});
-  var nom=function(x){return cmpResult[x].compare.model.indexOf('haiku')>-1?'Haiku 5.5':'Sonnet 5.5';};
-  var line=function(x){var c=cmpResult[x].compare;return '<b>'+x.toUpperCase()+' = '+nom(x)+'</b> · '+(c.ms/1000).toFixed(1)+' s · $'+c.costUsd.toFixed(4);};
-  var choix=k==='egal'?'Pas de différence':'Tu as préféré <b>'+nom(k)+'</b>';
-  document.getElementById('cmp-reveal').innerHTML='🎯 '+choix+'<br>'+line('a')+'<br>'+line('b');
-}
 
 // ── Messages aux élèves ──
 async function loadUserMessages(){
@@ -819,8 +692,6 @@ async function loadUsage(){
     document.getElementById('usage-total').textContent='Total : '+usd(d.total_cost_usd)+' (≈ '+(Number(d.total_cost_usd||0)*0.86).toFixed(2)+' €) sur 30 jours.';
     var t=document.getElementById('usage-table');
     t.innerHTML=(d.users&&d.users.length)?d.users.map(function(u){return '<tr><td>'+esc(u.email)+'</td><td><b>'+(u.credits||0)+'</b></td><td>'+(u.rapide||0)+'</td><td>'+(u.approfondi||0)+'</td><td>'+u.chats+'</td><td>'+(u.revision||0)+'</td><td><b>'+usd(u.cost_usd)+'</b></td></tr>';}).join(''):'<tr><td colspan="7" style="color:var(--text3)">Aucune donnée pour l\'instant.</td></tr>';
-    var r=document.getElementById('usage-recent');
-    r.innerHTML=(d.recent&&d.recent.length)?d.recent.map(function(x){return '<tr><td>'+new Date(x.created_at).toLocaleString('fr-FR')+'</td><td>'+esc(x.user_email)+'</td><td>'+esc(x.kind)+'</td><td>'+(x.input_tokens+x.output_tokens).toLocaleString('fr-FR')+'</td><td>$'+Number(x.cost_usd).toFixed(4)+'</td></tr>';}).join(''):'';
   }catch(e){if(e.message!=='WRONG_SECRET'){var m=document.getElementById('usage-msg');m.textContent='⚠️ Impossible de charger la consommation : '+e.message;m.className='msg error';}}
 }
 
