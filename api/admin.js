@@ -56,13 +56,13 @@ export default async function handler(req, res) {
   try {
     // ── Statistiques générales ──
     if (action === 'get_stats') {
-      const usersR = await fetch(SUPABASE_URL + '/rest/v1/users?select=email,username,plan,generations_used,generations_limit,chat_messages_used,chat_messages_limit,flashcards_used,flashcards_limit,niveau_scolaire,quota_period_start,plan_expires_at,created_at,banned,banned_until,banned_reason', { headers: sb });
+      const usersR = await fetch(SUPABASE_URL + '/rest/v1/users?select=email,username,plan,credits_used,credits_limit,bonus_generations,bonus_expires_at,approfondi_offerts,generations_used,generations_limit,chat_messages_used,chat_messages_limit,flashcards_used,flashcards_limit,niveau_scolaire,quota_period_start,plan_expires_at,created_at,banned,banned_until,banned_reason', { headers: sb });
       const users = await usersR.json();
       // Le compteur mensuel se remet à zéro au prochain usage ; ici on affiche la valeur réelle (0 si la période est expirée).
       const monthAgo = Date.now() - 31 * 24 * 3600 * 1000;
       users.forEach(u => {
         if (!u.quota_period_start || new Date(u.quota_period_start).getTime() <= monthAgo) {
-          u.generations_used = 0; u.chat_messages_used = 0; u.flashcards_used = 0;
+          u.credits_used = 0; u.generations_used = 0; u.chat_messages_used = 0; u.flashcards_used = 0;
         }
       });
       const fichesR = await fetch(SUPABASE_URL + '/rest/v1/fiches?select=id&limit=1', { headers: { ...sb, 'Prefer': 'count=exact' } });
@@ -126,11 +126,12 @@ export default async function handler(req, res) {
       const { enabled, message } = payload || {};
       const GRACE_PERIOD_SECONDS = 120;
       const body = { maintenance_mode: !!enabled, updated_at: new Date().toISOString() };
-      if (message) body.maintenance_message = message;
+      if (typeof message === 'string') body.maintenance_message = message.trim().slice(0, 300) || 'FicheAI est en maintenance. On revient très vite !';
       body.maintenance_starts_at = enabled ? new Date(Date.now() + GRACE_PERIOD_SECONDS * 1000).toISOString() : null;
-      const r = await fetch(SUPABASE_URL + '/rest/v1/site_settings?id=eq.1', {
-        method: 'PATCH', headers: { ...sb, 'Prefer': 'return=representation' },
-        body: JSON.stringify(body)
+      // Écriture « upsert » : crée la ligne de réglages si elle n'existe pas (cause de la panne du 23/10/2026).
+      const r = await fetch(SUPABASE_URL + '/rest/v1/site_settings?on_conflict=id', {
+        method: 'POST', headers: { ...sb, 'Prefer': 'return=representation,resolution=merge-duplicates' },
+        body: JSON.stringify(Object.assign({ id: 1 }, body))
       });
       const result = await r.json();
       return res.status(200).json({ success: true, result, grace_period_seconds: GRACE_PERIOD_SECONDS });
@@ -138,12 +139,14 @@ export default async function handler(req, res) {
 
     // ── Modifier manuellement le plan/quota d'un utilisateur ──
     if (action === 'set_plan') {
-      const { email, plan, generations_limit, chat_messages_limit, flashcards_limit, days } = payload || {};
+      const { email, plan, credits_limit, generations_limit, chat_messages_limit, flashcards_limit, days } = payload || {};
       if (!email) return res.status(400).json({ error: 'Email manquant' });
       const body = {};
       if (plan) {
         body.plan = plan;
         // Changement de plan par l'admin = nouvelle période : compteurs remis à zéro.
+        body.credits_used = 0; body.credits_used_today = 0;
+        if (credits_limit === undefined) body.credits_limit = plan === 'ultimate' ? 250 : plan === 'pro' ? 110 : 10;
         body.generations_used = 0; body.chat_messages_used = 0; body.flashcards_used = 0;
         body.generations_used_today = 0; body.chat_used_today = 0; body.flashcards_used_today = 0;
         body.quota_period_start = new Date().toISOString();
@@ -151,6 +154,7 @@ export default async function handler(req, res) {
         const d = parseInt(days, 10);
         body.plan_expires_at = (plan !== 'starter' && d > 0 && d <= 366) ? new Date(Date.now() + d * 86400000).toISOString() : null;
       }
+      if (credits_limit !== undefined) { const c = parseInt(credits_limit, 10); if (c >= 0 && c <= 999999) body.credits_limit = c; }
       if (generations_limit !== undefined) body.generations_limit = generations_limit;
       if (chat_messages_limit !== undefined) body.chat_messages_limit = chat_messages_limit;
       if (flashcards_limit !== undefined) body.flashcards_limit = flashcards_limit;
@@ -160,6 +164,24 @@ export default async function handler(req, res) {
       });
       const result = await r.json();
       return res.status(200).json({ success: true, result });
+    }
+
+    // ── Offrir des crédits (ajoutés au solde de recharge, valable 12 mois) ──
+    if (action === 'grant_bonus_generations') {
+      const { email, amount } = payload || {};
+      const n = parseInt(amount, 10);
+      if (!email || !(n > 0 && n <= 1000)) return res.status(400).json({ error: 'Email ou nombre de crédits invalide' });
+      const gr = await fetch(SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=bonus_generations,bonus_expires_at', { headers: sb });
+      const rows = await gr.json();
+      const u = Array.isArray(rows) ? rows[0] : null;
+      if (!u) return res.status(404).json({ error: 'Compte introuvable' });
+      const valid = (u.bonus_generations || 0) > 0 && (!u.bonus_expires_at || new Date(u.bonus_expires_at) > new Date());
+      const newBonus = (valid ? u.bonus_generations : 0) + n;
+      await fetch(SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email), {
+        method: 'PATCH', headers: { ...sb, 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ bonus_generations: newBonus, bonus_expires_at: new Date(Date.now() + 365 * 86400000).toISOString() })
+      });
+      return res.status(200).json({ success: true, new_bonus: newBonus });
     }
 
     // ── Supprimer définitivement un compte ──

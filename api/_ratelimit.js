@@ -1,6 +1,6 @@
 // Limitation de débit "meilleur effort" : bloque les rafales de requêtes (boucle de script, double clic
 // frénétique) avant qu'elles n'atteignent l'API Anthropic. La mémoire est propre à chaque instance
-// serverless : la protection principale reste le quota en base (check_and_consume_quota + plafond quotidien).
+// serverless : la protection principale reste le quota en base (consume_credits + plafond quotidien de crédits).
 const buckets = new Map();
 
 export function rateLimit(key, max, windowMs) {

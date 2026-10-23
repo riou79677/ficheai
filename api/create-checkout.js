@@ -1,4 +1,4 @@
-// Création des paiements Stripe : abonnements (Pro, Ultimate) et recharges de générations.
+// Création des paiements Stripe : abonnements (Pro, Ultimate) et recharges de crédits.
 // Toute commande passe par le récapitulatif du site (checkout.js) : le client y voit le prix, la durée et les
 // conditions, accepte les CGV et demande l'exécution immédiate. Ces consentements sont exigés ici et conservés
 // dans les métadonnées Stripe de la commande (preuve en cas de litige).
@@ -15,9 +15,9 @@ const OFFERS = {
   pro_monthly:      { mode: 'subscription', plan: 'pro',      price: 'price_1TXfc5JBbEVt3aRD8UpsC4Ym', label: 'Pro mensuel',      amount: '7,99 €',  period: 'mois', trialDays: 7 },
   pro_yearly:       { mode: 'subscription', plan: 'pro',      price: 'price_1USuiLJBbEVt3aRDV5FtLJtZ', label: 'Pro annuel',       amount: '79,90 €', period: 'an' },
   ultimate_monthly: { mode: 'subscription', plan: 'ultimate', price: 'price_1TXfiUJBbEVt3aRDXGVS7pAz', label: 'Ultimate mensuel', amount: '14,99 €', period: 'mois' },
-  recharge_50:      { mode: 'payment', credits: 50,  price: 'price_1TvvwjJBbEVt3aRDYw3CewZz', label: 'Recharge de 50 générations',  amount: '6,99 €' },
-  recharge_150:     { mode: 'payment', credits: 150, price: 'price_1TvvwqJBbEVt3aRDRZXro9z5', label: 'Recharge de 150 générations', amount: '19,99 €' },
-  recharge_400:     { mode: 'payment', credits: 400, price: 'price_1TvvwxJBbEVt3aRDJN6pTiYz', label: 'Recharge de 400 générations', amount: '49,99 €' },
+  recharge_50:      { mode: 'payment', credits: 100, price: 'price_1TvvwjJBbEVt3aRDYw3CewZz', label: 'Recharge de 100 crédits',  amount: '6,99 €' },
+  recharge_150:     { mode: 'payment', credits: 300, price: 'price_1TvvwqJBbEVt3aRDRZXro9z5', label: 'Recharge de 300 crédits', amount: '19,99 €' },
+  recharge_400:     { mode: 'payment', credits: 800, price: 'price_1TvvwxJBbEVt3aRDJN6pTiYz', label: 'Recharge de 800 crédits', amount: '49,99 €' },
 };
 
 const SITE_ORIGINS = ['https://studyai-kappa-swart.vercel.app', 'https://ficheai.fr', 'https://www.ficheai.fr'];
@@ -32,8 +32,8 @@ function submitMessage(offer, trialDays, base) {
   const tva = 'Prix TTC, TVA non applicable (art. 293 B du CGI).';
   if (offer.mode === 'payment') {
     return '**Commande avec obligation de paiement** : paiement unique de ' + offer.amount + '. ' + tva
-      + ' Les générations sont créditées immédiatement et restent valables 12 mois. Tu as demandé leur fourniture immédiate'
-      + ' et reconnu perdre ton droit de rétractation dès qu\'elles sont créditées. Voir les ' + cgv + '.';
+      + ' Les crédits sont ajoutés immédiatement et restent valables 12 mois. Tu as demandé leur fourniture immédiate'
+      + ' et reconnu perdre ton droit de rétractation dès qu\'ils sont ajoutés. Voir les ' + cgv + '.';
   }
   const every = offer.period === 'an' ? 'chaque année' : 'chaque mois';
   const resil = 'Sans engagement : résiliable à tout moment depuis Paramètres, bouton « Résilier mon abonnement », effet à la fin de la période payée.';

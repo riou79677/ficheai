@@ -168,10 +168,11 @@ tr.clickable-row:hover{background:rgba(108,92,231,0.08)}
 <div class="maintenance-row">
 <div>
 <div id="maint-status" style="font-weight:700;margin-bottom:4px">Vérification...</div>
-<div style="font-size:0.78rem;color:var(--text3)">Bloque l'accès au site pour tout le monde sauf toi.</div>
+<div style="font-size:0.78rem;color:var(--text3)">Les élèves voient un compte à rebours de 2 minutes, puis l'application est bloquée pour tout le monde sauf toi. La page d'accueil, les pages légales et les formulaires de résiliation restent ouverts.</div>
 </div>
 <div class="toggle" id="maint-toggle" onclick="toggleMaintenance()"><div class="knob"></div></div>
 </div>
+<input id="maint-text" maxlength="300" placeholder="Message affiché aux élèves (facultatif) : ex. Mise à jour en cours, retour vers 18 h" style="width:100%;box-sizing:border-box;margin-top:0.8rem;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;color:var(--text);padding:0.65rem 0.8rem;font-family:inherit;font-size:0.85rem">
 <div class="msg" id="maint-msg"></div>
 </div>
 
@@ -179,7 +180,7 @@ tr.clickable-row:hover{background:rgba(108,92,231,0.08)}
 <h2>⚠️ Comptes proches de leur quota (≥80%)</h2>
 <div id="quota-alerts"><p class="mini-note">Chargement...</p></div>
 <div class="msg" id="quota-msg"></div>
-<p class="mini-note">Les utilisateurs voient automatiquement un bandeau d'alerte avec les liens de recharge dès 80% d'utilisation. Ici tu peux leur offrir des générations gratuites.</p>
+<p class="mini-note">Les utilisateurs voient automatiquement un bandeau d'alerte avec les liens de recharge dès 80% d'utilisation. Ici tu peux leur offrir des crédits.</p>
 </div>
 
 <div class="section">
@@ -247,7 +248,7 @@ tr.clickable-row:hover{background:rgba(108,92,231,0.08)}
 <h2>👥 Utilisateurs</h2>
 <input type="text" id="search-input" placeholder="🔍 Rechercher par pseudo ou email..." style="width:100%;background:var(--bg3);border:1.5px solid var(--border2);border-radius:10px;padding:0.7rem 1rem;font-size:0.85rem;color:var(--text);font-family:inherit;outline:none;margin-bottom:1rem" oninput="filterUsers(this.value)">
 <table>
-<thead><tr><th>Utilisateur</th><th>Plan</th><th>Générations</th><th>Inscrit le</th><th>Actions</th></tr></thead>
+<thead><tr><th>Utilisateur</th><th>Plan</th><th>Crédits du mois</th><th>Inscrit le</th><th>Actions</th></tr></thead>
 <tbody id="users-table"></tbody>
 </table>
 <div class="msg" id="users-msg"></div>
@@ -308,17 +309,17 @@ tr.clickable-row:hover{background:rgba(108,92,231,0.08)}
 
 <div class="modal-overlay" id="gift-modal-overlay">
   <div class="modal-box" style="max-width:400px">
-    <h2>🎁 Offrir des générations</h2>
+    <h2>🎁 Offrir des crédits</h2>
     <p style="font-size:0.83rem;color:var(--text2);margin-bottom:0.3rem">Utilisateur : <strong id="gift-modal-email" style="color:var(--green)"></strong></p>
     <p style="font-size:0.83rem;color:var(--text2);margin-bottom:1rem">Utilisation actuelle : <strong id="gift-modal-usage"></strong></p>
-    <p style="font-size:0.8rem;color:var(--text3);margin-bottom:0.3rem">Nombre de générations à ajouter :</p>
+    <p style="font-size:0.8rem;color:var(--text3);margin-bottom:0.3rem">Nombre de crédits à ajouter :</p>
     <div class="gift-grid">
-      <button class="gift-btn" onclick="selectGift(5)">+5</button>
       <button class="gift-btn" onclick="selectGift(10)">+10</button>
-      <button class="gift-btn" onclick="selectGift(25)">+25</button>
+      <button class="gift-btn" onclick="selectGift(20)">+20</button>
       <button class="gift-btn" onclick="selectGift(50)">+50</button>
+      <button class="gift-btn" onclick="selectGift(100)">+100</button>
     </div>
-    <p class="mini-note">Ajoute à la limite du mois en cours. Le compteur de générations utilisées ne bouge pas.</p>
+    <p class="mini-note">Ajoutés au solde de recharge, valables 12 mois, utilisés après les crédits du mois.</p>
     <div id="gift-err" style="color:var(--red);font-size:0.78rem;margin-top:0.4rem;display:none"></div>
     <button class="gift-confirm-btn" id="gift-confirm-btn" onclick="confirmGift()" disabled>Offrir</button>
     <button onclick="closeGiftModal()" style="width:100%;margin-top:0.6rem;background:transparent;border:1px solid var(--border2);border-radius:10px;padding:0.65rem;color:var(--text2);cursor:pointer;font-family:inherit">Annuler</button>
@@ -357,9 +358,9 @@ var selectedBanDuration=undefined;
 var giftTargetEmail=null;
 var selectedGift=null;
 var PLAN_LIMITS_INFO={
-  starter:'Limites appliquées automatiquement : 5 générations, pas de chat.',
-  pro:'Limites appliquées automatiquement : 50 générations, 20 messages de chat.',
-  ultimate:'Limites appliquées automatiquement : 300 générations, 300 messages de chat.'
+  starter:'Appliqué automatiquement : 10 crédits par mois (Rapide), 2 fiches Approfondi offertes.',
+  pro:'Appliqué automatiquement : 110 crédits par mois.',
+  ultimate:'Appliqué automatiquement : 250 crédits par mois.'
 };
 
 window.addEventListener('load',function(){
@@ -550,20 +551,21 @@ function showDetail(filter){
 
 function scrollToFiches(){document.getElementById('fiches-table').scrollIntoView({behavior:'smooth',block:'center'});}
 
+function credLine(u){var b=(u.bonus_generations>0&&(!u.bonus_expires_at||new Date(u.bonus_expires_at)>new Date()))?u.bonus_generations:0;var l=u.credits_limit>=100000?'∞':(u.credits_limit??10);return (u.credits_used??0)+' / '+l+(b?' (+'+b+' recharge)':'');}
 // ── Comptes ≥80% : tous plans confondus, avec bouton "Offrir" ──
 function renderQuotaAlerts(users){
   var alerts=users.filter(function(u){
-    var limit=u.generations_limit||0;
+    var limit=(u.credits_limit>=100000?0:u.credits_limit)||0;
     if(limit<=0)return false;
-    return (((u.generations_used??0)/limit)*100)>=80;
+    return (((u.credits_used??0)/limit)*100)>=80;
   });
   var el=document.getElementById('quota-alerts');
   if(alerts.length===0){el.innerHTML='<p class="mini-note">Aucun compte proche de son quota actuellement.</p>';return;}
   var html='<table><thead><tr><th>Email</th><th>Plan</th><th>Usage</th><th>Action</th></tr></thead><tbody>';
   alerts.forEach(function(u){
-    var pct=Math.round(((u.generations_used??0)/(u.generations_limit||1))*100);
+    var pct=Math.round(((u.credits_used??0)/(u.credits_limit||1))*100);
     var cls=pct>=95?'quota-danger':'quota-warning';
-    html+='<tr><td>'+escH(u.email)+'</td><td><span class="plan-tag plan-'+escH(u.plan)+'">'+escH(u.plan)+'</span></td><td class="'+cls+'">'+(u.generations_used??0)+' / '+u.generations_limit+' ('+pct+'%)</td><td><button class="btn-sm gift" onclick="openGiftModal('+jsArg(u.email)+')">🎁 Offrir</button></td></tr>';
+    html+='<tr><td>'+escH(u.email)+'</td><td><span class="plan-tag plan-'+escH(u.plan)+'">'+escH(u.plan)+'</span></td><td class="'+cls+'">'+credLine(u)+' ('+pct+'%)</td><td><button class="btn-sm gift" onclick="openGiftModal('+jsArg(u.email)+')">🎁 Offrir</button></td></tr>';
   });
   html+='</tbody></table>';el.innerHTML=html;
 }
@@ -596,7 +598,7 @@ function renderUsers(users){
     html+='<tr class="clickable-row'+(u.banned?' banned-row':'')+'" onclick="openUserModal('+jsArg(u.email)+')">';
     html+='<td>'+displayName+banInfo+'</td>';
     html+='<td><span class="plan-tag plan-'+escH(u.plan)+'">'+escH(u.plan)+'</span></td>';
-    html+='<td>'+(u.generations_used??0)+' / '+(u.generations_limit??'∞')+'</td>';
+    html+='<td>'+credLine(u)+'</td>';
     html+='<td>'+new Date(u.created_at).toLocaleDateString('fr-FR')+'</td>';
     html+='<td>';
     if(u.banned){html+='<button class="btn-sm" onclick="event.stopPropagation();debanUser('+jsArg(u.email)+')">Débannir</button>';}
@@ -621,15 +623,15 @@ function openUserModal(email){
     ['Forfait','<span style="color:'+(planColors[user.plan]||'#fff')+';font-weight:700">'+escH((user.plan||'starter').toUpperCase())+'</span>'],
     ['Niveau',niveaux[user.niveau_scolaire]||'Non renseigné'],
     ['Inscrit le',new Date(user.created_at).toLocaleDateString('fr-FR')],
-    ['Générations',(user.generations_used??0)+' / '+(user.generations_limit??'∞')],
-    ['Chat IA',(user.chat_messages_used??0)+' / '+(user.chat_messages_limit??'∞')],
+    ['Crédits du mois',credLine(user)],
+    ['Fiches Approfondi offertes restantes',String(user.approfondi_offerts??0)],
     ['Banni',user.banned?'🚫 Oui'+(user.banned_reason?' — '+escH(user.banned_reason):''):'✅ Non'],
   ].map(function(f){return '<div class="modal-field"><label>'+f[0]+'</label><span>'+f[1]+'</span></div>';}).join('');
   var actions=document.getElementById('modal-actions');
   actions.innerHTML='';
   if(!isMe){
     actions.innerHTML+='<button class="btn-sm" onclick="openPlanModalFromProfile()">✏️ Changer le forfait</button>';
-    actions.innerHTML+='<button class="btn-sm gift" onclick="closeUserModalDirect();openGiftModal('+jsArg(user.email)+')">🎁 Offrir des générations</button>';
+    actions.innerHTML+='<button class="btn-sm gift" onclick="closeUserModalDirect();openGiftModal('+jsArg(user.email)+')">🎁 Offrir des crédits</button>';
     if(user.banned){actions.innerHTML+='<button class="btn-sm" onclick="debanUser('+jsArg(user.email)+');closeUserModalDirect()">✅ Débannir</button>';}
     else{actions.innerHTML+='<button class="btn-sm danger" onclick="closeUserModalDirect();openBanModal('+jsArg(user.email)+')">🚫 Bannir</button>';}
     actions.innerHTML+='<button class="btn-sm warn" onclick="deleteUser('+jsArg(user.email)+');closeUserModalDirect()">🗑️ Supprimer</button>';
@@ -690,12 +692,12 @@ async function confirmPlanChange(){
 
 function closePlanModal(){document.getElementById('plan-modal-overlay').classList.remove('active');document.body.style.overflow='';selectedPlan=null;planConfirmCode=null;var b=document.getElementById('plan-confirm-btn');if(b){b.textContent='Confirmer le changement';b.disabled=false;}}
 
-// ── Offrir des générations gratuites ──
+// ── Offrir des crédits ──
 function openGiftModal(email){
   var user=allUsersData.find(function(u){return u.email===email;});
   giftTargetEmail=email;selectedGift=null;
   document.getElementById('gift-modal-email').textContent=email;
-  document.getElementById('gift-modal-usage').textContent=user?((user.generations_used??0)+' / '+(user.generations_limit??'∞')):'—';
+  document.getElementById('gift-modal-usage').textContent=user?credLine(user):'—';
   document.getElementById('gift-confirm-btn').disabled=true;
   document.getElementById('gift-err').style.display='none';
   document.querySelectorAll('.gift-btn').forEach(function(b){b.classList.remove('selected');});
@@ -717,7 +719,7 @@ async function confirmGift(){
     var res=await callAdmin('grant_bonus_generations',{email:giftTargetEmail,amount:selectedGift});
     if(res.error)throw new Error(res.error);
     closeGiftModal();
-    showMsg('quota-msg','✅ +'+selectedGift+' générations offertes à '+giftTargetEmail+' (solde de recharges : '+res.new_bonus+').','ok');
+    showMsg('quota-msg','✅ +'+selectedGift+' crédits offerts à '+giftTargetEmail+' (solde de recharge : '+res.new_bonus+').','ok');
     await loadStats();
   }catch(e){btn.textContent='Offrir';btn.disabled=false;errEl.textContent='Erreur : '+e.message;errEl.style.display='block';}
 }
@@ -772,8 +774,8 @@ async function deleteUser(email){
 }
 
 function exportCSV(){
-  var rows=[['Email','Pseudo','Plan','Générations utilisées','Générations limite','Inscrit le','Banni']];
-  allUsersData.forEach(function(u){rows.push([u.email,u.username||'',u.plan,(u.generations_used??0),u.generations_limit,new Date(u.created_at).toLocaleDateString('fr-FR'),u.banned?'oui':'non']);});
+  var rows=[['Email','Pseudo','Plan','Crédits utilisés','Crédits par mois','Inscrit le','Banni']];
+  allUsersData.forEach(function(u){rows.push([u.email,u.username||'',u.plan,(u.credits_used??0),u.credits_limit,new Date(u.created_at).toLocaleDateString('fr-FR'),u.banned?'oui':'non']);});
   var csv=rows.map(function(r){return r.map(function(v){var t=String(v);if(/^[=+\-@\t\r]/.test(t))t="'"+t;return '"'+t.replace(/"/g,'""')+'"';}).join(',');}).join('\n');
   var a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));a.download='ficheai_utilisateurs_'+new Date().toISOString().split('T')[0]+'.csv';a.click();
 }
@@ -800,25 +802,37 @@ async function loadFiches(){
   }catch(e){if(e.message!=='WRONG_SECRET'){document.getElementById('fiches-msg').textContent='⚠️ Impossible de charger les fiches : '+e.message;document.getElementById('fiches-msg').className='msg error';}}
 }
 
+var maintState=null;
+function renderMaint(){
+  var el=document.getElementById('maint-status');if(!el)return;
+  document.getElementById('maint-toggle').classList.toggle('on',maintenanceOn);
+  if(!maintenanceOn){el.textContent='🟢 Site en ligne normalement';return;}
+  var t=maintState&&maintState.starts_at?new Date(maintState.starts_at).getTime():0;
+  var left=Math.round((t-Date.now())/1000);
+  el.textContent=left>0?('🟠 Maintenance programmée : blocage dans '+Math.floor(left/60)+' min '+String(left%60).padStart(2,'0')+' s'):'🔴 Site en maintenance (tu gardes l\'accès)';
+}
 async function loadMaintenanceStatus(){
   try{
     var r=await fetch(SUPABASE_URL+'/rest/v1/rpc/get_maintenance_status',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Content-Type':'application/json'},body:'{}'});
     var d=await r.json();
-    maintenanceOn=d.maintenance_mode;
-    document.getElementById('maint-toggle').classList.toggle('on',maintenanceOn);
-    document.getElementById('maint-status').textContent=maintenanceOn?'🔴 Site en maintenance':'🟢 Site en ligne normalement';
+    if(!d){document.getElementById('maint-status').textContent='⚠️ Réglage introuvable en base';return;}
+    maintState=d;maintenanceOn=!!d.maintenance_mode;
+    var inp=document.getElementById('maint-text');if(inp&&!inp.value&&d.message)inp.placeholder='Message actuel : '+d.message;
+    renderMaint();
   }catch(e){}
 }
+setInterval(renderMaint,1000);
 
 async function toggleMaintenance(){
   var nouveauEtat=!maintenanceOn;
-  if(nouveauEtat&&!confirm('Activer le mode maintenance ? Le site sera inaccessible pour tous les utilisateurs.'))return;
+  if(nouveauEtat&&!confirm('Activer le mode maintenance ? Les élèves auront 2 minutes pour finir, puis l\'application sera bloquée.'))return;
   try{
-    await callAdmin('set_maintenance',{enabled:nouveauEtat});
-    maintenanceOn=nouveauEtat;
-    document.getElementById('maint-toggle').classList.toggle('on',maintenanceOn);
-    document.getElementById('maint-status').textContent=maintenanceOn?'🔴 Site en maintenance':'🟢 Site en ligne normalement';
-    showMsg('maint-msg','✅ Mode maintenance '+(maintenanceOn?'activé':'désactivé')+'.','ok');
+    var msg=(document.getElementById('maint-text').value||'').trim();
+    var res=await callAdmin('set_maintenance',nouveauEtat?{enabled:true,message:msg||undefined}:{enabled:false});
+    if(!res||!res.success)throw new Error((res&&res.error)||'enregistrement refusé');
+    await loadMaintenanceStatus();
+    if(maintenanceOn!==nouveauEtat)throw new Error('le réglage n\'a pas été enregistré');
+    showMsg('maint-msg','✅ Mode maintenance '+(maintenanceOn?'activé : blocage dans 2 minutes':'désactivé')+'.','ok');
   }catch(e){showMsg('maint-msg','⚠️ Erreur : '+e.message,'error');}
 }
 

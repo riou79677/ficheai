@@ -72,21 +72,21 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Corps invalide' });
   }
 
-  // Price IDs Stripe
+  // Price IDs Stripe. « credits » = crédits par mois (Rapide 1, Approfondi 2, chat 1) ; les autres limites ne servent plus.
   const PLANS = {
-    'price_1TXfc5JBbEVt3aRD8UpsC4Ym': { plan: 'pro',      genLimit: 50,  chatLimit: 20,  fcLimit: 100 },  // Pro mensuel
-    'price_1TXfefJBbEVt3aRDhNEcUNQl': { plan: 'pro',      genLimit: 50,  chatLimit: 20,  fcLimit: 100 },  // Pro annuel
-    'price_1USuiLJBbEVt3aRDV5FtLJtZ': { plan: 'pro',      genLimit: 50,  chatLimit: 20,  fcLimit: 100 },  // Pro annuel 79,90 € (actuel)
-    'price_1TXfiUJBbEVt3aRDXGVS7pAz': { plan: 'ultimate', genLimit: 300, chatLimit: 300, fcLimit: 500 },  // Ultimate mensuel
-    'price_1TXfj3JBbEVt3aRDei6gdSy0': { plan: 'ultimate', genLimit: 300, chatLimit: 300, fcLimit: 500 },  // Ultimate annuel
+    'price_1TXfc5JBbEVt3aRD8UpsC4Ym': { plan: 'pro',      credits: 110, genLimit: 50,  chatLimit: 20,  fcLimit: 100 },  // Pro mensuel
+    'price_1TXfefJBbEVt3aRDhNEcUNQl': { plan: 'pro',      credits: 110, genLimit: 50,  chatLimit: 20,  fcLimit: 100 },  // Pro annuel
+    'price_1USuiLJBbEVt3aRDV5FtLJtZ': { plan: 'pro',      credits: 110, genLimit: 50,  chatLimit: 20,  fcLimit: 100 },  // Pro annuel 79,90 € (actuel)
+    'price_1TXfiUJBbEVt3aRDXGVS7pAz': { plan: 'ultimate', credits: 250, genLimit: 300, chatLimit: 300, fcLimit: 500 },  // Ultimate mensuel
+    'price_1TXfj3JBbEVt3aRDei6gdSy0': { plan: 'ultimate', credits: 250, genLimit: 300, chatLimit: 300, fcLimit: 500 },  // Ultimate annuel
   };
 
   // Paliers de recharge ponctuelle (paiement unique, pas d'abonnement) : créditent un solde séparé
-  // (bonus_generations), valable 12 mois, consommé après le quota mensuel et jamais remis à zéro.
+  // (bonus_generations, en crédits), valable 12 mois, consommé après le quota mensuel et jamais remis à zéro.
   const CREDIT_PACKS = {
-    'price_1TvvwjJBbEVt3aRDYw3CewZz': 50,   // Recharge 50 générations — 6,99€
-    'price_1TvvwqJBbEVt3aRDRZXro9z5': 150,  // Recharge 150 générations — 19,99€
-    'price_1TvvwxJBbEVt3aRDJN6pTiYz': 400,  // Recharge 400 générations — 49,99€
+    'price_1TvvwjJBbEVt3aRDYw3CewZz': 100,  // Recharge 100 crédits — 6,99€ (= 50 générations Approfondi)
+    'price_1TvvwqJBbEVt3aRDRZXro9z5': 300,  // Recharge 300 crédits — 19,99€
+    'price_1TvvwxJBbEVt3aRDJN6pTiYz': 800,  // Recharge 800 crédits — 49,99€
   };
 
   // Récupère les articles achetés lors d'une session de paiement ponctuel.
@@ -98,7 +98,7 @@ export default async function handler(req, res) {
     return d.data || [];
   }
 
-  // Ajoute des générations au quota, de façon atomique et protégée contre les doublons :
+  // Ajoute des crédits de recharge, de façon atomique et protégée contre les doublons :
   // si Stripe renvoie le même événement plusieurs fois (comportement normal et documenté
   // de Stripe), le crédit n'est appliqué qu'une seule fois grâce à l'identifiant unique
   // de l'événement (eventId).
@@ -219,12 +219,15 @@ export default async function handler(req, res) {
       if (alreadyOnThisPlan) {
         // Simple mise à jour de l'abonnement (ex : résiliation programmée puis reprise dans le portail) :
         // le forfait n'a pas changé, donc on ne remet PAS les compteurs à zéro. Le quota se renouvelle
-        // tout seul chaque mois dans la fonction check_and_consume_quota.
+        // tout seul chaque mois dans la fonction consume_credits.
         fields = { stripe_customer_id: customerId };
       } else if (isActive && priceId && PLANS[priceId]) {
         const p = PLANS[priceId];
         fields = {
           plan: p.plan,
+          credits_limit: p.credits,
+          credits_used: 0,
+          credits_used_today: 0,
           generations_limit: p.genLimit,
           generations_used: 0,
           chat_messages_limit: p.chatLimit,
@@ -239,6 +242,8 @@ export default async function handler(req, res) {
         // Annulé / impayé / en retard → retour au plan gratuit.
         fields = {
           plan: 'starter',
+          credits_limit: 10,
+          credits_used: 0,
           generations_limit: 5,
           generations_used: 0,
           chat_messages_limit: 0,
@@ -277,7 +282,7 @@ export default async function handler(req, res) {
                 if (result.already_processed) {
                   console.log('Événement déjà traité, ignoré :', event.id);
                 } else {
-                  console.log('Recharge créditée :', email, '+' + amount, 'générations');
+                  console.log('Recharge créditée :', email, '+' + amount, 'crédits');
                 }
               } catch (creditErr) {
                 console.error('Échec du crédit de générations, Stripe va réessayer:', creditErr);
@@ -295,6 +300,8 @@ export default async function handler(req, res) {
       if (email) {
         await updateUserPlan(email, {
           plan: 'starter',
+          credits_limit: 10,
+          credits_used: 0,
           generations_limit: 5,
           generations_used: 0,
           chat_messages_limit: 0,

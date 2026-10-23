@@ -370,8 +370,8 @@ FicheAI
 
 <div class="stats">
 <div class="stat-item reveal">
-<div class="stat-val">5</div>
-<div class="stat-label">Générations gratuites par semaine</div>
+<div class="stat-val">10</div>
+<div class="stat-label">Crédits gratuits chaque mois</div>
 </div>
 <div class="stat-item reveal">
 <div class="stat-val">6</div>
@@ -501,14 +501,15 @@ FicheAI
 <div class="price-sub">Aucune carte bancaire</div>
 <div class="price-note"></div>
 <ul class="feat">
-<li><b>5 générations</b> par semaine</li>
+<li><b>10 crédits</b> par mois, qualité Rapide</li>
+<li>🎓 <b>2 fiches Approfondi</b> offertes</li>
 <li>Fiches, quiz, flashcards, mind maps, questions, chronologies</li>
 <li>Import PDF jusqu'à 15 pages</li>
 <li>Bibliothèque de fiches</li>
+<li>💬 Chat IA avec ton cours</li>
 <li>Fiches en FR, EN, ES ou DE</li>
 <li>Téléchargement .txt</li>
 <li class="no">Sujets d'examen</li>
-<li class="no">Chat IA avec ton cours</li>
 <li class="no">Mode révision des flashcards</li>
 <li class="no">Export PDF</li>
 </ul>
@@ -522,11 +523,10 @@ FicheAI
 <div class="price-note" id="pro-price-note"></div>
 <ul class="feat">
 <li class="all">Tout le Starter, et :</li>
-<li><b>50 générations</b> par mois</li>
-<li>Notre IA la plus avancée pour toutes tes fiches</li>
+<li><b>110 crédits</b> par mois, soit 55 fiches Approfondi</li>
+<li>🎓 Qualité <b>Approfondi</b> à chaque génération : plus de détails et d'explications</li>
 <li>📝 Sujets d'examen type brevet, bac ou partiels</li>
-<li>💬 Chat IA avec ton cours : 20 messages par mois</li>
-<li>🔁 Mode révision des flashcards : 100 paquets par mois</li>
+<li>🔁 Mode révision des flashcards</li>
 <li>Import PDF jusqu'à 40 pages, schémas et images lus par l'IA</li>
 <li>📄 Export PDF et schémas dans tes fiches</li>
 </ul>
@@ -538,16 +538,14 @@ FicheAI
 <div class="plan-tag">Pour tout réviser, sans compter</div>
 <div class="price"><span class="amount">14,99</span><span class="cur">€</span><span class="per">par mois</span></div>
 <div class="price-sub">Sans engagement</div>
-<div class="price-note gold">0,05 € la génération : 3 fois moins cher qu'en Pro</div>
+<div class="price-note gold">0,06 € le crédit : 17 % moins cher qu'en Pro</div>
 <ul class="feat">
 <li class="all">Tout le Pro, et :</li>
-<li><b>300 générations</b> par mois, 6 fois plus qu'en Pro</li>
-<li>💬 Chat IA : <b>300 messages</b> par mois, 15 fois plus</li>
-<li>🔁 Mode révision : <b>500 paquets</b> de flashcards par mois</li>
+<li><b>250 crédits</b> par mois, soit 125 fiches Approfondi, 2,3 fois plus qu'en Pro</li>
 <li>Historique complet de tes conversations (5 dernières en Pro)</li>
 <li>Import PDF jusqu'à <b>50 pages</b></li>
 <li>8 pages de schémas et d'images lues par l'IA (4 en Pro)</li>
-<li>Jusqu'à 30 générations par jour (10 en Pro)</li>
+<li>Jusqu'à 60 crédits par jour (30 en Pro)</li>
 <li>Accès en avant-première aux nouveautés</li>
 </ul>
 <button id="ultimate-cta" onclick="handlePlanClick('ultimate','monthly')" style="display:block;width:100%;text-align:center;padding:0.8rem;border-radius:100px;background:linear-gradient(135deg,#e17055,var(--gold));color:#1a1200;text-decoration:none;font-weight:800;font-size:0.85rem;border:none;cursor:pointer;font-family:var(--font-b);box-shadow:0 6px 24px rgba(253,203,110,0.35)">Passer à Ultimate →</button>
@@ -578,7 +576,7 @@ FicheAI
 </div>
 <div class="faq-item reveal">
 <button class="faq-q" onclick="toggleFaq(this)">Faut-il une carte bancaire pour essayer ? <span>+</span></button>
-<div class="faq-a"><p>Non. Le plan Starter est gratuit (5 générations par semaine) et ne demande aucune carte bancaire. Le compte sert à enregistrer tes fiches et à suivre ton quota. La carte n'est demandée que pour les plans payants. Le plan Pro inclut 7 jours d'essai gratuit. Le plan Ultimate est facturé dès la souscription, sans période d'essai.</p></div>
+<div class="faq-a"><p>Non. Le plan Starter est gratuit (10 crédits par mois) et ne demande aucune carte bancaire. Le compte sert à enregistrer tes fiches et à suivre ton quota. La carte n'est demandée que pour les plans payants. Le plan Pro inclut 7 jours d'essai gratuit. Le plan Ultimate est facturé dès la souscription, sans période d'essai.</p></div>
 </div>
 </div>
 </section>
@@ -666,7 +664,7 @@ function setProBilling(b){
     ? Math.round(PRO_MONTHLY * 12 - PRO_YEARLY) + ' € économisés par rapport au mensuel'
     : '7 jours d\'essai gratuit pour un premier abonnement';
   var ulti = document.querySelector('.plan-ultimate .price-note');
-  if (ulti) ulti.textContent = '0,05 € la génération : ' + (yearly ? '2,5' : '3') + ' fois moins cher qu\'en Pro' + (yearly ? ' annuel' : '');
+  if (ulti) ulti.textContent = yearly ? '0,06 € le crédit, sans t\'engager sur un an' : '0,06 € le crédit : 17 % moins cher qu\'en Pro';
   var _c = document.getElementById('pro-cta'); if (_c && !_c.disabled) _c.textContent = yearly ? 'S\'abonner à l\'année' : 'Essayer 7 jours gratuits';
   var on = 'background:linear-gradient(135deg,#6c5ce7,#fd79a8);color:#fff', off = 'background:transparent;color:#9898b8';
   ['monthly','yearly'].forEach(function(k){
@@ -727,5 +725,6 @@ this.classList.add('active');
 });
 </script>
 <script src="/va.js" defer></script>
+<script src="/maintenance.js" defer></script>
 </body>
 </html>

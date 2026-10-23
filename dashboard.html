@@ -224,11 +224,11 @@ allFiches=await r.json();renderPage();
 function renderPage(){
 var plan=currentUser.plan||'starter';
 var planDisplay=plan.charAt(0).toUpperCase()+plan.slice(1);
-var remaining=currentUser.remaining===999999?'∞':(currentUser.remaining!==undefined?currentUser.remaining:5);
+var remaining=currentUser.remaining===999999?'∞':(currentUser.remaining!==undefined?currentUser.remaining:10);
 var formats=['all','fiche','quiz','flash','mindmap','questions','chrono'];
 var labels={'all':'Tout','fiche':'📄 Fiches','quiz':'✅ Quiz','flash':'🃏 Flashcards','mindmap':'🧠 Mind Maps','questions':'💬 Questions','chrono':'📅 Chronologies'};
 var filtered=currentFilter==='all'?allFiches:allFiches.filter(function(f){return f.format===currentFilter;});
-var html='<div class="page-header"><h1>📚 Ma bibliothèque</h1><p>Plan <b>'+planDisplay+'</b> · '+remaining+' générations restantes '+(planDisplay&&/starter|gratuit/i.test(planDisplay)?'cette semaine':'ce mois')+'</p></div>';
+var html='<div class="page-header"><h1>📚 Ma bibliothèque</h1><p>Plan <b>'+planDisplay+'</b> · '+remaining+' crédits restants ce mois-ci</p></div>';
 html+='<div class="stats-row"><div class="stat-card"><div class="stat-val">'+allFiches.length+'</div><div class="stat-label">Fiches sauvegardées</div></div><div class="stat-card"><div class="stat-val">'+[...new Set(allFiches.map(function(f){return f.format;}))].length+'</div><div class="stat-label">Formats utilisés</div></div><div class="stat-card"><div class="stat-val">'+planDisplay+'</div><div class="stat-label">Ton plan actuel</div></div></div>';
 html+='<div class="filters">'+formats.map(function(f){return '<button class="filter-btn '+(currentFilter===f?'active':'')+'" onclick="setFilter(\''+f+'\')">'+labels[f]+'</button>';}).join('')+'</div>';
 if(filtered.length===0){html+='<div class="empty-state"><div class="empty-icon">📭</div><h3>'+(currentFilter==='all'?'Aucune fiche sauvegardée':'Aucune fiche dans ce format')+'</h3><p>Génère ta première fiche et elle apparaîtra ici !</p><a href="/app.html" class="btn-primary">Générer une fiche</a></div>';}
@@ -350,5 +350,6 @@ exportToPDF(fiche.contenu, (fiche.format_icon||'📄')+' '+(fiche.titre||'Fiche'
 }
 </script>
 <script src="/va.js" defer></script>
+<script src="/maintenance.js" defer></script>
 </body>
 </html>

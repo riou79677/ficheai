@@ -213,7 +213,7 @@ if(data.access_token){
 await fetch(SUPABASE_URL+'/rest/v1/users',{
 method:'POST',
 headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+data.access_token,'Prefer':'resolution=ignore-duplicates'},
-body:JSON.stringify({id:newUser.id,email:email,username:username,plan:'starter',generations_used:0,generations_limit:5})
+body:JSON.stringify({id:newUser.id,email:email,username:username,plan:'starter',credits_used:0,credits_limit:10})
 }).catch(function(){});
 
 
@@ -278,7 +278,7 @@ overlay.innerHTML = '<div style="max-width:1000px;margin:0 auto">'
 + '<div style="font-size:0.72rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#9898b8;margin-bottom:0.7rem">Starter</div>'
 + '<div style="font-family:var(--font-h);font-size:2.2rem;font-weight:800;line-height:1">0€</div>'
 + '<div style="font-size:0.78rem;color:#9898b8;margin:0.3rem 0 1.1rem">gratuit, sans carte bancaire</div>'
-+ '<ul style="list-style:none;padding:0;font-size:0.82rem;color:#b8b8d0;display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1.4rem;flex:1">'+li('5 générations par semaine')+li('Tous les formats')+li('Import PDF jusqu\'à 15 pages')+'</ul>'
++ '<ul style="list-style:none;padding:0;font-size:0.82rem;color:#b8b8d0;display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1.4rem;flex:1">'+li('10 crédits par mois')+li('2 fiches Approfondi offertes')+li('Chat IA : 1 crédit par message')+li('Import PDF jusqu\'à 15 pages')+'</ul>'
 + '<button data-plan="starter" style="width:100%;padding:0.8rem;border-radius:12px;border:1.5px solid rgba(255,255,255,0.18);background:none;color:#f0efff;font-weight:700;cursor:pointer;font-family:inherit;font-size:0.9rem">Continuer gratuitement</button>'
 + '</div>'
 
@@ -291,7 +291,7 @@ overlay.innerHTML = '<div style="max-width:1000px;margin:0 auto">'
 + '<button data-bill="yearly" style="flex:1;padding:0.45rem 0.4rem;border:none;border-radius:100px;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit;'+(yearly?'background:#7c6dfa;color:#fff':'background:transparent;color:#9898b8')+'">Annuel <span style="color:'+(yearly?'#fde68a':'#4ade80')+'">-17%</span></button></div>'
 + '<div style="font-family:var(--font-h);font-size:2.2rem;font-weight:800;line-height:1">'+(yearly?'79,90€':'7,99€')+'</div>'
 + '<div style="font-size:0.78rem;color:#b8b8d0;margin:0.3rem 0 1.1rem">'+(yearly?'par an · soit 6,66 € par mois · 2 mois offerts':'par mois · 7 jours d\'essai gratuit')+'</div>'
-+ '<ul style="list-style:none;padding:0;font-size:0.82rem;color:#b8b8d0;display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1.4rem;flex:1">'+li('50 générations par mois')+li('Chat IA avec historique')+li('Export PDF et schémas')+li('Import PDF jusqu\'à 40 pages')+'</ul>'
++ '<ul style="list-style:none;padding:0;font-size:0.82rem;color:#b8b8d0;display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1.4rem;flex:1">'+li('110 crédits par mois (55 fiches Approfondi)')+li('Chat IA avec historique')+li('Export PDF et schémas')+li('Import PDF jusqu\'à 40 pages')+'</ul>'
 + '<button data-plan="pro" style="width:100%;padding:0.8rem;border-radius:12px;border:none;background:linear-gradient(135deg,#7c6dfa,#f472b6);color:#fff;font-weight:700;cursor:pointer;font-family:inherit;font-size:0.9rem">'+(yearly?'Choisir Pro annuel':'Essayer 7 jours gratuits')+'</button>'
 + '</div>'
 
@@ -301,7 +301,7 @@ overlay.innerHTML = '<div style="max-width:1000px;margin:0 auto">'
 + '<div style="height:2.2rem;margin-bottom:1rem"></div>'
 + '<div style="font-family:var(--font-h);font-size:2.2rem;font-weight:800;line-height:1">14,99€</div>'
 + '<div style="font-size:0.78rem;color:#b8b8d0;margin:0.3rem 0 1.1rem">par mois, sans engagement</div>'
-+ '<ul style="list-style:none;padding:0;font-size:0.82rem;color:#b8b8d0;display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1.4rem;flex:1">'+li('300 générations par mois')+li('Chat IA : 300 messages, historique complet')+li('Simulation d\'examen et suivi')+li('Import PDF jusqu\'à 50 pages')+'</ul>'
++ '<ul style="list-style:none;padding:0;font-size:0.82rem;color:#b8b8d0;display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1.4rem;flex:1">'+li('250 crédits par mois (125 fiches Approfondi)')+li('Chat IA avec historique complet')+li('Simulation d\'examen et suivi')+li('Import PDF jusqu\'à 50 pages')+'</ul>'
 + '<button data-plan="ultimate" style="width:100%;padding:0.8rem;border-radius:12px;border:none;background:linear-gradient(135deg,#e17055,#fdcb6e);color:#fff;font-weight:700;cursor:pointer;font-family:inherit;font-size:0.9rem">Choisir Ultimate</button>'
 + '</div>'
 
@@ -322,5 +322,6 @@ document.getElementById('submit-btn').addEventListener('click',handleSignup);
 document.addEventListener('keydown',function(e){if(e.key==='Enter' && consentCheckbox.checked)handleSignup();});
 </script>
 <script src="/va.js" defer></script>
+<script src="/maintenance.js" defer></script>
 </body>
 </html>

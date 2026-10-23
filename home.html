@@ -90,21 +90,22 @@ document.getElementById('logout').addEventListener('click',function(e){e.prevent
   try{
     var t=await window.ficheaiToken();
     if(t){
-      var r=await fetch(SB+'/rest/v1/users?email=eq.'+encodeURIComponent(u.email)+'&select=plan,generations_used,generations_limit,bonus_generations,bonus_expires_at,username',{headers:{apikey:KEY,Authorization:'Bearer '+t}});
+      var r=await fetch(SB+'/rest/v1/users?email=eq.'+encodeURIComponent(u.email)+'&select=plan,credits_used,credits_limit,bonus_generations,bonus_expires_at,username',{headers:{apikey:KEY,Authorization:'Bearer '+t}});
       var d=await r.json();
       if(Array.isArray(d)&&d[0]){
         var x=d[0];plan=x.plan||plan;
         var bonus=(x.bonus_generations>0&&(!x.bonus_expires_at||new Date(x.bonus_expires_at)>new Date()))?x.bonus_generations:0;
-        var left=Math.max(0,(x.generations_limit||0)-(x.generations_used||0))+bonus;
+        var left=x.credits_limit>=100000?'∞':Math.max(0,(x.credits_limit||0)-(x.credits_used||0))+bonus;
         var names={starter:'Starter',pro:'Pro',ultimate:'Ultimate'};
-        document.getElementById('status').innerHTML='<span class="pill">Plan <b>'+esc(names[plan]||plan)+'</b></span><span class="pill"><b>'+left+'</b> génération'+(left>1?'s':'')+' restante'+(left>1?'s':'')+(plan==='starter'?' cette semaine':' ce mois-ci')+'</span>';
+        document.getElementById('status').innerHTML='<span class="pill">Plan <b>'+esc(names[plan]||plan)+'</b></span><span class="pill"><b>'+left+'</b> crédit'+(left>1?'s':'')+' restant'+(left>1?'s':'')+' ce mois-ci</span>';
         if(x.username)document.getElementById('hello').textContent='Salut '+x.username+' 👋';
       }
     }
   }catch(e){}
-  if(plan==='starter'){document.getElementById('chat-badge').style.display='inline-block';document.getElementById('chat-card').classList.add('lock');document.getElementById('chat-card').href='/settings.html';}
+  // Chat IA ouvert à tous les forfaits (1 crédit par message).
 })();
 </script>
 <script src="/va.js" defer></script>
+<script src="/maintenance.js" defer></script>
 </body>
 </html>

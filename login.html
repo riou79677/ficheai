@@ -149,18 +149,20 @@ async function handleLogin(){
       return;
     }
     var planResponse=await fetch(
-      SUPABASE_URL+'/rest/v1/users?email=eq.'+encodeURIComponent(email)+'&select=plan,generations_used,generations_limit,bonus_generations,bonus_expires_at',
+      SUPABASE_URL+'/rest/v1/users?email=eq.'+encodeURIComponent(email)+'&select=plan,credits_used,credits_limit,bonus_generations,bonus_expires_at,approfondi_offerts',
       {headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+data.access_token}}
     );
     var planData=await planResponse.json();
     var userInfo=(planData&&planData[0])?planData[0]:null;
     var plan='starter';
-    var limit=5;
-    var remaining=5;
+    var limit=10;
+    var remaining=10;
+    var offerts=0;
     if(userInfo){
       plan=userInfo.plan||'starter';
-      var baseLimit=userInfo.generations_limit||5;
-      var used=userInfo.generations_used||0;
+      var baseLimit=userInfo.credits_limit||10;
+      var used=userInfo.credits_used||0;
+      offerts=userInfo.approfondi_offerts||0;
       var bonus=(userInfo.bonus_generations>0&&(!userInfo.bonus_expires_at||new Date(userInfo.bonus_expires_at)>new Date()))?userInfo.bonus_generations:0;
       limit=baseLimit+bonus;
       remaining=Math.max(0,baseLimit-used)+bonus;
@@ -171,6 +173,7 @@ async function handleLogin(){
       plan:plan,
       remaining:remaining,
       limit:limit,
+      offerts:offerts,
       access_token:data.access_token,
       refresh_token:data.refresh_token,
       expires_at:data.expires_at
@@ -223,5 +226,6 @@ document.getElementById('forgot-link').addEventListener('click',async function()
 var b=document.getElementById('msg-success');if(b){b.textContent='✅ Ton adresse e-mail est confirmée ! Connecte-toi pour commencer.';b.style.display='block';}
 }}catch(e){}})();
 </script>
+<script src="/maintenance.js" defer></script>
 </body>
 </html>

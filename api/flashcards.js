@@ -139,21 +139,21 @@ export default async function handler(req, res) {
   };
 
   // Mode maintenance : bloque tout le monde pendant que le site est en pause
+  // Maintenance : tout le monde est bloqué, sauf le compte administrateur (vérifié après lecture du profil).
+  let maintBlock = null;
   try {
     const maintRes = await fetch(SUPABASE_URL + '/rest/v1/rpc/get_maintenance_status', {
       method: 'POST', headers: { ...sb, 'Content-Type': 'application/json' }, body: '{}'
     });
     const maint = await maintRes.json();
-    if (maint && maint.hard_blocked) {
-      return res.status(503).json({ error: maint.message || 'FicheAI est en maintenance. On revient très vite !' });
-    }
+    if (maint && maint.hard_blocked) maintBlock = maint.message || 'FicheAI est en maintenance. On revient très vite !';
   } catch (e) { /* si la vérification échoue, on laisse passer */ }
 
   // Vérifie qu'un compte existe pour cet email, et qu'il n'est pas banni
   let banMsg = 'Ce compte a été suspendu.';
   async function requireUser(email) {
     if (!email) return null;
-    const r = await fetch(SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=email,banned_reason,banned_until', { headers: sb });
+    const r = await fetch(SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=email,banned_reason,banned_until,is_dev', { headers: sb });
     const u = await r.json();
     const found = (Array.isArray(u) && u[0]) ? u[0] : null;
     if (!found) return null;
@@ -190,6 +190,7 @@ export default async function handler(req, res) {
     if (!email) return res.status(401).json({ error: 'Non connecté' });
     const checkUser = await requireUser(email);
     if (checkUser === 'BANNED') return res.status(403).json({ error: banMsg });
+    if (maintBlock && !(checkUser && checkUser.is_dev === true)) return res.status(503).json({ error: maintBlock, reason: 'maintenance' });
 
     // Mode "file de révision" : les cartes à réviser maintenant
     if (req.query.due === '1') {
@@ -249,6 +250,7 @@ export default async function handler(req, res) {
     const user = await requireUser(email);
     if (user === 'BANNED') return res.status(403).json({ error: banMsg });
     if (!user) return res.status(403).json({ error: 'Compte introuvable. Reconnecte-toi.' });
+    if (maintBlock && !(user && user.is_dev === true)) return res.status(503).json({ error: maintBlock, reason: 'maintenance' });
 
     // ── Noter une carte après révision ──
     if (body.action === 'review') {
@@ -306,42 +308,37 @@ export default async function handler(req, res) {
 
       // 2) Vérification et décompte du quota (le Mode Révision est réservé aux plans Pro/Ultimate,
       //    et limité même en Ultimate pour éviter un usage abusif coûteux)
+      let debit = null; // 1 crédit par paquet de cartes de révision
       try {
         const quotaRes = await fetch(
-          SUPABASE_URL + '/rest/v1/rpc/check_and_consume_quota',
-          { method: 'POST', headers: Object.assign({}, sb, { 'Content-Type': 'application/json' }), body: JSON.stringify({ p_email: email, p_type: 'flashcard' }) }
+          SUPABASE_URL + '/rest/v1/rpc/consume_credits',
+          { method: 'POST', headers: Object.assign({}, sb, { 'Content-Type': 'application/json' }), body: JSON.stringify({ p_email: email, p_cost: 1, p_kind: 'flashcard', p_offert: false }) }
         );
         const quota = await quotaRes.json();
-        if (!quota.allowed) {
-          if (quota.reason === 'plan_required') {
-            return res.status(403).json({ error: 'Le Mode Révision est disponible à partir du plan Pro.' });
+        if (!quota || !quota.allowed) {
+          if (quota && quota.reason === 'plan_required') {
+            return res.status(403).json({ error: 'Le Mode Révision est disponible à partir du forfait Pro.' });
           }
-          if (quota.reason === 'daily_limit_reached') {
-            return res.status(403).json({ error: 'Tu as atteint la limite de cartes pour aujourd\'hui. Reviens demain, ou passe à un plan supérieur !' });
+          if (quota && quota.reason === 'daily_limit_reached') {
+            return res.status(403).json({ error: 'Tu as atteint la limite de crédits pour aujourd\'hui. Reviens demain, ou passe à un forfait supérieur !' });
           }
-          return res.status(403).json({ error: 'Limite de cartes générées atteinte pour ce mois. Passe à un plan supérieur pour continuer !' });
+          return res.status(403).json({ error: 'Tu n\'as plus de crédits ce mois-ci (1 crédit par paquet de cartes).' });
         }
+        debit = quota;
       } catch (e) {
-        console.error('Erreur vérification quota flashcards:', e);
+        console.error('Erreur vérification crédits flashcards:', e);
         return res.status(503).json({ error: 'Service momentanément indisponible' });
       }
 
       // En cas d'échec après le décompte, on rend la carte de quota à l'utilisateur.
       const refundFlashcard = async () => {
         try {
-          const q = SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email);
-          const r = await fetch(q + '&select=flashcards_used,flashcards_used_today', { headers: sb });
-          const rows = await r.json();
-          const u = Array.isArray(rows) ? rows[0] : null;
-          if (!u) return;
-          await fetch(q, {
-            method: 'PATCH',
-            headers: { ...sb, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-            body: JSON.stringify({
-              flashcards_used: Math.max(0, (u.flashcards_used || 0) - 1),
-              flashcards_used_today: Math.max(0, (u.flashcards_used_today || 0) - 1)
-            })
+          if (!debit) return;
+          await fetch(SUPABASE_URL + '/rest/v1/rpc/refund_credits', {
+            method: 'POST', headers: { ...sb, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ p_email: email, p_from_month: debit.from_month || 0, p_from_bonus: debit.from_bonus || 0, p_offert: false })
           });
+          debit = null;
         } catch (e) { console.error('Remboursement flashcards:', e && e.message); }
       };
 
@@ -426,7 +423,7 @@ export default async function handler(req, res) {
         console.error('Erreur génération flashcards:', e);
         await logApiUsage(SERVICE_KEY, email, 'erreur:flashcards:' + String((e && e.message) || e).slice(0, 120), FLASH_MODEL, 0, 0);
         await refundFlashcard();
-        return res.status(500).json({ error: 'La création des cartes a échoué. Réessaie dans un instant : ton quota n\'a pas été décompté.' });
+        return res.status(500).json({ error: 'La création des cartes a échoué. Réessaie dans un instant : ton crédit t\'a été rendu.' });
       }
     }
 

@@ -39,7 +39,6 @@ body.nav-fixe{
   padding-top:var(--sat);
 }
 #mobile-menu{top:calc(65px + var(--sat))}
-#maintenance-banner{padding-top:calc(0.7rem + var(--sat)) !important}
 
 /* Fenêtres par-dessus la page : jamais sous l'encoche ni sous la barre du bas */
 .modal-bg,

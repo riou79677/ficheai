@@ -245,6 +245,14 @@ textarea::placeholder{color:var(--text3)}
 .instr-zone input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:9px;padding:0.6rem 0.8rem;font-size:0.84rem;color:var(--text);font-family:var(--font-b);outline:none}
 .instr-zone input:focus{border-color:var(--purple)}
 .instr-zone input::placeholder{color:var(--text3)}
+.qual-box{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:0.8rem}
+.qual-label{font-size:0.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.55rem}
+.qual-seg{display:grid;grid-template-columns:1fr 1fr;gap:0.5rem}
+.qual-btn{display:flex;flex-direction:column;gap:2px;text-align:left;background:var(--bg3,#13131f);border:1.5px solid var(--border2);border-radius:11px;padding:0.65rem 0.8rem;color:var(--text);cursor:pointer;font-family:inherit;transition:border 0.15s,background 0.15s}
+.qual-btn b{font-size:0.88rem}.qual-btn span{font-size:0.74rem;color:var(--text3);line-height:1.35}
+.qual-btn.on{border-color:var(--purple);background:rgba(108,92,231,0.12)}
+.qual-btn.locked{opacity:0.55}
+@media(max-width:420px){.qual-seg{grid-template-columns:1fr}}
 .multi-note{background:rgba(108,92,231,0.08);border:1px solid rgba(108,92,231,0.25);border-radius:11px;padding:0.6rem 1rem;font-size:0.8rem;color:var(--purple2)}
 .fmt-hint{font-size:0.68rem;color:var(--text3);margin:-0.4rem 0 0.7rem;line-height:1.4}
 .rc-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:0.9rem}
@@ -268,20 +276,14 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
 <link rel="stylesheet" href="/ecrans.css">
 </head>
 <body>
-<div id="maintenance-lock" style="display:none;position:fixed;inset:0;z-index:99999;background:#07070f;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:2rem;font-family:'DM Sans',sans-serif">
-  <div style="font-size:3.5rem;margin-bottom:1.2rem">🚧</div>
-  <h2 style="font-family:'Syne',sans-serif;font-size:1.6rem;margin-bottom:0.8rem;color:#f0efff">FicheAI est en maintenance</h2>
-  <p id="maintenance-lock-msg" style="font-size:0.95rem;color:#9898b8;line-height:1.7;max-width:420px;margin-bottom:2rem">On revient très vite !</p>
-  <button onclick="deconnexion()" style="background:transparent;border:1px solid rgba(255,255,255,0.18);color:#f0efff;padding:0.75rem 1.8rem;border-radius:100px;font-size:0.9rem;font-weight:600;cursor:pointer;font-family:inherit">🚪 Se déconnecter</button>
-</div>
-<div id="maintenance-banner" style="display:none;position:sticky;top:0;left:0;right:0;background:linear-gradient(135deg,#f59e0b,#f97316);color:#1a1200;padding:0.7rem 1rem;text-align:center;font-size:0.85rem;font-weight:700;z-index:2000"></div>
+
 <nav>
   <a href="/" class="logo">
     <div class="logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
     FicheAI
   </a>
   <div class="nav-right">
-    <span class="plan-badge" id="plan-badge-nav">Plan <span id="plan-name">Starter</span> · <span id="tok-nav">5</span> gen.</span>
+    <span class="plan-badge" id="plan-badge-nav">Plan <span id="plan-name">Starter</span> · <span id="tok-nav">10</span> crédits</span>
     <div style="position:relative;display:inline-block">
       <span id="user-display" style="display:none" class="user-badge" onclick="toggleMenu()"></span>
       <div id="user-menu" class="user-menu">
@@ -305,7 +307,7 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
         <button class="mode-btn" id="mode-chat-btn" onclick="switchMode('chat')">💬 Chat IA</button>
       </div>
       <div class="sidebar-label"><span class="step-num">1</span> Format de sortie</div>
-      <div class="fmt-hint">Tu peux en choisir plusieurs (1 génération par format, 4 maximum).</div>
+      <div class="fmt-hint">Tu peux en choisir plusieurs (4 maximum). Chaque format coûte 1 crédit en Rapide, 2 en Approfondi.</div>
       <div class="format-list" id="format-list">
         <div class="fmt active" data-fmt="fiche" data-icon="📄" data-name="Fiche de révision" onclick="selectFormat(this)"><span class="fmt-icon">📄</span><div class="fmt-info"><span class="fmt-name">Fiche de révision</span><span class="fmt-desc">Structurée & complète</span></div></div>
         <div class="fmt" data-fmt="quiz" data-icon="✅" data-name="Quiz QCM" onclick="selectFormat(this)"><span class="fmt-icon">✅</span><div class="fmt-info"><span class="fmt-name">Quiz QCM</span><span class="fmt-desc">6 questions & corrections</span></div></div>
@@ -337,7 +339,7 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
     <div class="sidebar-card" id="stats-card" style="display:none">
       <div class="sidebar-label">Ton activité</div>
       <div class="stats-mini">
-        <div class="stat-mini"><div class="stat-mini-val" id="stat-gen">–</div><div class="stat-mini-label">Générations</div></div>
+        <div class="stat-mini"><div class="stat-mini-val" id="stat-gen">–</div><div class="stat-mini-label">Crédits restants</div></div>
         <div class="stat-mini"><div class="stat-mini-val" id="stat-fiches">–</div><div class="stat-mini-label">Fiches sauvées</div></div>
       </div>
       <div class="quota-bar-wrap" id="quota-bar-wrap" style="display:none">
@@ -376,6 +378,13 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
         <div class="tip-card" onclick="genererDirectement()"><div class="tip-icon">⚡</div><div class="tip-title">Générer maintenant</div><div class="tip-desc">Lance la génération avec le format choisi</div></div>
         <div class="tip-card" onclick="switchMode('chat')"><div class="tip-icon">💬</div><div class="tip-title">Mode Chat IA</div><div class="tip-desc">Discute librement sur ton cours</div></div>
         <div class="tip-card" onclick="document.getElementById('file-input').click()"><div class="tip-icon">📎</div><div class="tip-title">Importer un fichier</div><div class="tip-desc">PDF ou TXT depuis tes documents</div></div>
+      </div>
+      <div class="qual-box" id="qual-box">
+        <div class="qual-label">Qualité de génération</div>
+        <div class="qual-seg">
+          <button type="button" class="qual-btn" id="qual-rapide" onclick="setGenMode('rapide')"><b>⚡ Rapide</b><span>L'essentiel du cours · 1 crédit</span></button>
+          <button type="button" class="qual-btn" id="qual-approfondi" onclick="setGenMode('approfondi')"><b>🎓 Approfondi</b><span id="qual-approfondi-sub">Plus de détails et d'explications · 2 crédits</span></button>
+        </div>
       </div>
       <div id="multi-note" class="multi-note" style="display:none"></div>
       <div id="error-box" class="error-box" style="display:none"></div>
@@ -487,7 +496,7 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
   <div class="signup-popup">
     <div style="font-size:3rem;margin-bottom:1rem">🚀</div>
     <h2>Crée ton compte gratuit</h2>
-    <p>Pour générer des fiches, quiz et flashcards avec FicheAI, crée ton compte gratuit : tu obtiens 5 générations offertes chaque semaine.</p>
+    <p>Pour générer des fiches, quiz et flashcards avec FicheAI, crée ton compte gratuit : tu obtiens 10 crédits offerts chaque mois, plus 2 fiches Approfondi pour découvrir la meilleure qualité.</p>
     <div class="signup-popup-btns">
       <a href="/signup.html" class="primary">Créer mon compte gratuit →</a>
       <a href="/login.html" class="secondary">J'ai déjà un compte</a>
@@ -517,7 +526,7 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
       <button onclick="simulatePlan('starter')" style="background:#181830;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:0.4rem 0.8rem;color:#9898b8;font-size:0.78rem;cursor:pointer;text-align:left;font-family:DM Sans,sans-serif;">👤 Simuler Starter (5)</button>
       <button onclick="simulatePlan('pro')" style="background:#181830;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:0.4rem 0.8rem;color:#9898b8;font-size:0.78rem;cursor:pointer;text-align:left;font-family:DM Sans,sans-serif;">⚡ Simuler Pro (50)</button>
       <button onclick="simulatePlan('ultimate')" style="background:#181830;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:0.4rem 0.8rem;color:#9898b8;font-size:0.78rem;cursor:pointer;text-align:left;font-family:DM Sans,sans-serif;">👑 Simuler Ultimate</button>
-      <button onclick="resetGenerations()" style="background:#181830;border:1px solid rgba(255,165,0,0.25);border-radius:8px;padding:0.4rem 0.8rem;color:#fb923c;font-size:0.78rem;cursor:pointer;text-align:left;font-family:DM Sans,sans-serif;">🔢 Générations à 0</button>
+      <button onclick="resetGenerations()" style="background:#181830;border:1px solid rgba(255,165,0,0.25);border-radius:8px;padding:0.4rem 0.8rem;color:#fb923c;font-size:0.78rem;cursor:pointer;text-align:left;font-family:DM Sans,sans-serif;">🔢 Crédits à 0</button>
       <button onclick="simulatePlan('reset')" style="background:#181830;border:1px solid rgba(108,92,231,0.25);border-radius:8px;padding:0.4rem 0.8rem;color:#a29bfe;font-size:0.78rem;cursor:pointer;text-align:left;font-family:DM Sans,sans-serif;">🔄 Réinitialiser</button>
       <button onclick="localStorage.removeItem('onboarding_vu');showOnboarding();" style="background:#181830;border:1px solid rgba(108,92,231,0.25);border-radius:8px;padding:0.4rem 0.8rem;color:#a29bfe;font-size:0.78rem;cursor:pointer;text-align:left;font-family:DM Sans,sans-serif;">🎓 Revoir l'onboarding</button>
     </div>
@@ -547,10 +556,49 @@ var PDF_NOTE='ℹ️ Seul le texte est lu : les schémas, images et formules ne 
 var pdfImages=[],pdfImagesKey='';
 function pdfImagesFor(txt){if(!pdfImages.length||!pdfImagesKey)return [];return String(txt||'').replace(/\s+/g,'').slice(0,120)===pdfImagesKey?pdfImages:[];}
 function formatMeta(f){var el=document.querySelector('.fmt[data-fmt="'+f+'"]');return el?{name:el.dataset.name,icon:el.dataset.icon}:{name:f,icon:'📄'};}
+// ── Qualité : Rapide (1 crédit) ou Approfondi (2 crédits) ──
+// Comptes gratuits : Rapide, sauf leurs fiches Approfondi offertes. Comptes payants : Approfondi par défaut (choix mémorisé).
+var genMode=null;
+function offertsLeft(){return savedUser&&savedUser.offerts!==undefined?savedUser.offerts:0;}
+function defaultGenMode(){
+  if(getPlan()==='starter')return offertsLeft()>0?'approfondi':'rapide';
+  try{var m=localStorage.getItem('ficheai_mode');if(m==='rapide'||m==='approfondi')return m;}catch(e){}
+  return 'approfondi';
+}
+function setGenMode(m){
+  if(m==='approfondi'&&getPlan()==='starter'&&offertsLeft()<=0){
+    showLimitModal('Tes fiches Approfondi offertes sont utilisées. Avec Pro, tu choisis la qualité Approfondi à chaque génération.','approfondi');return;
+  }
+  genMode=m;
+  if(getPlan()!=='starter'){try{localStorage.setItem('ficheai_mode',m);}catch(e){}}
+  renderGenMode();
+}
+function renderGenMode(){
+  if(!genMode)genMode=defaultGenMode();
+  if(genMode==='approfondi'&&getPlan()==='starter'&&offertsLeft()<=0)genMode='rapide';
+  var r=document.getElementById('qual-rapide'),a=document.getElementById('qual-approfondi'),sub=document.getElementById('qual-approfondi-sub');
+  if(!r||!a)return;
+  r.classList.toggle('on',genMode==='rapide');a.classList.toggle('on',genMode==='approfondi');
+  if(getPlan()==='starter'){
+    var o=offertsLeft();
+    sub.textContent=o>0?(o+' fiche'+(o>1?'s':'')+' offerte'+(o>1?'s':'')+' · 0 crédit'):'🔒 Disponible avec Pro';
+    a.classList.toggle('locked',o<=0);
+  } else {sub.textContent='Plus de détails et d\'explications · 2 crédits';a.classList.remove('locked');}
+  updateGenCostNote();
+}
+function genCost(n){
+  if(genMode==='approfondi'){
+    if(getPlan()==='starter'){var o=offertsLeft();return Math.max(0,n-o);} // au-delà des offertes : Rapide, 1 crédit
+    return 2*n;
+  }
+  return n;
+}
 function updateGenCostNote(){
-  var el=document.getElementById('multi-note');var n=selectedFormats.length;
-  if(n>1){el.style.display='block';el.textContent='⚡ '+n+' formats sélectionnés : '+n+' générations seront utilisées.';}
-  else{el.style.display='none';}
+  var el=document.getElementById('multi-note');if(!el)return;var n=selectedFormats.length;
+  if(!genMode)genMode=defaultGenMode();
+  var c=genCost(n);
+  el.style.display='block';
+  el.textContent=(n>1?'⚡ '+n+' formats · ':'')+(c===0?'Offert : aucun crédit utilisé':'Coût : '+c+' crédit'+(c>1?'s':''))+(tokensLeft<100000?' · il te reste '+tokensLeft+' crédit'+(tokensLeft>1?'s':''):'');
 }
 function getCharLimit(){var plan=savedUser?(savedUser.plan||'starter'):'starter';return plan==='ultimate'?100000:plan==='pro'?80000:30000;}
 function updateCharCount(){
@@ -610,7 +658,7 @@ function toggleDevPanel(){devPanelOpen=!devPanelOpen;document.getElementById('de
 function simulatePlan(plan){
   if(!savedUser)return;
   if(plan==='reset'){window.location.reload();return;}
-  var limits={starter:5,pro:50,ultimate:300};
+  var limits={starter:10,pro:110,ultimate:250};
   savedUser.plan=plan;savedUser.remaining=limits[plan];savedUser.limit=limits[plan];
   localStorage.setItem('ficheai_user',JSON.stringify(savedUser));
   document.getElementById('plan-name').textContent=plan.charAt(0).toUpperCase()+plan.slice(1);
@@ -628,7 +676,7 @@ function resetGenerations(){
   localStorage.setItem('ficheai_user',JSON.stringify(savedUser));
   document.getElementById('tok-nav').textContent='0';
   updateQuotaUI();
-  showToast('🔢 Générations à 0 !');
+  showToast('🔢 Crédits à 0 !');
 }
 
 function updateNavUpgradeBtn(){
@@ -666,10 +714,10 @@ function updateQuotaUI(){
     banner.style.display='flex';
     banner.classList.toggle('critical',pct>=95);
     document.getElementById('quota-banner-msg').innerHTML=pct>=95
-      ? 'Tu as utilisé <b>'+pct+'%</b> de tes générations '+(getPlan()==='starter'?'cette semaine':'ce mois-ci')+' ('+used+' / '+tokensLimit+'). Plus que '+tokensLeft+' restante'+(tokensLeft>1?'s':'')+' !'
-      : 'Tu approches de ta limite : <b>'+pct+'%</b> utilisé ('+used+' / '+tokensLimit+' générations '+(getPlan()==='starter'?'cette semaine':'ce mois-ci')+').';
+      ? 'Tu as utilisé <b>'+pct+'%</b> de tes crédits ce mois-ci ('+used+' / '+tokensLimit+'). Plus que '+tokensLeft+' crédit'+(tokensLeft>1?'s':'')+' !'
+      : 'Tu approches de ta limite : <b>'+pct+'%</b> de tes crédits utilisés ce mois-ci ('+used+' / '+tokensLimit+').';
     var bp=getPlan();
-    var rl='<a href="'+RECHARGE_50+'" target="_blank">+50 générations — 6,99€</a><a href="'+RECHARGE_150+'" target="_blank">+150 générations — 19,99€</a><a href="'+RECHARGE_400+'" target="_blank">+400 générations — 49,99€</a>';
+    var rl='<a href="'+RECHARGE_50+'" target="_blank">+100 crédits — 6,99€</a><a href="'+RECHARGE_150+'" target="_blank">+300 crédits — 19,99€</a><a href="'+RECHARGE_400+'" target="_blank">+800 crédits — 49,99€</a>';
     document.getElementById('quota-banner-links').innerHTML=bp==='starter'
       ? '<a href="'+PRO_M+'" target="_blank">⚡ Passer à Pro — 7,99€/mois</a><a href="'+ULT_M+'" target="_blank">👑 Ultimate</a>'
       : bp==='pro' ? '<a href="'+ULT_M+'" target="_blank">👑 Passer à Ultimate</a>'+rl : rl;
@@ -700,16 +748,27 @@ if(savedUser&&savedUser.email){
 }
 updateNavUpgradeBtn();
 GEN_BTN_HTML=document.getElementById('gen-btn').innerHTML;
+renderGenMode();
 
 /* Bouton photo masqué tant que l'analyse de photos n'existe pas */
 
+function applyCredits(rem,offerts){
+  if(typeof rem==='number'&&tokensLeft<100000)tokensLeft=Math.max(0,rem);
+  if(savedUser){savedUser.remaining=tokensLeft;if(typeof offerts==='number')savedUser.offerts=offerts;try{localStorage.setItem('ficheai_user',JSON.stringify(savedUser));}catch(e){}}
+  var shown=tokensLeft>=100000?'∞':tokensLeft;
+  document.getElementById('tok-nav').textContent=shown;
+  document.getElementById('stat-gen').textContent=shown;
+  updateQuotaUI();renderGenMode();
+  if(typeof updateChatCount==='function')updateChatCount();
+}
 async function refreshAccount(){
   if(!savedUser||!savedUser.email)return;
   try{
     var tk=await ficheaiToken();if(!tk)return;
-    var r=await fetch(SUPABASE_URL+'/rest/v1/users?email=eq.'+encodeURIComponent(savedUser.email)+'&select=plan,generations_used,generations_limit,bonus_generations,bonus_expires_at',{headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+tk}});
+    var r=await fetch(SUPABASE_URL+'/rest/v1/users?email=eq.'+encodeURIComponent(savedUser.email)+'&select=plan,credits_used,credits_limit,bonus_generations,bonus_expires_at,approfondi_offerts,quota_period_start',{headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+tk}});
     var d=await r.json();var u=Array.isArray(d)?d[0]:null;if(!u)return;
-    var base=u.generations_limit||5,used=u.generations_used||0;
+    var base=u.credits_limit||10,used=(u.quota_period_start&&new Date(u.quota_period_start)<new Date(Date.now()-30*86400000))?0:(u.credits_used||0);
+    savedUser.offerts=u.approfondi_offerts||0;
     var bonus=(u.bonus_generations>0&&(!u.bonus_expires_at||new Date(u.bonus_expires_at)>new Date()))?u.bonus_generations:0;
     savedUser.plan=u.plan||'starter';savedUser.limit=base+bonus;savedUser.remaining=Math.max(0,base-used)+bonus;
     localStorage.setItem('ficheai_user',JSON.stringify(savedUser));
@@ -718,7 +777,7 @@ async function refreshAccount(){
     var shown=tokensLeft>=100000?'∞':tokensLeft;
     document.getElementById('tok-nav').textContent=shown;
     document.getElementById('stat-gen').textContent=shown;
-    updateNavUpgradeBtn();updateQuotaUI();
+    updateNavUpgradeBtn();updateQuotaUI();renderGenMode();updateChatCount();
     if(currentMode==='chat')renderChatMode();
   }catch(e){}
 }
@@ -741,10 +800,7 @@ function switchMode(mode){
   if(mode==='chat')renderChatMode();
 }
 
-function renderChatMode(){
-  var plan=savedUser?(savedUser.plan||'starter'):'starter';
-  if(plan==='starter'){document.getElementById('chat-area').innerHTML='<div class="plan-lock"><div class="plan-lock-icon">💬</div><h3>Chat IA — Plan Pro requis</h3><p>Discute librement avec l\'IA sur ton cours, demande des explications personnalisées et génère du contenu sur mesure.</p><div class="plan-lock-features"><span class="plan-lock-feat">💬 20 messages/mois</span><span class="plan-lock-feat">🧠 Contexte de cours</span><span class="plan-lock-feat">💾 Sauvegarde des réponses</span><span class="plan-lock-feat">🎯 Questions d\'exam</span></div><a href="'+PRO_M+'" target="_blank">Passer à Pro — 7,99€/mois</a></div>';}
-}
+function renderChatMode(){ updateChatCount(); } // chat ouvert à tous les forfaits : 1 crédit par message
 
 function selectFormat(el){
   var plan=savedUser?(savedUser.plan||'starter'):'starter';
@@ -821,21 +877,21 @@ function limitOption(href,label,price,primary){
   return '<a href="'+href+'" target="_blank" style="'+(primary?'background:linear-gradient(135deg,#6c5ce7,#fd79a8);font-weight:700;':'background:#181830;border:1px solid rgba(255,255,255,0.13);font-weight:600;')+'color:#fff;padding:0.75rem 1rem;border-radius:12px;text-decoration:none;display:flex;justify-content:space-between"><span>'+label+'</span><span>'+price+'</span></a>';
 }
 function rechargeOptions(){
-  return limitOption(RECHARGE_50,'+50 générations','6,99€',false)+limitOption(RECHARGE_150,'+150 générations','19,99€',false)+limitOption(RECHARGE_400,'+400 générations','49,99€',false);
+  return limitOption(RECHARGE_50,'+100 crédits','6,99€',false)+limitOption(RECHARGE_150,'+300 crédits','19,99€',false)+limitOption(RECHARGE_400,'+800 crédits','49,99€',false);
 }
 // Fenêtre affichée quand la limite est atteinte : Starter -> abonnements, Pro -> Ultimate (+ recharges), Ultimate -> recharges.
 function showLimitModal(message,kind){
   var plan=getPlan();
-  if(plan==='ultimate'){showRechargeModal(message||'Tu as atteint ta limite de générations ce mois-ci.');return;}
+  if(plan==='ultimate'){showRechargeModal(message||'Tu as utilisé tous tes crédits ce mois-ci.');return;}
   var title,intro,opts;
   if(plan==='starter'){
-    title='Tu as utilisé tes générations gratuites 🎉';
-    intro='Passe à un abonnement pour continuer à réviser. Pro : 50 générations par mois, Chat IA, export PDF et sujets d’examen. Ultimate : 300 générations et 300 messages de chat par mois.';
+    title=kind==='approfondi'?'Passe à la qualité Approfondi':'Tu as utilisé tes crédits gratuits 🎉';
+    intro=(kind==='approfondi'&&message?message+' ':'')+'Pro : 110 crédits par mois (55 fiches Approfondi), Mode Révision, export PDF et sujets d’examen. Ultimate : 250 crédits par mois.'+(kind==='approfondi'?'':' Tes crédits gratuits reviennent à 10 le mois prochain.');
     opts=limitOption(PRO_M,'⚡ Pro','7,99€/mois',true)+limitOption(ULT_M,'👑 Ultimate','Voir l’offre',false);
   } else {
-    title=(plan==='starter'?'Limite atteinte pour cette semaine':'Limite atteinte pour ce mois-ci');
-    intro=(message?message+' ':'')+'Ultimate offre 300 générations et 300 messages de chat par mois'+(kind==='chat'?'.':', ou tu peux recharger des générations tout de suite :');
-    opts=limitOption(ULT_M,'👑 Passer à Ultimate','Voir l’offre',true)+(kind==='chat'?'':rechargeOptions());
+    title='Plus de crédits pour ce mois-ci';
+    intro=(message?message+' ':'')+'Ultimate offre 250 crédits par mois, ou tu peux recharger des crédits tout de suite (valables 12 mois) :';
+    opts=limitOption(ULT_M,'👑 Passer à Ultimate','Voir l’offre',true)+rechargeOptions();
   }
   var modal=document.createElement('div');
   modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:999;display:flex;align-items:center;justify-content:center;padding:1.5rem';
@@ -847,7 +903,7 @@ function showLimitModal(message,kind){
 function showRechargeModal(message){
   var modal=document.createElement('div');
   modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:999;display:flex;align-items:center;justify-content:center;padding:1.5rem';
-  modal.innerHTML='<div style="background:#0f0f1a;border:1px solid rgba(108,92,231,0.35);border-radius:20px;padding:2rem;max-width:440px;text-align:center"><div style="font-size:2.2rem;margin-bottom:0.8rem">🎉</div><h3 style="font-size:1.15rem;margin-bottom:0.6rem">Tu es sacrément assidu ce mois-ci !</h3><p style="font-size:0.85rem;color:#a0a0c0;line-height:1.6;margin-bottom:1.5rem">'+message+' En attendant la remise à zéro du mois prochain, tu peux débloquer plus de générations dès maintenant :</p><div style="display:flex;flex-direction:column;gap:0.6rem;margin-bottom:1rem"><a href="'+RECHARGE_50+'" target="_blank" style="background:#181830;border:1px solid rgba(255,255,255,0.13);color:#fff;padding:0.7rem 1rem;border-radius:12px;text-decoration:none;font-weight:600;display:flex;justify-content:space-between"><span>+50 générations</span><span>6,99€</span></a><a href="'+RECHARGE_150+'" target="_blank" style="background:linear-gradient(135deg,#6c5ce7,#fd79a8);color:#fff;padding:0.7rem 1rem;border-radius:12px;text-decoration:none;font-weight:700;display:flex;justify-content:space-between"><span>+150 générations</span><span>19,99€</span></a><a href="'+RECHARGE_400+'" target="_blank" style="background:#181830;border:1px solid rgba(255,255,255,0.13);color:#fff;padding:0.7rem 1rem;border-radius:12px;text-decoration:none;font-weight:600;display:flex;justify-content:space-between"><span>+400 générations</span><span>49,99€</span></a></div><button onclick="this.closest(\'div[style*=fixed]\').remove()" style="background:none;border:1px solid rgba(255,255,255,0.15);color:#a0a0c0;padding:0.6rem 1.3rem;border-radius:100px;cursor:pointer;font-size:0.85rem">Plus tard</button></div>';
+  modal.innerHTML='<div style="background:#0f0f1a;border:1px solid rgba(108,92,231,0.35);border-radius:20px;padding:2rem;max-width:440px;text-align:center"><div style="font-size:2.2rem;margin-bottom:0.8rem">🎉</div><h3 style="font-size:1.15rem;margin-bottom:0.6rem">Tu es sacrément assidu ce mois-ci !</h3><p style="font-size:0.85rem;color:#a0a0c0;line-height:1.6;margin-bottom:1.5rem">'+message+' En attendant la remise à zéro du mois prochain, tu peux débloquer plus de crédits dès maintenant (valables 12 mois) :</p><div style="display:flex;flex-direction:column;gap:0.6rem;margin-bottom:1rem"><a href="'+RECHARGE_50+'" target="_blank" style="background:#181830;border:1px solid rgba(255,255,255,0.13);color:#fff;padding:0.7rem 1rem;border-radius:12px;text-decoration:none;font-weight:600;display:flex;justify-content:space-between"><span>+100 crédits</span><span>6,99€</span></a><a href="'+RECHARGE_150+'" target="_blank" style="background:linear-gradient(135deg,#6c5ce7,#fd79a8);color:#fff;padding:0.7rem 1rem;border-radius:12px;text-decoration:none;font-weight:700;display:flex;justify-content:space-between"><span>+1+100 crédits</span><span>19,99€</span></a><a href="'+RECHARGE_400+'" target="_blank" style="background:#181830;border:1px solid rgba(255,255,255,0.13);color:#fff;padding:0.7rem 1rem;border-radius:12px;text-decoration:none;font-weight:600;display:flex;justify-content:space-between"><span>+800 crédits</span><span>49,99€</span></a></div><button onclick="this.closest(\'div[style*=fixed]\').remove()" style="background:none;border:1px solid rgba(255,255,255,0.15);color:#a0a0c0;padding:0.6rem 1.3rem;border-radius:100px;cursor:pointer;font-size:0.85rem">Plus tard</button></div>';
   document.body.appendChild(modal);
   modal.addEventListener('click',function(e){if(e.target===modal)modal.remove();});
 }
@@ -1071,10 +1127,12 @@ document.getElementById('gen-btn').addEventListener('click',async function(){
   if(!savedUser||!savedUser.email){showSignupPopup();return;}
   if(!input){errBox.textContent='⚠️ Colle ou importe ton cours !';errBox.style.display='block';return;}
   if(input.length<30){errBox.textContent='⚠️ Le cours est trop court.';errBox.style.display='block';return;}
-  if(tokensLeft<=0){showLimitModal();return;}
   var formats=selectedFormats.slice();
-  if(tokensLeft!==999999&&tokensLeft<formats.length){
-    errBox.textContent='⚠️ Il te reste '+tokensLeft+' génération'+(tokensLeft>1?'s':'')+' et tu as sélectionné '+formats.length+' formats (1 génération par format). Retire un format ou passe à l’abonnement supérieur.';
+  if(!genMode)genMode=defaultGenMode();
+  var needed=genCost(formats.length);
+  if(tokensLeft<100000&&needed>0&&tokensLeft<=0){showLimitModal();return;}
+  if(tokensLeft<100000&&tokensLeft<needed){
+    errBox.textContent='⚠️ Il te reste '+tokensLeft+' crédit'+(tokensLeft>1?'s':'')+' et cette génération en demande '+needed+'. Retire un format'+(genMode==='approfondi'?', passe en Rapide (1 crédit par format)':'')+' ou recharge tes crédits.';
     errBox.style.display='block';return;
   }
   var btn=this;btn.disabled=true;
@@ -1089,10 +1147,10 @@ document.getElementById('gen-btn').addEventListener('click',async function(){
     var f=formats[k],meta=formatMeta(f);
     btn.textContent=formats.length>1?('Génération '+(k+1)+'/'+formats.length+'…'):'Génération en cours…';
     try{
-      var response=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+((await ficheaiToken())||'')},body:JSON.stringify({course:input,format:f,language:langSel,instructions:instructions,diagrams:!!(document.getElementById('diagrams-input')&&document.getElementById('diagrams-input').checked),images:pdfImagesFor(input)})});
+      var response=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+((await ficheaiToken())||'')},body:JSON.stringify({course:input,format:f,mode:genMode,language:langSel,instructions:instructions,diagrams:!!(document.getElementById('diagrams-input')&&document.getElementById('diagrams-input').checked),images:pdfImagesFor(input)})});
       var data=await readResponseSafely(response,'génération');
       if(data.error){
-        if(response.status===403&&/limite/i.test(data.error||'')&&generatedResults.length===0){
+        if(response.status===403&&(data.reason==='limit_reached'||data.reason==='daily_limit_reached'||/limite|crédits/i.test(data.error||''))&&generatedResults.length===0){
           spinner.style.display='none';resultCard.style.display='none';showLimitModal(data.error);btn.disabled=false;btn.innerHTML=GEN_BTN_HTML;return;
         }
         throw new Error(data.error);
@@ -1102,13 +1160,7 @@ document.getElementById('gen-btn').addEventListener('click',async function(){
       generatedResults.push({fmt:f,name:meta.name,icon:meta.icon,result:data.result});
       if(!imgToastShown&&data.imagesUsed>0){imgToastShown=true;showToast('📊 Schémas analysés : '+data.imagesUsed+' page'+(data.imagesUsed>1?'s':''));}
       else if(!imgToastShown&&data.imagesDropped){imgToastShown=true;showToast('⚠️ Les schémas n’ont pas pu être analysés cette fois : contenu basé sur le texte');}
-      if(tokensLeft!==999999){
-        tokensLeft--;
-        document.getElementById('tok-nav').textContent=tokensLeft;
-        document.getElementById('stat-gen').textContent=tokensLeft;
-        if(savedUser){savedUser.remaining=tokensLeft;localStorage.setItem('ficheai_user',JSON.stringify(savedUser));}
-        updateQuotaUI();
-      }
+      applyCredits(typeof data.remaining==='number'?data.remaining:(tokensLeft-(data.cost||0)),data.offertsLeft);
       if(currentUserEmail){
         var lignes=data.result.split('\n').filter(function(l){return l.trim().length>3;});
         var titre=(lignes[1]||lignes[0]||meta.name).replace(/[📚🎯📖⚡❓🔗━▸✦]/g,'').trim().substring(0,80);
@@ -1339,9 +1391,8 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'){var overlay
 
 async function sendChatMessage(isFullscreen){
   var plan=getPlan();
-  if(plan==='starter'){showToast('💬 Chat IA disponible à partir du plan Pro !');return;}
-  var limit=plan==='ultimate'?300:20;
-  if(chatMsgCount>=limit){showToast('⚠️ Limite de '+limit+' messages atteinte !');return;}
+  if(!savedUser||!savedUser.email){showSignupPopup();return;}
+  if(tokensLeft<100000&&tokensLeft<1){showLimitModal('Il te faut 1 crédit par message.');return;}
   var inputId=isFullscreen?'chat-fullscreen-input':'chat-input';
   var input=document.getElementById(inputId);
   var text=input?input.value.trim():'';
@@ -1358,8 +1409,7 @@ async function sendChatMessage(isFullscreen){
       var data=await readResponseSafely(response,'chat');
       removeTyping();
       var emsg=data.error||'Erreur inattendue.';
-      if(response.status===403&&/limite/i.test(emsg)&&getPlan()==='pro'){showLimitModal(emsg,'chat');}
-      else if(response.status===403&&/limite/i.test(emsg)&&getPlan()==='ultimate'){showRechargeModal(emsg);}
+      if(response.status===403&&(data.reason==='limit_reached'||/limite|crédits/i.test(emsg))){showLimitModal(emsg,'chat');}
       else{addMessage('ai','⚠️ '+emsg,isFullscreen);}
     } else {
       // Affichage progressif de la réponse, mot par mot.
@@ -1376,16 +1426,16 @@ async function sendChatMessage(isFullscreen){
       acc+=decoder.decode();
       removeTyping();
       if(!bubble){addMessage('ai','⚠️ Réponse vide, réessaie.',isFullscreen);}
-      else{paint();chatHistory.push({role:'assistant',content:acc});saveConversation();}
+      else{paint();chatHistory.push({role:'assistant',content:acc});saveConversation();if(tokensLeft<100000)applyCredits(tokensLeft-1);}
     }
   }catch(e){removeTyping();addMessage('ai','⚠️ Erreur réseau. Réessaie.',isFullscreen);}
   document.getElementById(isFullscreen?'chat-fullscreen-send-btn':'chat-send-btn').disabled=false;
 }
 
 function updateChatCount(){
-  var plan=getPlan();var limit=plan==='ultimate'?300:20;
-  var el=document.getElementById('chat-count');if(el)el.textContent=chatMsgCount+' / '+limit+' messages ce mois';
-  var elFs=document.getElementById('chat-fullscreen-count');if(elFs)elFs.textContent=chatMsgCount+' / '+limit+' messages ce mois';
+  var t='1 crédit par message'+(tokensLeft<100000?' · '+tokensLeft+' crédit'+(tokensLeft>1?'s':'')+' restant'+(tokensLeft>1?'s':''):'');
+  var el=document.getElementById('chat-count');if(el)el.textContent=t;
+  var elFs=document.getElementById('chat-fullscreen-count');if(elFs)elFs.textContent=t;
 }
 
 function sendSuggestion(text){document.getElementById('chat-input').value=text;sendChatMessage();}
@@ -1447,49 +1497,7 @@ function exportToPDF(content,title,format){
 
 function exportMsgToPDF(btn){var content=btn.closest('.msg').querySelector('.msg-content').innerText;exportToPDF(content,currentFormatIcon+' '+currentFormatName,currentFormatName);}
 </script>
-<script>
-(function(){
-  var SUPABASE_URL='https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
-  var SUPABASE_KEY='sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ';
-  var banner=document.getElementById('maintenance-banner');
-  var lock=document.getElementById('maintenance-lock');
-  var lockMsg=document.getElementById('maintenance-lock-msg');
-  var state=null; // dernier statut reçu du serveur
-  function formatCompteARebours(secondes){if(secondes<=0)return'0 s';var m=Math.floor(secondes/60),s=secondes%60;return m>0?(m+' min '+(s<10?'0':'')+s+' s'):(s+' s');}
 
-  // Affichage recalculé chaque seconde à partir de l'heure de début (pas besoin de re-interroger le serveur)
-  function render(){
-    if(!state||!state.maintenance_mode){banner.style.display='none';lock.style.display='none';document.body.style.overflow='';return;}
-    var startsAt=state.starts_at?new Date(state.starts_at).getTime():null;
-    var blocked=state.hard_blocked||(startsAt!==null&&Date.now()>=startsAt);
-    if(blocked){
-      if(window.isDevUser){
-        banner.textContent='🚧 Mode maintenance actif (tu restes connecté en tant qu\'administrateur).';
-        banner.style.display='block';lock.style.display='none';
-      } else {
-        lockMsg.textContent=state.message||'On revient très vite !';
-        lock.style.display='flex';banner.style.display='none';document.body.style.overflow='hidden';
-      }
-    } else if(startsAt!==null){
-      var restant=Math.max(0,Math.round((startsAt-Date.now())/1000));
-      banner.textContent='🚧 Maintenance prévue dans '+formatCompteARebours(restant)+'. Termine ce que tu es en train de faire !';
-      banner.style.display='block';lock.style.display='none';
-    }
-  }
-
-  async function checkMaintenance(){
-    try{
-      var r=await fetch(SUPABASE_URL+'/rest/v1/rpc/get_maintenance_status',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Content-Type':'application/json'},body:'{}'});
-      state=await r.json();
-      render();
-    }catch(e){}
-  }
-
-  checkMaintenance();
-  setInterval(checkMaintenance,10000); // vérifie le serveur toutes les 10 s
-  setInterval(render,1000);            // met à jour l'affichage chaque seconde
-})();
-</script>
 
 <div id="chat-history-modal" style="display:none;position:fixed;inset:0;z-index:6000;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;padding:1rem">
   <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:20px;width:100%;max-width:480px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden">
@@ -1505,5 +1513,6 @@ function exportMsgToPDF(btn){var content=btn.closest('.msg').querySelector('.msg
 window.addEventListener('load',function(){if(location.hash==='#chat'&&typeof openChatFullscreen==='function'&&getPlan()!=='starter'){setTimeout(openChatFullscreen,500);}});
 </script>
 <script src="/va.js" defer></script>
+<script src="/maintenance.js" defer></script>
 </body>
 </html>

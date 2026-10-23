@@ -5,7 +5,9 @@ const SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
 // Modèle IA utilisé selon le plan. Tarifs en $ par million de tokens (entrée / sortie) :
 // Haiku 4.5 = 1 / 5 · Sonnet 5.5 = 2 / 10 · Opus 5.5 = 4 / 20 · Fable 5.1 = 10 / 50.
 // Sonnet 5.5 est à la fois plus récent et moins cher que Sonnet 4.5 (3 / 15). Pour changer de modèle, modifier une ligne ci-dessous.
-const MODEL_BY_PLAN = { starter: 'claude-sonnet-5-5', pro: 'claude-sonnet-5-5', ultimate: 'claude-sonnet-5-5' };
+// Chaque message coûte 1 crédit. Comptes gratuits : Haiku 5.5 ; Pro et Ultimate : Sonnet 5.5.
+const MODEL_BY_PLAN = { starter: 'claude-haiku-5-5', pro: 'claude-sonnet-5-5', ultimate: 'claude-sonnet-5-5' };
+const PRICES = { 'claude-haiku-5-5': [0.10, 0.50], 'claude-sonnet-5-5': [2, 10] };
 const modelFor = (plan) => MODEL_BY_PLAN[plan] || MODEL_BY_PLAN.starter;
 
 // Même raison que generate.js : évite la coupure à 10 s de Vercel.
@@ -14,7 +16,8 @@ const modelFor = (plan) => MODEL_BY_PLAN[plan] || MODEL_BY_PLAN.starter;
 // Tarif Sonnet 5.5 : 2 $ / million de tokens en entrée, 10 $ / million en sortie.
 async function logApiUsage(SERVICE_KEY, email, kind, model, inTok, outTok) {
   try {
-    const cost = ((inTok || 0) * 2 + (outTok || 0) * 10) / 1e6;
+    const pr = PRICES[model] || PRICES['claude-sonnet-5-5'];
+    const cost = ((inTok || 0) * pr[0] + (outTok || 0) * pr[1]) / 1e6;
     await fetch('https://qyjqtjrqnlbgtxvnjvnk.supabase.co/rest/v1/api_usage', {
       method: 'POST',
       headers: { apikey: SERVICE_KEY, Authorization: 'Bearer ' + SERVICE_KEY, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
@@ -47,7 +50,7 @@ export default async function handler(req, res) {
 
   // Historique nettoyé avant tout appel à l'IA : rôles autorisés, texte seul, longueurs plafonnées.
   // Sans ce plafond, un script pouvait envoyer une conversation géante facturée à chaque message.
-  const MAX_MSG_CHARS = 16000, MAX_TOTAL_CHARS = 60000;
+  const MAX_MSG_CHARS = 16000, MAX_TOTAL_CHARS = 30000; // ~7 500 tokens d'historique : un message reste sous 1 crédit de coût
   const cleanMessages = messages.slice(-12).map((m) => {
     if (!m || (m.role !== 'user' && m.role !== 'assistant')) return null;
     let c = m.content;
@@ -96,20 +99,20 @@ export default async function handler(req, res) {
   }
 
   // ── Mode maintenance ──
+  // Maintenance : tout le monde est bloqué, sauf le compte administrateur (vérifié après lecture du profil).
+  let maintBlock = null;
   try {
     const maintRes = await fetch(SUPABASE_URL + '/rest/v1/rpc/get_maintenance_status', {
       method: 'POST', headers: { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY, 'Content-Type': 'application/json' }, body: '{}'
     });
     const maint = await maintRes.json();
-    if (maint && maint.hard_blocked) {
-      return res.status(503).json({ error: maint.message || 'FicheAI est en maintenance. On revient très vite !' });
-    }
+    if (maint && maint.hard_blocked) maintBlock = maint.message || 'FicheAI est en maintenance. On revient très vite !';
   } catch (e) { /* si la vérification échoue, on laisse passer */ }
 
   let user;
   try {
     const userRes = await fetch(
-      SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=plan,niveau_scolaire,banned,banned_reason,banned_until',
+      SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=plan,niveau_scolaire,banned,banned_reason,banned_until,is_dev',
       { headers: { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY } }
     );
     const users = await userRes.json();
@@ -132,25 +135,25 @@ export default async function handler(req, res) {
   if (!user) {
     return res.status(403).json({ error: 'Compte introuvable. Déconnecte-toi puis reconnecte-toi.' });
   }
+  if (maintBlock && user.is_dev !== true) return res.status(503).json({ error: maintBlock, reason: 'maintenance' });
 
+  let debit = null;
   try {
     const quotaRes = await fetch(
-      SUPABASE_URL + '/rest/v1/rpc/check_and_consume_quota',
+      SUPABASE_URL + '/rest/v1/rpc/consume_credits',
       { method: 'POST', headers: { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ p_email: email, p_type: 'chat' }) }
+        body: JSON.stringify({ p_email: email, p_cost: 1, p_kind: 'chat', p_offert: false }) }
     );
     const quota = await quotaRes.json();
-    if (!quota.allowed) {
-      if (quota.reason === 'plan_required') {
-        return res.status(403).json({ error: 'Le Chat IA est disponible à partir du plan Pro.' });
+    if (!quota || !quota.allowed) {
+      if (quota && quota.reason === 'daily_limit_reached') {
+        return res.status(403).json({ error: 'Tu as atteint la limite de crédits pour aujourd\'hui. Reviens demain, ou passe à un forfait supérieur !', reason: 'daily_limit_reached' });
       }
-      if (quota.reason === 'daily_limit_reached') {
-        return res.status(403).json({ error: 'Tu as atteint la limite de messages pour aujourd\'hui. Reviens demain, ou passe à un plan supérieur !' });
-      }
-      return res.status(403).json({ error: 'Limite de messages atteinte pour ce mois. Passe à un plan supérieur pour continuer !' });
+      return res.status(403).json({ error: 'Tu n\'as plus de crédits ce mois-ci (1 crédit par message).', reason: 'limit_reached' });
     }
+    debit = quota;
   } catch (e) {
-    console.error('Erreur vérification quota chat:', e);
+    console.error('Erreur vérification crédits chat:', e);
     return res.status(503).json({ error: 'Service momentanément indisponible' });
   }
 
@@ -212,7 +215,7 @@ Style de réponse :
     const chatPayload = {
       model: modelFor(user.plan),
       stream: true,
-      max_tokens: 3500, // la réflexion par défaut du modèle consomme une partie de ce plafond
+      max_tokens: 2500, // réponse longue possible ; plafond tenu sous le coût d'1 crédit
       system: systemPrompt,
       messages: cleanMessages
     };
@@ -282,20 +285,13 @@ Style de réponse :
     console.error('Erreur API chat:', error);
     await logApiUsage(SERVICE_KEY, email, 'erreur:chat:' + String((error && error.message) || error).slice(0, 90), modelFor(user.plan), 0, 0);
     if (res.headersSent) return res.end();
-    // Aucune réponse n'a été envoyée : le message n'est pas décompté (même principe que pour les générations).
+    // Aucune réponse n'a été envoyée : le crédit est rendu.
     try {
-      const hdr = { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY };
-      const q = SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email);
-      const rr = await fetch(q + '&select=chat_messages_used,chat_used_today', { headers: hdr });
-      const rows = await rr.json();
-      const u = Array.isArray(rows) ? rows[0] : null;
-      if (u) {
-        await fetch(q, {
-          method: 'PATCH',
-          headers: Object.assign({ 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }, hdr),
-          body: JSON.stringify({ chat_messages_used: Math.max(0, (u.chat_messages_used || 0) - 1), chat_used_today: Math.max(0, (u.chat_used_today || 0) - 1) })
-        });
-      }
+      if (debit) await fetch(SUPABASE_URL + '/rest/v1/rpc/refund_credits', {
+        method: 'POST',
+        headers: { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ p_email: email, p_from_month: debit.from_month || 0, p_from_bonus: debit.from_bonus || 0, p_offert: false })
+      });
     } catch (e) { console.error('Remboursement chat:', e && e.message); }
     return res.status(500).json({ error: "L'IA est momentanément indisponible. Réessaie dans un instant." });
   }

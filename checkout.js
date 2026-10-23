@@ -6,14 +6,14 @@
 (function () {
   var OFFERS = {
     pro_monthly: { kind: 'sub', plan: 'pro', title: '⚡ FicheAI Pro, formule mensuelle', price: '7,99 €', per: 'mois', trial: 7,
-      what: '50 générations par mois, Chat IA (20 messages par mois), import de PDF jusqu\'à 40 pages, sujets d\'examen et export PDF.' },
+      what: '110 crédits par mois (55 fiches en qualité Approfondi, ou 110 en Rapide ; 1 crédit par message de Chat IA), Mode Révision, import de PDF jusqu\'à 40 pages, sujets d\'examen et export PDF.' },
     pro_yearly: { kind: 'sub', plan: 'pro', title: '⚡ FicheAI Pro, formule annuelle', price: '79,90 €', per: 'an',
-      what: '50 générations par mois pendant un an, Chat IA (20 messages par mois), import de PDF jusqu\'à 40 pages, sujets d\'examen et export PDF.' },
+      what: '110 crédits par mois pendant un an (55 fiches en qualité Approfondi, ou 110 en Rapide ; 1 crédit par message de Chat IA), Mode Révision, import de PDF jusqu\'à 40 pages, sujets d\'examen et export PDF.' },
     ultimate_monthly: { kind: 'sub', plan: 'ultimate', title: '👑 FicheAI Ultimate, formule mensuelle', price: '14,99 €', per: 'mois',
-      what: '300 générations et 300 messages de Chat IA par mois, import de PDF jusqu\'à 50 pages, lecture des schémas, sujets d\'examen et export PDF.' },
-    recharge_50: { kind: 'pack', title: '🔋 Recharge de 50 générations', price: '6,99 €', credits: 50 },
-    recharge_150: { kind: 'pack', title: '🔋 Recharge de 150 générations', price: '19,99 €', credits: 150 },
-    recharge_400: { kind: 'pack', title: '🔋 Recharge de 400 générations', price: '49,99 €', credits: 400 }
+      what: '250 crédits par mois (125 fiches en qualité Approfondi, ou 250 en Rapide ; 1 crédit par message de Chat IA), Mode Révision, import de PDF jusqu\'à 50 pages, lecture des schémas, sujets d\'examen et export PDF.' },
+    recharge_50: { kind: 'pack', title: '🔋 Recharge de 100 crédits', price: '6,99 €', credits: 100 },
+    recharge_150: { kind: 'pack', title: '🔋 Recharge de 300 crédits', price: '19,99 €', credits: 300 },
+    recharge_400: { kind: 'pack', title: '🔋 Recharge de 800 crédits', price: '49,99 €', credits: 800 }
   };
   // Anciens liens de paiement Stripe -> offre correspondante.
   var LINKS = {
@@ -61,7 +61,7 @@
   function closedView(o) {
     shell('<h2 id="fa-co-title" style="font-size:1.12rem;margin:0 0 0.7rem">' + esc(o.title) + '</h2>'
       + '<p style="' + P + '">Les abonnements et les recharges ouvrent très bientôt : FicheAI finalise ses démarches légales.</p>'
-      + '<p style="' + P + '">En attendant, le plan Starter reste gratuit (5 générations par semaine).</p>'
+      + '<p style="' + P + '">En attendant, le plan Starter reste gratuit (10 crédits par mois).</p>'
       + '<button data-close style="width:100%;margin-top:0.6rem;padding:0.8rem;border:none;border-radius:12px;background:#24243a;color:#fff;font-weight:700;font-size:0.92rem;cursor:pointer">Fermer</button>');
   }
 
@@ -87,15 +87,15 @@
       lines.push('<b>Résiliation :</b> à tout moment, en quelques clics, depuis Paramètres → « Résilier mon abonnement ». Tu gardes l\'accès jusqu\'à la fin de la période payée.');
       lines.push('<b>Rétractation :</b> 14 jours après la commande, avec le lien « Renoncer au contrat ici » en bas de chaque page.');
     } else {
-      lines.push('<b>Contenu :</b> ' + o.credits + ' générations supplémentaires, créditées immédiatement et utilisables pendant 12 mois, une fois ton quota du mois épuisé.');
+      lines.push('<b>Contenu :</b> ' + o.credits + ' crédits supplémentaires, ajoutés immédiatement et utilisables pendant 12 mois, une fois tes crédits du mois épuisés.');
       lines.push('<b>Prix :</b> paiement unique de ' + esc(o.price) + ' TTC, sans abonnement.');
-      lines.push('<b>Rétractation :</b> comme les générations sont fournies immédiatement, le droit de rétractation prend fin dès qu\'elles sont créditées (si tu coches la case ci-dessous).');
+      lines.push('<b>Rétractation :</b> comme les crédits sont fournis immédiatement, le droit de rétractation prend fin dès qu\'ils sont ajoutés (si tu coches la case ci-dessous).');
     }
     lines.push('Prix TTC, TVA non applicable (article 293 B du CGI). Paiement sécurisé par Stripe.');
 
     var c2 = o.kind === 'sub'
       ? 'Je demande à accéder à mon abonnement dès maintenant, sans attendre la fin du délai de rétractation de 14 jours. Si je me rétracte, je paierai seulement la part du service déjà fournie (rien pendant l\'essai gratuit).'
-      : 'Je demande que les générations soient créditées immédiatement et je reconnais perdre mon droit de rétractation dès qu\'elles le sont.';
+      : 'Je demande que les crédits soient ajoutés immédiatement et je reconnais perdre mon droit de rétractation dès qu\'ils le sont.';
     var box = 'display:flex;gap:0.6rem;align-items:flex-start;font-size:0.84rem;color:#e4e2f5;margin:0.55rem 0;cursor:pointer';
     var cb = 'width:18px;height:18px;flex:0 0 18px;margin-top:2px;accent-color:#7c6dfa;cursor:pointer';
     var ov = shell('<h2 id="fa-co-title" style="font-size:1.12rem;margin:0 0 0.2rem">Récapitulatif de ta commande</h2>'

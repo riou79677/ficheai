@@ -409,13 +409,13 @@ function initSettings() {
 }
 
 function renderPlanSection(plan) {
-  var remaining = savedUser.remaining === 999999 ? '∞' : (savedUser.remaining || 5);
+  var remaining = savedUser.remaining === 999999 ? '∞' : (savedUser.remaining || 0);
   var displayZone = document.getElementById('plan-display-zone');
   var actionsZone = document.getElementById('plan-actions-zone');
 
   if (plan === 'starter') {
-    displayZone.innerHTML = '<div class="plan-card starter"><div class="plan-card-left"><div class="plan-card-icon">🆓</div><div><div class="plan-card-name starter">Starter</div><div class="plan-card-desc">Gratuit · ' + remaining + ' générations restantes</div></div></div></div><div class="plan-feats"><div class="plan-feat"><span>✅</span> 5 générations IA / semaine</div><div class="plan-feat"><span>✅</span> Tous les formats</div><div class="plan-feat"><span>✅</span> Import PDF jusqu\'à 15 pages</div><div class="plan-feat"><span>❌</span> Chat IA — Pro requis</div><div class="plan-feat"><span>✅</span> Bibliothèque de fiches</div></div>';
-    actionsZone.innerHTML = '<div class="settings-card"><h3>Passe à la vitesse supérieure 🚀</h3><p>Débloque le Chat IA, 50 générations par mois et bien plus.</p>'
+    displayZone.innerHTML = '<div class="plan-card starter"><div class="plan-card-left"><div class="plan-card-icon">🆓</div><div><div class="plan-card-name starter">Starter</div><div class="plan-card-desc">Gratuit · ' + remaining + ' crédits restants ce mois-ci</div></div></div></div><div class="plan-feats"><div class="plan-feat"><span>✅</span> 10 crédits par mois (Rapide)</div><div class="plan-feat"><span>✅</span> 2 fiches Approfondi offertes</div><div class="plan-feat"><span>✅</span> Chat IA : 1 crédit par message</div><div class="plan-feat"><span>✅</span> Import PDF jusqu\'à 15 pages</div><div class="plan-feat"><span>✅</span> Bibliothèque de fiches</div><div class="plan-feat"><span>❌</span> Qualité Approfondi à volonté — Pro requis</div></div>';
+    actionsZone.innerHTML = '<div class="settings-card"><h3>Passe à la vitesse supérieure 🚀</h3><p>110 crédits par mois, la qualité Approfondi à chaque génération, le Mode Révision et les sujets d\'examen.</p>'
       + '<div style="display:flex;gap:0.8rem;flex-wrap:wrap;margin-bottom:0.8rem;">'
       + '<a href="' + PRO_M + '" target="_blank" class="btn btn-primary">⚡ Pro — 7,99€/mois</a>'
       + '<a href="' + PRO_A + '" target="_blank" class="btn btn-secondary">⚡ Pro — 79,90€/an</a>'
@@ -425,16 +425,16 @@ function renderPlanSection(plan) {
       + '</div></div>';
 
   } else if (plan === 'pro') {
-    displayZone.innerHTML = '<div class="plan-card pro"><div class="plan-card-left"><div class="plan-card-icon">⚡</div><div><div class="plan-card-name pro">Pro</div><div class="plan-card-desc">' + remaining + ' générations restantes ce mois</div></div></div></div><div class="plan-feats"><div class="plan-feat highlight"><span>✅</span> 50 générations IA / mois</div><div class="plan-feat highlight"><span>✅</span> Chat IA — 20 messages/mois</div><div class="plan-feat highlight"><span>✅</span> Import PDF jusqu\'à 40 pages</div><div class="plan-feat highlight"><span>✅</span> Bibliothèque de fiches</div><div class="plan-feat"><span>❌</span> Chat IA 300 messages/mois — Ultimate requis</div><div class="plan-feat"><span>❌</span> 300 générations / mois — Ultimate requis</div></div>';
-    actionsZone.innerHTML = '<div class="settings-card"><h3>Passe à Ultimate 👑</h3><p>300 générations et 300 messages de chat par mois, import PDF jusqu\'à 50 pages.</p>'
+    displayZone.innerHTML = '<div class="plan-card pro"><div class="plan-card-left"><div class="plan-card-icon">⚡</div><div><div class="plan-card-name pro">Pro</div><div class="plan-card-desc">' + remaining + ' crédits restants ce mois-ci</div></div></div></div><div class="plan-feats"><div class="plan-feat highlight"><span>✅</span> 110 crédits par mois</div><div class="plan-feat highlight"><span>✅</span> Qualité Approfondi à chaque génération</div><div class="plan-feat"><span>✅</span> Mode Révision des flashcards</div><div class="plan-feat"><span>✅</span> Import PDF jusqu\'à 40 pages</div><div class="plan-feat"><span>✅</span> Bibliothèque de fiches</div><div class="plan-feat"><span>❌</span> 250 crédits par mois — Ultimate requis</div></div>';
+    actionsZone.innerHTML = '<div class="settings-card"><h3>Passe à Ultimate 👑</h3><p>250 crédits par mois, import PDF jusqu\'à 50 pages, 8 pages de schémas lues par l\'IA.</p>'
       + '<div style="display:flex;gap:0.8rem;flex-wrap:wrap;margin-bottom:1rem;">'
       + '<a href="' + ULT_M + '" target="_blank" class="btn btn-gold">👑 Ultimate — 14,99€/mois</a>'
       + '</div></div>'
       + subscriptionCard('Pro');
 
   } else if (plan === 'ultimate') {
-    displayZone.innerHTML = '<div class="plan-card ultimate"><div class="plan-card-left"><div class="plan-card-icon">👑</div><div><div class="plan-card-name ultimate">Ultimate</div><div class="plan-card-desc">Le plan le plus puissant · 300 générations par mois</div></div></div></div><div class="plan-feats"><div class="plan-feat highlight"><span>✅</span> 300 générations / mois</div><div class="plan-feat highlight"><span>✅</span> Chat IA (300 messages/mois)</div><div class="plan-feat highlight"><span>✅</span> Import PDF jusqu\'à 50 pages</div><div class="plan-feat highlight"><span>✅</span> Bibliothèque de fiches</div><div class="plan-feat highlight"><span>✅</span> Accès anticipé aux nouvelles fonctionnalités</div></div>';
-    actionsZone.innerHTML = '<div class="settings-card"><h3>👑 Tu es au maximum !</h3><p>Tu profites de toutes les fonctionnalités de FicheAI, avec 300 générations et 300 messages de chat par mois. Merci pour ta confiance !</p><div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:0.8rem 1rem;font-size:0.83rem;color:var(--gold);">✨ Toutes les fonctionnalités débloquées</div></div>'
+    displayZone.innerHTML = '<div class="plan-card ultimate"><div class="plan-card-left"><div class="plan-card-icon">👑</div><div><div class="plan-card-name ultimate">Ultimate</div><div class="plan-card-desc">Le plan le plus puissant · ' + remaining + ' crédits restants ce mois-ci</div></div></div></div><div class="plan-feats"><div class="plan-feat highlight"><span>✅</span> 250 crédits par mois</div><div class="plan-feat highlight"><span>✅</span> Qualité Approfondi à chaque génération</div><div class="plan-feat"><span>✅</span> Import PDF jusqu\'à 50 pages</div><div class="plan-feat"><span>✅</span> Bibliothèque de fiches</div><div class="plan-feat"><span>✅</span> Accès anticipé aux nouvelles fonctionnalités</div></div>';
+    actionsZone.innerHTML = '<div class="settings-card"><h3>👑 Tu es au maximum !</h3><p>Tu profites de toutes les fonctionnalités de FicheAI, avec 250 crédits par mois. Merci pour ta confiance !</p><div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:0.8rem 1rem;font-size:0.83rem;color:var(--gold);">✨ Toutes les fonctionnalités débloquées</div></div>'
       + subscriptionCard('Ultimate');
   }
 }
@@ -611,5 +611,6 @@ async function openStripePortal(ev, cancel) {
   } catch(e) {}
 })();
 </script>
+<script src="/maintenance.js" defer></script>
 </body>
 </html>

@@ -2,13 +2,13 @@ import { rateLimit, clientIp } from './_ratelimit.js';
 import { banMessage } from './_ban.js';
 const SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
 
-// Modèle IA utilisé selon le plan. Tarifs en $ par million de tokens (entrée / sortie) :
-// Haiku 5.5 = 0,10 / 0,50 · Sonnet 5.5 = 2 / 10 · Opus 5.5 = 4 / 20 · Fable 5.1 = 10 / 50.
-// 22/10/2026 : le plan gratuit (Starter) passe sur Haiku 5.5, 20 fois moins cher ; Pro et Ultimate restent sur Sonnet 5.5.
-// Pour changer de modèle, modifier une ligne ci-dessous.
-const MODEL_BY_PLAN = { starter: 'claude-haiku-5-5', pro: 'claude-sonnet-5-5', ultimate: 'claude-sonnet-5-5' };
+// Deux modes de génération (23/10/2026), payés en crédits. Tarifs en $ par million de tokens (entrée / sortie) :
+// Haiku 5.5 = 0,10 / 0,50 · Sonnet 5.5 = 2 / 10.
+//   Rapide     = Haiku 5.5  → 1 crédit
+//   Approfondi = Sonnet 5.5 → 2 crédits (par défaut sur Pro et Ultimate ; 2 fiches offertes une fois aux comptes gratuits)
+const MODE_MODEL = { rapide: 'claude-haiku-5-5', approfondi: 'claude-sonnet-5-5' };
+const MODE_COST = { rapide: 1, approfondi: 2 };
 const FALLBACK_MODEL = 'claude-sonnet-5-5'; // utilisé si un modèle venait à être refusé par l'API
-const modelFor = (plan) => MODEL_BY_PLAN[plan] || MODEL_BY_PLAN.starter;
 const PRICES = { 'claude-haiku-5-5': [0.10, 0.50], 'claude-sonnet-5-5': [2, 10] }; // $ par million de tokens (entrée, sortie)
 
 // Vercel coupe les fonctions à 10 s par défaut. Une génération sur un cours long dépasse ce délai,
@@ -89,20 +89,20 @@ export default async function handler(req, res) {
     }
   }
 
+  // Maintenance : tout le monde est bloqué, sauf le compte administrateur (vérifié après lecture du profil).
+  let maintBlock = null;
   try {
     const maintRes = await fetch(SUPABASE_URL + '/rest/v1/rpc/get_maintenance_status', {
       method: 'POST', headers: { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY, 'Content-Type': 'application/json' }, body: '{}'
     });
     const maint = await maintRes.json();
-    if (maint && maint.hard_blocked) {
-      return res.status(503).json({ error: maint.message || 'FicheAI est en maintenance. On revient très vite !' });
-    }
+    if (maint && maint.hard_blocked) maintBlock = maint.message || 'FicheAI est en maintenance. On revient très vite !';
   } catch (e) { /* si la vérification échoue, on laisse passer */ }
 
   let user;
   try {
     const userRes = await fetch(
-      SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=plan,niveau_scolaire,banned,banned_reason,banned_until,generations_used,is_dev',
+      SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=plan,niveau_scolaire,banned,banned_reason,banned_until,is_dev,approfondi_offerts',
       { headers: { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY } }
     );
     const users = await userRes.json();
@@ -125,48 +125,52 @@ export default async function handler(req, res) {
   if (!user) {
     return res.status(403).json({ error: 'Compte introuvable. Déconnecte-toi puis reconnecte-toi.' });
   }
+  if (maintBlock && user.is_dev !== true) return res.status(503).json({ error: maintBlock, reason: 'maintenance' });
 
   if (format === 'examen' && user.plan === 'starter') {
     return res.status(403).json({ error: 'Le générateur de sujets d\'examen est disponible à partir du plan Pro. Passe à Pro pour t\'entraîner avec des sujets sur mesure !' });
   }
 
+  // ── Mode demandé et débit des crédits ──
+  // Comptes gratuits : Rapide, sauf leurs fiches Approfondi offertes. Comptes payants : Approfondi par défaut.
+  const askedMode = String((req.body || {}).mode || '');
+  let mode = askedMode === 'rapide' ? 'rapide' : askedMode === 'approfondi' ? 'approfondi' : (user.plan === 'starter' ? 'rapide' : 'approfondi');
+  let offert = false;
+  if (user.plan === 'starter' && mode === 'approfondi') {
+    if ((user.approfondi_offerts || 0) > 0) offert = true; else mode = 'rapide';
+  }
+  const RUN_MODEL = MODE_MODEL[mode];
+  let debit = null; // ce qui a été réellement débité, pour un remboursement exact en cas d'échec
   try {
     const quotaRes = await fetch(
-      SUPABASE_URL + '/rest/v1/rpc/check_and_consume_quota',
+      SUPABASE_URL + '/rest/v1/rpc/consume_credits',
       { method: 'POST', headers: { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ p_email: email, p_type: 'generation' }) }
+        body: JSON.stringify({ p_email: email, p_cost: offert ? 0 : MODE_COST[mode], p_kind: 'generation', p_offert: offert }) }
     );
     const quota = await quotaRes.json();
-    if (!quota.allowed) {
-      if (quota.reason === 'daily_limit_reached') {
-        return res.status(403).json({ error: 'Tu as atteint la limite de générations pour aujourd\'hui. Reviens demain, ou passe à un plan supérieur !' });
+    if (!quota || !quota.allowed) {
+      if (quota && quota.reason === 'daily_limit_reached') {
+        return res.status(403).json({ error: 'Tu as atteint la limite de crédits pour aujourd\'hui. Reviens demain, ou passe à un forfait supérieur !', reason: 'daily_limit_reached' });
       }
-      return res.status(403).json({ error: 'Limite de générations atteinte pour ce mois. Passe à un plan supérieur pour continuer !' });
+      return res.status(403).json({ error: 'Tu n\'as plus assez de crédits ce mois-ci (' + (mode === 'approfondi' ? '2 crédits pour une génération Approfondi' : '1 crédit pour une génération Rapide') + ').', reason: 'limit_reached', remaining: quota && quota.remaining });
     }
+    debit = quota;
   } catch (e) {
-    console.error('Erreur vérification quota:', e);
+    console.error('Erreur vérification crédits:', e);
     return res.status(503).json({ error: 'Service momentanément indisponible' });
   }
 
-  // Si la génération échoue après la consommation du quota (IA sans réponse, erreur réseau...), on rend la génération
-  // à l'utilisateur : il ne doit pas perdre une génération pour un échec qui ne vient pas de lui.
+  // Si la génération échoue après le débit (IA sans réponse, erreur réseau...), les crédits sont rendus à l'utilisateur.
   const refundGeneration = async () => {
+    if (!debit) return;
     try {
-      const hdr = { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY };
-      const q = SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email);
-      const r = await fetch(q + '&select=generations_used,generations_used_today', { headers: hdr });
-      const rows = await r.json();
-      const u = Array.isArray(rows) ? rows[0] : null;
-      if (!u) return;
-      await fetch(q, {
-        method: 'PATCH',
-        headers: Object.assign({ 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }, hdr),
-        body: JSON.stringify({
-          generations_used: Math.max(0, (u.generations_used || 0) - 1),
-          generations_used_today: Math.max(0, (u.generations_used_today || 0) - 1)
-        })
+      await fetch(SUPABASE_URL + '/rest/v1/rpc/refund_credits', {
+        method: 'POST',
+        headers: { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ p_email: email, p_from_month: debit.from_month || 0, p_from_bonus: debit.from_bonus || 0, p_offert: !!debit.offert })
       });
-    } catch (e) { console.error('Remboursement de génération impossible :', e); }
+      debit = null;
+    } catch (e) { console.error('Remboursement de crédits impossible :', e); }
   };
 
   const charLimit = user.plan === 'ultimate' ? 100000 : user.plan === 'pro' ? 80000 : 30000;
@@ -437,7 +441,7 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
     const COMPARE = (user.is_dev === true && ['claude-haiku-5-5', 'claude-sonnet-5-5'].includes(String((req.body || {}).compareModel))) ? String(req.body.compareModel) : null;
     const callModel = async (maxTok, withImages, forceModel) => {
       const payload = {
-        model: forceModel || COMPARE || modelFor(user.plan),
+        model: forceModel || COMPARE || RUN_MODEL,
         max_tokens: maxTok,
         system: systemPrompt,
         messages: [{ role: 'user', content: buildContent(withImages) }]
@@ -495,7 +499,7 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
       if (!images.length) throw e;
       // Si l'IA refuse les images (taille, format...), la génération continue avec le texte seul.
       console.error('Images du PDF refusées, nouvel essai avec le texte seul :', e.message);
-      logApiUsage(SERVICE_KEY, email, 'info:images-refusees:' + String(e.message || '').slice(0, 90), modelFor(user.plan), 0, 0);
+      logApiUsage(SERVICE_KEY, email, 'info:images-refusees:' + String(e.message || '').slice(0, 90), RUN_MODEL, 0, 0);
       imagesDropped = true;
       imagesUsed = 0;
       data = await callModel(baseTokens, false);
@@ -503,12 +507,12 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
     let text = extractText(data);
     if (!text.trim() && Date.now() - t0 < 22000) { // le second essai n'a lieu que s'il reste assez de temps avant la limite de 60 s
       console.error('Réponse IA sans texte (essai 1). stop_reason =', data.stop_reason, '| types de blocs =', (data.content || []).map((b) => b && b.type));
-      logApiUsage(SERVICE_KEY, email, 'info:generation:' + format + ':vide-essai-1:' + (data.stop_reason || '?'), modelFor(user.plan), 0, 0);
+      logApiUsage(SERVICE_KEY, email, 'info:generation:' + format + ':vide-essai-1:' + (data.stop_reason || '?'), RUN_MODEL, 0, 0);
       data = await callModel(Math.min(Math.round(baseTokens * 1.75), 9000), imagesUsed > 0);
       text = extractText(data);
     }
 
-    // ── Contrôle qualité des fiches gratuites (Haiku 5.5) ──
+    // ── Contrôle qualité du mode Rapide (Haiku 5.5) ──
     // Les consignes sont identiques pour tous les forfaits. Si la réponse de Haiku est incomplète (coupée, sections
     // obligatoires absentes, nettement trop courte pour la taille du cours), elle est refaite avec Sonnet 5.5 :
     // l'élève reçoit toujours une fiche complète, et ce cas reste rare (environ 6 centimes quand il arrive).
@@ -535,17 +539,13 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
       }
     }
 
-    // ── CORRECTION (03/10/2026) : suppression du PATCH manuel du compteur ──
-    // check_and_consume_quota() incrémente DÉJÀ generations_used en base (confirmé dans la RPC SQL).
-    // Le PATCH manuel qui existait ici créait un DOUBLE INCRÉMENT à chaque génération :
-    // une seule fiche générée consommait 2 générations du quota au lieu d'1.
-    // Rien à faire de plus ici — le quota a déjà été consommé par check_and_consume_quota plus haut.
+    // Les crédits ont déjà été débités par consume_credits() avant l'appel à l'IA (et sont rendus en cas d'échec).
 
     // Les modèles récents peuvent renvoyer plusieurs blocs (réflexion + texte) : on assemble tous les blocs de texte
     // au lieu de lire seulement le premier (c'était la cause de l'erreur « reading 'split' »).
     if (!text.trim()) {
       console.error('Réponse IA sans texte (essai 2). stop_reason =', data.stop_reason, '| types de blocs =', (data.content || []).map((b) => b && b.type));
-      await logApiUsage(SERVICE_KEY, email, 'erreur:generation:' + format + ':vide:' + (data.stop_reason || '?'), modelFor(user.plan), 0, 0);
+      await logApiUsage(SERVICE_KEY, email, 'erreur:generation:' + format + ':vide:' + (data.stop_reason || '?'), RUN_MODEL, 0, 0);
       await refundGeneration();
       return res.status(502).json({ error: "L'IA n'a pas renvoyé de texte cette fois, ta génération t'a été rendue. Réessaie dans un instant." });
     }
@@ -554,11 +554,11 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
       const u = data.usage || {};
       return res.status(200).json({ result: text, compare: { model: data._model, ms: Date.now() - t0, inTok: u.input_tokens || 0, outTok: u.output_tokens || 0, costUsd: ((u.input_tokens || 0) * pr[0] + (u.output_tokens || 0) * pr[1]) / 1e6, stop: data.stop_reason || '' } });
     }
-    return res.status(200).json({ result: text, imagesUsed, imagesDropped });
+    return res.status(200).json({ result: text, imagesUsed, imagesDropped, mode, offert, cost: offert ? 0 : MODE_COST[mode], remaining: debit && debit.remaining, offertsLeft: debit && debit.offerts_left });
 
   } catch (error) {
     console.error('Erreur API:', error);
-    await logApiUsage(SERVICE_KEY, email, 'erreur:generation:' + format + ':' + String((error && error.message) || error).slice(0, 90), modelFor(user.plan), 0, 0);
+    await logApiUsage(SERVICE_KEY, email, 'erreur:generation:' + format + ':' + String((error && error.message) || error).slice(0, 90), RUN_MODEL, 0, 0);
     await refundGeneration();
     // Le détail technique reste dans le journal (api_usage) : l'élève reçoit un message clair, sans information interne.
     return res.status(500).json({ error: "L'IA est momentanément indisponible. Ta génération t'a été rendue : réessaie dans un instant." });

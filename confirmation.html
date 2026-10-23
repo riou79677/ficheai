@@ -117,7 +117,7 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
   var hint = (new URLSearchParams(location.search).get('plan') || '').toLowerCase();
   if (hint === 'ultimate') planBadge.textContent = '👑 Plan Ultimate — activation en cours…';
   else if (hint === 'pro') planBadge.textContent = '🚀 Plan Pro — activation en cours…';
-  featGen.textContent = 'Générations mensuelles incluses';
+  featGen.textContent = 'Crédits mensuels inclus';
   loadingMsg.textContent = 'Un instant, on confirme ton paiement…';
 
   function showPlan(plan) {
@@ -126,12 +126,12 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
       planBadge.style.background = 'linear-gradient(135deg,rgba(253,203,110,0.15),rgba(225,112,85,0.1))';
       planBadge.style.borderColor = 'rgba(253,203,110,0.4)';
       planBadge.style.color = '#fdcb6e';
-      featGen.textContent = '300 générations par mois';
-      if (featChat) featChat.textContent = 'Chat IA : 300 messages par mois';
+      featGen.textContent = '250 crédits par mois (125 fiches Approfondi)';
+      if (featChat) featChat.textContent = 'Chat IA : 1 crédit par message';
     } else {
       planBadge.textContent = '🚀 Plan Pro activé';
-      featGen.textContent = '50 générations par mois';
-      if (featChat) featChat.textContent = 'Chat IA : 20 messages par mois';
+      featGen.textContent = '110 crédits par mois (55 fiches Approfondi)';
+      if (featChat) featChat.textContent = 'Chat IA : 1 crédit par message';
     }
     loadingMsg.textContent = '✅ Compte activé — bonne révision !';
     loadingMsg.style.color = '#00cec9';
@@ -140,7 +140,7 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
   async function readPlan() {
     var token = await window.ficheaiToken();
     if (!token || !user || !user.email) return null;
-    var r = await fetch(SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(user.email) + '&select=plan,generations_used,generations_limit,bonus_generations,bonus_expires_at',
+    var r = await fetch(SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(user.email) + '&select=plan,credits_used,credits_limit,bonus_generations,bonus_expires_at',
       { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + token } });
     var d = await r.json();
     return Array.isArray(d) && d[0] ? d[0] : null;
@@ -157,7 +157,7 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
       try {
         var u = await readPlan();
         if (u && (u.plan === 'pro' || u.plan === 'ultimate')) {
-          var base = u.generations_limit || 5, used = u.generations_used || 0;
+          var base = u.credits_limit || 10, used = u.credits_used || 0;
           var bonus = (u.bonus_generations > 0 && (!u.bonus_expires_at || new Date(u.bonus_expires_at) > new Date())) ? u.bonus_generations : 0;
           user.plan = u.plan; user.limit = base + bonus; user.remaining = Math.max(0, base - used) + bonus;
           localStorage.setItem('ficheai_user', JSON.stringify(user));
@@ -173,5 +173,6 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
   run();
 })();
 </script>
+<script src="/maintenance.js" defer></script>
 </body>
 </html>
