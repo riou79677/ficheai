@@ -227,9 +227,10 @@ tr.clickable-row:hover{background:rgba(108,92,231,0.08)}
 <h2>💸 Consommation de crédit IA (30 derniers jours)</h2>
 <p class="mini-note" id="usage-total">Chargement...</p>
 <table>
-<thead><tr><th>Utilisateur</th><th>Générations</th><th>Messages chat</th><th>Tokens (entrée / sortie)</th><th>Coût estimé</th></tr></thead>
+<thead><tr><th>Utilisateur</th><th>Crédits utilisés*</th><th>⚡ Rapide</th><th>🎓 Approfondi</th><th>💬 Chat</th><th>🔁 Révision</th><th>Coût réel</th></tr></thead>
 <tbody id="usage-table"></tbody>
 </table>
+<p class="mini-note">* Estimation à partir du journal de l'IA : Rapide 1, Approfondi 2, chat 1, révision 1. Une fiche Approfondi offerte compte ici 2 sans avoir rien coûté à l'élève. Le solde exact de chaque élève est dans « Utilisateurs ».</p>
 <h3 style="margin:1.2rem 0 0.5rem;font-size:0.95rem">Dernières activités</h3>
 <table>
 <thead><tr><th>Date</th><th>Utilisateur</th><th>Action</th><th>Tokens</th><th>Coût</th></tr></thead>
@@ -787,7 +788,7 @@ async function loadUsage(){
     function usd(n){return '$'+Number(n||0).toFixed(3);}
     document.getElementById('usage-total').textContent='Total : '+usd(d.total_cost_usd)+' (≈ '+(Number(d.total_cost_usd||0)*0.86).toFixed(2)+' €) sur 30 jours.';
     var t=document.getElementById('usage-table');
-    t.innerHTML=(d.users&&d.users.length)?d.users.map(function(u){return '<tr><td>'+esc(u.email)+'</td><td>'+u.generations+'</td><td>'+u.chats+'</td><td>'+u.input_tokens.toLocaleString('fr-FR')+' / '+u.output_tokens.toLocaleString('fr-FR')+'</td><td><b>'+usd(u.cost_usd)+'</b></td></tr>';}).join(''):'<tr><td colspan="5" style="color:var(--text3)">Aucune donnée pour l\'instant.</td></tr>';
+    t.innerHTML=(d.users&&d.users.length)?d.users.map(function(u){return '<tr><td>'+esc(u.email)+'</td><td><b>'+(u.credits||0)+'</b></td><td>'+(u.rapide||0)+'</td><td>'+(u.approfondi||0)+'</td><td>'+u.chats+'</td><td>'+(u.revision||0)+'</td><td><b>'+usd(u.cost_usd)+'</b></td></tr>';}).join(''):'<tr><td colspan="7" style="color:var(--text3)">Aucune donnée pour l\'instant.</td></tr>';
     var r=document.getElementById('usage-recent');
     r.innerHTML=(d.recent&&d.recent.length)?d.recent.map(function(x){return '<tr><td>'+new Date(x.created_at).toLocaleString('fr-FR')+'</td><td>'+esc(x.user_email)+'</td><td>'+esc(x.kind)+'</td><td>'+(x.input_tokens+x.output_tokens).toLocaleString('fr-FR')+'</td><td>$'+Number(x.cost_usd).toFixed(4)+'</td></tr>';}).join(''):'';
   }catch(e){if(e.message!=='WRONG_SECRET'){var m=document.getElementById('usage-msg');m.textContent='⚠️ Impossible de charger la consommation : '+e.message;m.className='msg error';}}

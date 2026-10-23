@@ -200,15 +200,19 @@ export default async function handler(req, res) {
     // ── Consommation de l'API IA : totaux par utilisateur (30 jours) + dernières activités ──
     if (action === 'get_api_usage') {
       const since = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();
-      const r = await fetch(SUPABASE_URL + '/rest/v1/api_usage?select=user_email,kind,input_tokens,output_tokens,cost_usd,created_at&created_at=gte.' + since + '&order=created_at.desc&limit=5000', { headers: sb });
+      const r = await fetch(SUPABASE_URL + '/rest/v1/api_usage?select=user_email,kind,model,input_tokens,output_tokens,cost_usd,created_at&created_at=gte.' + since + '&order=created_at.desc&limit=5000', { headers: sb });
       const rows = await r.json();
       const list = Array.isArray(rows) ? rows : [];
       const byUser = {};
       list.forEach(x => {
-        const u = byUser[x.user_email] || (byUser[x.user_email] = { email: x.user_email, generations: 0, chats: 0, errors: 0, cost_usd: 0, input_tokens: 0, output_tokens: 0 });
+        const u = byUser[x.user_email] || (byUser[x.user_email] = { email: x.user_email, generations: 0, rapide: 0, approfondi: 0, chats: 0, revision: 0, credits: 0, errors: 0, cost_usd: 0, input_tokens: 0, output_tokens: 0 });
         // Les lignes « erreur:… » et « info:… » sont des événements (échecs, replis), pas des appels facturés.
         if (/^(erreur|info):/.test(String(x.kind))) { u.errors++; return; }
-        if (String(x.kind).startsWith('chat')) u.chats++; else u.generations++;
+        // Crédits estimés à partir du journal : Rapide (Haiku) 1, Approfondi (Sonnet) 2, chat 1, paquet de révision 1.
+        const k = String(x.kind);
+        if (k.startsWith('chat')) { u.chats++; u.credits += 1; }
+        else if (k.startsWith('flashcards')) { u.revision++; u.credits += 1; }
+        else { u.generations++; if (String(x.model).includes('haiku')) { u.rapide++; u.credits += 1; } else { u.approfondi++; u.credits += 2; } }
         u.cost_usd += Number(x.cost_usd) || 0; u.input_tokens += x.input_tokens || 0; u.output_tokens += x.output_tokens || 0;
       });
       const users = Object.values(byUser).sort((a, b) => b.cost_usd - a.cost_usd);
