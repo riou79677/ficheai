@@ -1,0 +1,79 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   FicheAI — adaptation à la forme de chaque écran
+   Chargé en dernier sur toutes les pages. Les valeurs env(safe-area-inset-*)
+   valent 0 sur un écran sans découpe : rien ne change sur ordinateur.
+   · iPhone : encoche, Dynamic Island, barre d'accueil (surtout une fois FicheAI
+     ajouté à l'écran d'accueil, où le site s'affiche sous la barre d'état)
+   · Android : barre d'état et barre de navigation par gestes (affichage bord à bord),
+     poinçon de caméra, clavier qui redimensionne la page
+   · Pliables, tablettes, Mac : marges latérales et hauteurs d'écran réelles
+   ───────────────────────────────────────────────────────────────────────────── */
+
+:root{
+  --sat:env(safe-area-inset-top,0px);
+  --sar:env(safe-area-inset-right,0px);
+  --sab:env(safe-area-inset-bottom,0px);
+  --sal:env(safe-area-inset-left,0px);
+}
+
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;background:#09090f}
+
+/* Bords gauche/droite (téléphone en paysage, encoche ou poinçon sur le côté) et bas (barre d'accueil, barre de gestes) */
+body{
+  padding-left:var(--sal);
+  padding-right:var(--sar);
+  padding-bottom:var(--sab);
+  -webkit-tap-highlight-color:transparent;
+}
+
+/* Haut de l'écran : la barre de navigation descend sous l'encoche / la Dynamic Island / la barre d'état,
+   sa couleur de fond remplit la zone. La bordure transparente laisse voir ce fond sans toucher aux marges internes. */
+body > nav,
+body > .nav{
+  border-top:var(--sat) solid transparent;
+  box-sizing:content-box;
+}
+/* Pages sans barre de navigation, ou dont la barre est fixée par-dessus le contenu : le contenu descend d'autant. */
+body:not(:has(> nav, > .nav)),
+body.nav-fixe{
+  padding-top:var(--sat);
+}
+#mobile-menu{top:calc(65px + var(--sat))}
+#maintenance-banner{padding-top:calc(0.7rem + var(--sat)) !important}
+
+/* Fenêtres par-dessus la page : jamais sous l'encoche ni sous la barre du bas */
+.modal-bg,
+.confirm-overlay,
+.onboarding-overlay,
+.signup-popup-overlay,
+.chat-fullscreen-overlay{
+  padding-top:max(1rem, var(--sat));
+  padding-bottom:max(1rem, var(--sab));
+  padding-left:max(1rem, var(--sal));
+  padding-right:max(1rem, var(--sar));
+}
+
+/* Hauteur réelle de l'écran (sans la barre d'adresse mobile qui apparaît et disparaît) */
+@supports (min-height:100dvh){
+  body,
+  .lock-screen,
+  .hero{min-height:100dvh}
+}
+
+/* Écrans tactiles : pas de zoom automatique de l'iPhone quand on touche un champ, pas de délai au toucher */
+@media (pointer:coarse){
+  input:not([type=checkbox]):not([type=radio]),
+  select,
+  textarea{font-size:max(16px, 1em)}
+  a, button, label, input, select, textarea{touch-action:manipulation}
+}
+
+/* Très petits écrans (écran extérieur des pliables, anciens Android ≤ 360 px) : rien ne dépasse */
+@media (max-width:360px){
+  img, video, canvas, svg, table, pre{max-width:100%}
+  pre{white-space:pre-wrap;word-break:break-word}
+}
+
+/* Boutons flottants en bas (outils développeur) : au-dessus de la barre d'accueil / de gestes */
+.dev-toggle{bottom:calc(1rem + var(--sab)) !important;left:calc(1rem + var(--sal)) !important}
+#dev-panel{bottom:calc(3.5rem + var(--sab)) !important;right:calc(1rem + var(--sar)) !important}

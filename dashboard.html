@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
 <title>FicheAI — Ma bibliothèque</title>
 <link rel="preload" href="/fonts/syne-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/fonts/dm-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/fonts/fonts.css">
@@ -94,6 +94,7 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="FicheAI">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="stylesheet" href="/ecrans.css">
 </head>
 <body>
 <nav>
@@ -253,7 +254,7 @@ function telechargerFiche(id){var fiche=getFicheById(id);if(!fiche)return;var bl
 function confirmerSuppression(id){document.getElementById('confirm-title').textContent='Supprimer cette fiche ?';document.getElementById('confirm-text').textContent='Cette action est irréversible. La fiche sera définitivement supprimée.';document.getElementById('confirm-ok').onclick=function(){supprimerFiche(id);};document.getElementById('confirm-overlay').classList.add('open');}
 function closeConfirm(){document.getElementById('confirm-overlay').classList.remove('open');}
 async function supprimerFiche(id){closeConfirm();await fetch(SUPABASE_URL+'/rest/v1/rpc/delete_my_fiche',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+((await ficheaiToken())||SUPABASE_KEY),'Content-Type':'application/json'},body:JSON.stringify({p_email:currentUser.email,p_fiche_id:id})});allFiches=allFiches.filter(function(f){return f.id!==id;});renderPage();showToast('🗑️ Fiche supprimée');}
-function showToast(msg){var t=document.createElement('div');t.textContent=msg;t.style.cssText='position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:#13131f;border:1px solid rgba(124,109,250,0.4);color:#f1f0ff;padding:0.7rem 1.5rem;border-radius:100px;font-size:0.85rem;font-weight:600;z-index:1000;box-shadow:0 4px 20px rgba(0,0,0,0.4);';document.body.appendChild(t);setTimeout(function(){t.remove();},2500);}
+function showToast(msg){var t=document.createElement('div');t.textContent=msg;t.style.cssText='position:fixed;bottom:calc(2rem + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:#13131f;border:1px solid rgba(124,109,250,0.4);color:#f1f0ff;padding:0.7rem 1.5rem;border-radius:100px;font-size:0.85rem;font-weight:600;z-index:1000;box-shadow:0 4px 20px rgba(0,0,0,0.4);';document.body.appendChild(t);setTimeout(function(){t.remove();},2500);}
 var inactivityTimer;
 function resetTimer(){clearTimeout(inactivityTimer);inactivityTimer=setTimeout(function(){localStorage.removeItem('ficheai_user');window.location.href='/login.html';},30*60*1000);}
 document.addEventListener('mousemove',resetTimer);document.addEventListener('keypress',resetTimer);document.addEventListener('click',resetTimer);resetTimer();

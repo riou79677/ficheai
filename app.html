@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
 <title>FicheAI — Générateur de fiches IA</title>
 <link rel="preload" href="/fonts/syne-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/fonts/dm-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/fonts/fonts.css">
@@ -265,6 +265,7 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="FicheAI">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="stylesheet" href="/ecrans.css">
 </head>
 <body>
 <div id="maintenance-lock" style="display:none;position:fixed;inset:0;z-index:99999;background:#07070f;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:2rem;font-family:'DM Sans',sans-serif">
@@ -566,7 +567,7 @@ var onboardingSteps=[
 function showToast(msg){
   var t=document.createElement('div');
   t.textContent=msg;
-  t.style.cssText='position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:#0d0d1a;border:1px solid rgba(108,92,231,0.4);color:#f0efff;padding:0.7rem 1.5rem;border-radius:100px;font-size:0.85rem;font-weight:600;z-index:10000;box-shadow:0 4px 20px rgba(0,0,0,0.4);white-space:nowrap;';
+  t.style.cssText='position:fixed;bottom:calc(2rem + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:#0d0d1a;border:1px solid rgba(108,92,231,0.4);color:#f0efff;padding:0.7rem 1.5rem;border-radius:100px;font-size:0.85rem;font-weight:600;z-index:10000;box-shadow:0 4px 20px rgba(0,0,0,0.4);white-space:nowrap;';
   document.body.appendChild(t);
   setTimeout(function(){t.remove();},2500);
 }
