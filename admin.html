@@ -224,6 +224,17 @@ tr.clickable-row:hover{background:rgba(108,92,231,0.08)}
 </div>
 
 <div class="section">
+<h2>✉️ Écrire à un élève dans FicheAI</h2>
+<p class="mini-note">Le message s'affiche dans une fenêtre la prochaine fois que l'élève ouvre FicheAI (application, accueil, bibliothèque, révision ou réglages). Tu vois ensuite s'il l'a lu.</p>
+<input id="um-email" type="email" list="um-emails" placeholder="Email de l'élève" style="width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;color:var(--text);padding:0.65rem 0.8rem;font-family:inherit;font-size:0.85rem;margin-bottom:0.6rem">
+<datalist id="um-emails"></datalist>
+<textarea id="um-body" rows="4" maxlength="2000" placeholder="Ton message" style="width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;color:var(--text);padding:0.65rem 0.8rem;font-family:inherit;font-size:0.85rem;resize:vertical"></textarea>
+<button class="btn-sm" style="margin-top:0.6rem;padding:0.55rem 1.1rem" onclick="sendUserMessage()">Envoyer le message</button>
+<div class="msg" id="um-msg"></div>
+<table style="margin-top:1rem"><thead><tr><th>Date</th><th>Élève</th><th>Message</th><th>Lu</th></tr></thead><tbody id="um-table"></tbody></table>
+</div>
+
+<div class="section">
 <h2>💸 Consommation de crédit IA (30 derniers jours)</h2>
 <p class="mini-note" id="usage-total">Chargement...</p>
 <table>
@@ -468,6 +479,25 @@ function cmpPick(k){
   var choix=k==='egal'?'Pas de différence':'Tu as préféré <b>'+nom(k)+'</b>';
   document.getElementById('cmp-reveal').innerHTML='🎯 '+choix+'<br>'+line('a')+'<br>'+line('b');
 }
+
+// ── Messages aux élèves ──
+async function loadUserMessages(){
+  try{
+    var d=await callAdmin('get_user_messages');
+    var dl=document.getElementById('um-emails');if(dl&&allUsersData)dl.innerHTML=allUsersData.map(function(u){return '<option value="'+escH(u.email)+'">';}).join('');
+    document.getElementById('um-table').innerHTML=(d.messages||[]).map(function(m){return '<tr><td>'+new Date(m.created_at).toLocaleString('fr-FR')+'</td><td>'+escH(m.user_email)+'</td><td style="max-width:420px;white-space:pre-wrap">'+escH(m.body)+'</td><td>'+(m.read_at?'✅ '+new Date(m.read_at).toLocaleString('fr-FR'):'⏳ Pas encore')+'</td></tr>';}).join('')||'<tr><td colspan="4" style="color:var(--text3)">Aucun message envoyé.</td></tr>';
+  }catch(e){}
+}
+async function sendUserMessage(){
+  var email=document.getElementById('um-email').value.trim(),body=document.getElementById('um-body').value.trim();
+  if(!email||!body){showMsg('um-msg','⚠️ Indique l\'email et le message.','error');return;}
+  try{
+    var r=await callAdmin('send_user_message',{email:email,body:body});
+    if(!r||!r.success)throw new Error((r&&r.error)||'envoi refusé');
+    document.getElementById('um-body').value='';
+    showMsg('um-msg','✅ Message enregistré : il s\'affichera à sa prochaine visite.','ok');loadUserMessages();
+  }catch(e){if(e.message!=='WRONG_SECRET')showMsg('um-msg','⚠️ '+e.message,'error');}
+}
 function refreshDashboard(){Promise.all([loadStats(),loadFiches(),loadUsage(),loadLegal()]).catch(function(){});}
 
 // ── Rétractations, résiliations et messages de contact ──
@@ -528,7 +558,7 @@ async function loadStats(){
       '<div class="stat-card" onclick="showDetail(\'ultimate\')"><div class="val">'+data.par_plan.ultimate+'</div><div class="lbl">Ultimate</div></div>'+
       '<div class="stat-card" onclick="scrollToFiches()"><div class="val">'+data.total_fiches+'</div><div class="lbl">Fiches générées</div></div>'+
       '<div class="stat-card" onclick="showDetail(\'bannis\')"><div class="val">'+data.bannis+'</div><div class="lbl">Comptes bannis</div></div>';
-    allUsersData=data.users;renderUsers(data.users);renderQuotaAlerts(data.users);loadMaintenanceStatus();
+    allUsersData=data.users;renderUsers(data.users);renderQuotaAlerts(data.users);loadMaintenanceStatus();loadUserMessages();
   }catch(e){if(e.message!=='WRONG_SECRET'){document.getElementById('lock-err').textContent='Erreur : '+e.message;document.getElementById('lock-err').style.display='block';}}
 }
 

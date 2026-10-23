@@ -184,6 +184,28 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true, new_bonus: newBonus });
     }
 
+    // ── Message de l'admin à un élève (affiché dans FicheAI à sa prochaine visite) ──
+    if (action === 'send_user_message') {
+      const { email, body } = payload || {};
+      const text = String(body || '').trim();
+      if (!email || !text || text.length > 2000) return res.status(400).json({ error: 'Email ou message invalide (2000 caractères maximum)' });
+      const ur = await fetch(SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=email', { headers: sb });
+      const found = await ur.json();
+      if (!Array.isArray(found) || !found[0]) return res.status(404).json({ error: 'Aucun compte FicheAI avec cet email' });
+      const r = await fetch(SUPABASE_URL + '/rest/v1/user_messages', {
+        method: 'POST', headers: { ...sb, 'Prefer': 'return=representation' },
+        body: JSON.stringify({ user_email: found[0].email, body: text })
+      });
+      const rows = await r.json();
+      if (!r.ok) return res.status(500).json({ error: 'Enregistrement impossible' });
+      return res.status(200).json({ success: true, message: rows[0] });
+    }
+    if (action === 'get_user_messages') {
+      const r = await fetch(SUPABASE_URL + '/rest/v1/user_messages?select=id,user_email,body,created_at,read_at&order=created_at.desc&limit=30', { headers: sb });
+      const rows = await r.json();
+      return res.status(200).json({ messages: Array.isArray(rows) ? rows : [] });
+    }
+
     // ── Supprimer définitivement un compte ──
     if (action === 'delete_account') {
       const { email } = payload || {};
