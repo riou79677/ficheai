@@ -102,7 +102,7 @@ export default async function handler(req, res) {
   let user;
   try {
     const userRes = await fetch(
-      SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=plan,niveau_scolaire,banned,banned_reason,banned_until,generations_used',
+      SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=plan,niveau_scolaire,banned,banned_reason,banned_until,generations_used,is_dev',
       { headers: { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY } }
     );
     const users = await userRes.json();
@@ -433,9 +433,11 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
         .concat([{ type: 'text', text: userBody + imagesNote + finalLine }]);
     };
     const systemPrompt = 'Tu es FicheAI, un assistant pédagogique expert. ' + langInstruction + ' ' + niveauInstruction + ' ' + antiInjectionGuard + ' Les utilisateurs sont souvent des collégiens et des lycéens, parfois mineurs : produis uniquement un contenu adapté à leur âge (aucun contenu sexuel, aucune violence gratuite, aucun propos haineux, aucune instruction dangereuse ou illégale), et traite les sujets sensibles du programme de façon factuelle et pédagogique. Sois précis, structuré et pédagogique.';
+    // Outil de comparaison réservé à l'admin (compte is_dev) : force le modèle demandé, sans contrôle qualité ni reprise Sonnet.
+    const COMPARE = (user.is_dev === true && ['claude-haiku-5-5', 'claude-sonnet-5-5'].includes(String((req.body || {}).compareModel))) ? String(req.body.compareModel) : null;
     const callModel = async (maxTok, withImages, forceModel) => {
       const payload = {
-        model: forceModel || modelFor(user.plan),
+        model: forceModel || COMPARE || modelFor(user.plan),
         max_tokens: maxTok,
         system: systemPrompt,
         messages: [{ role: 'user', content: buildContent(withImages) }]
@@ -510,7 +512,7 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
     // Les consignes sont identiques pour tous les forfaits. Si la réponse de Haiku est incomplète (coupée, sections
     // obligatoires absentes, nettement trop courte pour la taille du cours), elle est refaite avec Sonnet 5.5 :
     // l'élève reçoit toujours une fiche complète, et ce cas reste rare (environ 6 centimes quand il arrive).
-    if (text.trim() && data._model !== FALLBACK_MODEL && Date.now() - t0 < 25000) {
+    if (!COMPARE && text.trim() && data._model !== FALLBACK_MODEL && Date.now() - t0 < 25000) {
       const count = (re) => (text.match(re) || []).length;
       const courseLen = String(course).length;
       const checks = {
@@ -546,6 +548,11 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
       await logApiUsage(SERVICE_KEY, email, 'erreur:generation:' + format + ':vide:' + (data.stop_reason || '?'), modelFor(user.plan), 0, 0);
       await refundGeneration();
       return res.status(502).json({ error: "L'IA n'a pas renvoyé de texte cette fois, ta génération t'a été rendue. Réessaie dans un instant." });
+    }
+    if (COMPARE) {
+      const pr = PRICES[data._model] || PRICES['claude-sonnet-5-5'];
+      const u = data.usage || {};
+      return res.status(200).json({ result: text, compare: { model: data._model, ms: Date.now() - t0, inTok: u.input_tokens || 0, outTok: u.output_tokens || 0, costUsd: ((u.input_tokens || 0) * pr[0] + (u.output_tokens || 0) * pr[1]) / 1e6, stop: data.stop_reason || '' } });
     }
     return res.status(200).json({ result: text, imagesUsed, imagesDropped });
 

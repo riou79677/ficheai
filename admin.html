@@ -171,6 +171,23 @@ tr.clickable-row:hover{background:rgba(108,92,231,0.08)}
 </div>
 
 <div class="section">
+<h2>🧪 Comparer Haiku 5.5 et Sonnet 5.5 (à l'aveugle)</h2>
+<p style="font-size:0.85rem;color:var(--text3);margin-bottom:0.8rem">Colle un cours, choisis le format : la même demande part vers les deux modèles. Les résultats s'affichent en A et B, sans le nom du modèle. Note-les, puis révèle. Chaque test utilise ton crédit Anthropic (environ 0,05 $ par modèle pour une fiche).</p>
+<select id="cmp-format" style="margin-bottom:0.6rem"><option value="fiche">Fiche</option><option value="quiz">Quiz</option><option value="flash">Flashcards</option></select>
+<textarea id="cmp-course" rows="7" style="width:100%;margin-bottom:0.6rem" placeholder="Colle ici un cours (une page suffit)…"></textarea>
+<button class="btn-sm" id="cmp-go" onclick="runCompare()">Lancer la comparaison</button>
+<div class="msg" id="cmp-msg"></div>
+<div id="cmp-out" style="display:none">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;margin-top:1rem">
+<div><b>Réponse A</b><pre id="cmp-a" style="white-space:pre-wrap;word-break:break-word;font:inherit;font-size:0.85rem;max-height:520px;overflow:auto;padding:0.8rem;border:1px solid var(--border);border-radius:10px"></pre></div>
+<div><b>Réponse B</b><pre id="cmp-b" style="white-space:pre-wrap;word-break:break-word;font:inherit;font-size:0.85rem;max-height:520px;overflow:auto;padding:0.8rem;border:1px solid var(--border);border-radius:10px"></pre></div>
+</div>
+<button class="btn-sm" style="margin-top:0.8rem" onclick="revealCompare()">Révéler qui est qui</button>
+<div id="cmp-reveal" style="margin-top:0.8rem;font-size:0.9rem"></div>
+</div>
+</div>
+
+<div class="section">
 <h2>💸 Consommation de crédit IA (30 derniers jours)</h2>
 <p class="mini-note" id="usage-total">Chargement...</p>
 <table>
@@ -342,6 +359,38 @@ function showDashboard(){
   Promise.all([loadStats(),loadFiches(),loadUsage(),loadLegal()]).catch(function(){});
 }
 
+
+// ── Comparaison à l'aveugle Haiku / Sonnet ──
+var cmpResult=null;
+function cmpMsg(t,type){var el=document.getElementById('cmp-msg');el.textContent=t;el.className='msg '+type;el.style.display='block';}
+async function runCompare(){
+  var course=document.getElementById('cmp-course').value.trim();
+  if(course.length<200){cmpMsg('⚠️ Colle un cours plus long (200 caractères minimum).','error');return;}
+  var btn=document.getElementById('cmp-go');btn.disabled=true;
+  cmpMsg('⏳ Génération avec les deux modèles, compte 20 à 40 secondes…','ok');
+  document.getElementById('cmp-out').style.display='none';
+  var fmt=document.getElementById('cmp-format').value;
+  var models=['claude-haiku-5-5','claude-sonnet-5-5'];
+  try{
+    var rs=await Promise.all(models.map(function(m){
+      return fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+SECRET},body:JSON.stringify({course:course,format:fmt,language:'fr',compareModel:m})}).then(function(r){return r.json();});
+    }));
+    for(var i=0;i<rs.length;i++){if(!rs[i].result){throw new Error(rs[i].error||'Réponse vide');}}
+    var swap=Math.random()<0.5;
+    cmpResult={a:swap?rs[1]:rs[0],b:swap?rs[0]:rs[1]};
+    document.getElementById('cmp-a').textContent=cmpResult.a.result;
+    document.getElementById('cmp-b').textContent=cmpResult.b.result;
+    document.getElementById('cmp-reveal').textContent='';
+    document.getElementById('cmp-out').style.display='block';
+    cmpMsg('✅ Terminé. Lis A et B, choisis ta préférence, puis clique sur « Révéler ».','ok');
+  }catch(e){cmpMsg('⚠️ '+e.message,'error');}
+  btn.disabled=false;
+}
+function revealCompare(){
+  if(!cmpResult)return;
+  function line(l,x){var c=x.compare;var nom=c.model.indexOf('haiku')>-1?'Haiku 5.5':'Sonnet 5.5';return '<b>'+l+' = '+nom+'</b> · '+(c.ms/1000).toFixed(1)+' s · '+c.outTok.toLocaleString('fr-FR')+' tokens écrits · $'+c.costUsd.toFixed(4)+(c.stop==='max_tokens'?' · ⚠️ coupé':'');}
+  document.getElementById('cmp-reveal').innerHTML=line('A',cmpResult.a)+'<br>'+line('B',cmpResult.b);
+}
 function refreshDashboard(){Promise.all([loadStats(),loadFiches(),loadUsage(),loadLegal()]).catch(function(){});}
 
 // ── Rétractations, résiliations et messages de contact ──
