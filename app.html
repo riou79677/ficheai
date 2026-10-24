@@ -586,10 +586,16 @@ function renderGenMode(){
   } else {sub.textContent='Plus de détails et d\'explications · 2 crédits';a.classList.remove('locked');}
   updateGenCostNote();
 }
+// Cours longs : +1 crédit par tranche de 30 pages (~60 000 caractères) au-delà des 30 premières, en Approfondi (même calcul que le serveur).
+function longExtra(){
+  if(genMode!=='approfondi'||getPlan()==='starter')return 0;
+  var el=document.getElementById('course-input');var len=Math.min(el?el.value.length:0,getCharLimit());
+  return Math.ceil(Math.max(0,len-60000)/60000);
+}
 function genCost(n){
   if(genMode==='approfondi'){
     if(getPlan()==='starter'){var o=offertsLeft();return Math.max(0,n-o);} // au-delà des offertes : Rapide, 1 crédit
-    return 2*n;
+    return (2+longExtra())*n;
   }
   return n;
 }
@@ -598,10 +604,11 @@ function updateGenCostNote(){
   if(!genMode)genMode=defaultGenMode();
   var c=genCost(n);
   el.style.display='block';
-  el.textContent=(n>1?'⚡ '+n+' formats · ':'')+(c===0?'Offert : aucun crédit utilisé':'Coût : '+c+' crédit'+(c>1?'s':''))+(tokensLeft<100000?' · il te reste '+tokensLeft+' crédit'+(tokensLeft>1?'s':''):'');
+  el.textContent=(n>1?'⚡ '+n+' formats · ':'')+(c===0?'Offert : aucun crédit utilisé':'Coût : '+c+' crédit'+(c>1?'s':''))+(longExtra()?' · 📚 cours long : +'+longExtra()+' crédit'+(longExtra()>1?'s':'')+(n>1?' par format':'')+' (+1 par tranche de 30 pages au-delà de 30)':'')+(tokensLeft<100000?' · il te reste '+tokensLeft+' crédit'+(tokensLeft>1?'s':''):'');
 }
-function getCharLimit(){var plan=savedUser?(savedUser.plan||'starter'):'starter';return plan==='ultimate'?100000:plan==='pro'?80000:30000;}
+function getCharLimit(){var plan=savedUser?(savedUser.plan||'starter'):'starter';return plan==='ultimate'?500000:plan==='pro'?300000:30000;}
 function updateCharCount(){
+  try{updateGenCostNote();}catch(e){}
   var n=document.getElementById('course-input').value.length;var lim=getCharLimit();var el=document.getElementById('char-count');
   if(n>lim){el.textContent=n+' caractères — seuls les '+lim+' premiers seront utilisés (limite de ton plan)';el.style.color='#fbbf24';}
   else{el.textContent=n+' caractères';el.style.color='';}
@@ -942,7 +949,7 @@ function handleFileLoad(file){
         pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         var pdf=await pdfjsLib.getDocument({data:ev.target.result,isEvalSupported:false}).promise;
         var plan=savedUser?(savedUser.plan||'starter'):'starter';
-        var pageLimit=plan==='ultimate'?50:plan==='pro'?40:15;
+        var pageLimit=plan==='ultimate'?250:plan==='pro'?150:15;
         var maxPages=Math.min(pdf.numPages,pageLimit);
         var text='';
         for(var i=1;i<=maxPages;i++){var page=await pdf.getPage(i);var content=await page.getTextContent();text+=content.items.map(function(item){return item.str;}).join(' ')+'\n';}
@@ -957,7 +964,7 @@ function handleFileLoad(file){
         if(imgCap>0&&imgPages>0){
           setFileBadge('⏳ Préparation des schémas pour l’IA...','ok');
           var chosen=visualPages.slice().sort(function(a,b){return (b.raster-a.raster)||(b.paths-a.paths);}).slice(0,imgCap).sort(function(a,b){return a.n-b.n;});
-          var totalLen=0;
+          var totalLen=0;var imgBudget=Math.max(0,3300000-Math.round(Math.min(text.length,getCharLimit())*1.3));
           for(var k2=0;k2<chosen.length;k2++){
             try{
               var p2=await pdf.getPage(chosen[k2].n);var v1=p2.getViewport({scale:1});var vp=p2.getViewport({scale:1240/Math.max(v1.width,v1.height)});
@@ -966,7 +973,7 @@ function handleFileLoad(file){
               await p2.render({canvasContext:cx,viewport:vp}).promise;
               var b64=cv.toDataURL('image/jpeg',0.72).split(',')[1]||'';
               cv.width=0;cv.height=0;
-              if(b64.length<100||b64.length>1150000||totalLen+b64.length>3300000)continue;
+              if(b64.length<100||b64.length>1150000||totalLen+b64.length>imgBudget)continue;
               totalLen+=b64.length;pdfImages.push({page:chosen[k2].n,media_type:'image/jpeg',data:b64});
             }catch(rErr){}
           }

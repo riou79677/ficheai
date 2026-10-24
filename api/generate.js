@@ -8,6 +8,14 @@ const SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
 //   Approfondi = Sonnet 5.5 → 2 crédits (par défaut sur Pro et Ultimate ; 2 fiches offertes une fois aux comptes gratuits)
 const MODE_MODEL = { rapide: 'claude-haiku-5-5', approfondi: 'claude-sonnet-5-5' };
 const MODE_COST = { rapide: 1, approfondi: 2 };
+// Cours longs (Pro et Ultimate) : au-delà de 30 pages (~60 000 caractères), +1 crédit par tranche de 30 pages
+// en mode Approfondi. Le calcul se fait ici, sur le texte réellement reçu : le navigateur affiche le même calcul.
+const CHARS_PER_TRANCHE = 60000;
+const CHAR_LIMIT = { starter: 30000, pro: 300000, ultimate: 500000 };
+function longCourseExtra(len, mode) {
+  if (mode !== 'approfondi') return 0;
+  return Math.ceil(Math.max(0, len - CHARS_PER_TRANCHE) / CHARS_PER_TRANCHE);
+}
 const FALLBACK_MODEL = 'claude-sonnet-5-5'; // utilisé si un modèle venait à être refusé par l'API
 const PRICES = { 'claude-haiku-5-5': [0.10, 0.50], 'claude-sonnet-5-5': [2, 10] }; // $ par million de tokens (entrée, sortie)
 
@@ -28,7 +36,7 @@ async function logApiUsage(SERVICE_KEY, email, kind, model, inTok, outTok) {
   } catch (e) { console.error('Log usage:', e && e.message); }
 }
 
-export const config = { maxDuration: 60 };
+export const config = { maxDuration: 300 };
 
 // Longueur maximale de la réponse selon le format. 1500 tokens coupait les fiches et les cartes
 // mentales en plein milieu (branches vides, sections manquantes).
@@ -140,19 +148,23 @@ export default async function handler(req, res) {
     if ((user.approfondi_offerts || 0) > 0) offert = true; else mode = 'rapide';
   }
   const RUN_MODEL = MODE_MODEL[mode];
+  const charLimit = CHAR_LIMIT[user.plan] || CHAR_LIMIT.starter;
+  const usedLen = Math.min(String(course).length, charLimit);
+  const extra = offert ? 0 : longCourseExtra(usedLen, mode);
+  const cost = offert ? 0 : MODE_COST[mode] + extra;
   let debit = null; // ce qui a été réellement débité, pour un remboursement exact en cas d'échec
   try {
     const quotaRes = await fetch(
       SUPABASE_URL + '/rest/v1/rpc/consume_credits',
       { method: 'POST', headers: { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ p_email: email, p_cost: offert ? 0 : MODE_COST[mode], p_kind: 'generation', p_offert: offert }) }
+        body: JSON.stringify({ p_email: email, p_cost: cost, p_kind: 'generation', p_offert: offert }) }
     );
     const quota = await quotaRes.json();
     if (!quota || !quota.allowed) {
       if (quota && quota.reason === 'daily_limit_reached') {
         return res.status(403).json({ error: 'Tu as atteint la limite de crédits pour aujourd\'hui. Reviens demain, ou passe à un forfait supérieur !', reason: 'daily_limit_reached' });
       }
-      return res.status(403).json({ error: 'Tu n\'as plus assez de crédits ce mois-ci (' + (mode === 'approfondi' ? '2 crédits pour une génération Approfondi' : '1 crédit pour une génération Rapide') + ').', reason: 'limit_reached', remaining: quota && quota.remaining });
+      return res.status(403).json({ error: 'Tu n\'as plus assez de crédits ce mois-ci (' + cost + ' crédit' + (cost > 1 ? 's' : '') + ' pour cette génération' + (extra ? ', cours long inclus' : '') + ').', reason: 'limit_reached', remaining: quota && quota.remaining });
     }
     debit = quota;
   } catch (e) {
@@ -173,7 +185,6 @@ export default async function handler(req, res) {
     } catch (e) { console.error('Remboursement de crédits impossible :', e); }
   };
 
-  const charLimit = user.plan === 'ultimate' ? 100000 : user.plan === 'pro' ? 80000 : 30000;
 
   // ── Garde anti-injection de prompt ──
   // Le contenu du cours est une donnée utilisateur non fiable : elle peut contenir des tentatives
@@ -547,7 +558,7 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
       await refundGeneration();
       return res.status(502).json({ error: "L'IA n'a pas renvoyé de texte cette fois, ta génération t'a été rendue. Réessaie dans un instant." });
     }
-    return res.status(200).json({ result: text, imagesUsed, imagesDropped, mode, offert, cost: offert ? 0 : MODE_COST[mode], remaining: debit && debit.remaining, offertsLeft: debit && debit.offerts_left });
+    return res.status(200).json({ result: text, imagesUsed, imagesDropped, mode, offert, cost, extra, remaining: debit && debit.remaining, offertsLeft: debit && debit.offerts_left });
 
   } catch (error) {
     console.error('Erreur API:', error);
