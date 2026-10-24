@@ -1,0 +1,94 @@
+/* Réglages de lecture de l'élève (Paramètres → Affichage) : taille du texte, police lisible,
+   mode concentration et corrections cachées des quiz et flashcards. */
+
+/* ── Taille du texte des fiches ── */
+html[data-texte="grand"] #result-content,
+html[data-texte="grand"] #modal-content,
+html[data-texte="grand"] .fl-body,
+html[data-texte="grand"] #review .q,
+html[data-texte="grand"] #review .a { zoom: 1.12; }
+html[data-texte="tres_grand"] #result-content,
+html[data-texte="tres_grand"] #modal-content,
+html[data-texte="tres_grand"] .fl-body,
+html[data-texte="tres_grand"] #review .q,
+html[data-texte="tres_grand"] #review .a { zoom: 1.25; }
+
+/* ── Police lisible (Lexend, pensée pour faciliter la lecture, notamment avec une dyslexie) ── */
+html[data-police="lisible"] #result-content,
+html[data-police="lisible"] #result-content *,
+html[data-police="lisible"] #modal-content,
+html[data-police="lisible"] .fl-body,
+html[data-police="lisible"] .fl-body *,
+html[data-police="lisible"] #review .q,
+html[data-police="lisible"] #review .a {
+  font-family: 'Lexend', 'DM Sans', system-ui, sans-serif !important;
+  letter-spacing: 0.012em;
+  word-spacing: 0.06em;
+}
+html[data-police="lisible"] #result-content .rc-item,
+html[data-police="lisible"] #result-content .rc-p,
+html[data-police="lisible"] .fl-body .rc-item,
+html[data-police="lisible"] .fl-body .rc-p,
+html[data-police="lisible"] #modal-content { line-height: 1.95; }
+
+/* ── Corrections cachées (quiz et flashcards) ── */
+.rc-answer { margin-top: 0.7rem; border-top: 1px dashed var(--border2, rgba(255,255,255,0.13)); padding-top: 0.6rem; }
+.rc-answer > summary {
+  list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem;
+  font-size: 0.8rem; font-weight: 700; color: var(--purple2, #a78bfa);
+  background: rgba(124,109,250,0.1); border: 1px solid rgba(124,109,250,0.28);
+  border-radius: 100px; padding: 0.35rem 0.9rem; user-select: none;
+}
+.rc-answer > summary::-webkit-details-marker { display: none; }
+.rc-answer[open] > summary { margin-bottom: 0.6rem; }
+.rc-answer[open] > summary .rc-answer-show { display: none; }
+.rc-answer:not([open]) > summary .rc-answer-hide { display: none; }
+.rc-qa-title { font-family: var(--font-h, inherit); font-size: 0.92rem; font-weight: 700; color: var(--purple2, #a78bfa); margin-bottom: 0.6rem; }
+.rc-opt { font-size: 0.86rem; line-height: 1.7; color: var(--text2, #a0a0c0); padding: 0.18rem 0 0.18rem 0.4rem; }
+
+/* ── Mode concentration ── */
+.fl-overlay {
+  position: fixed; inset: 0; z-index: 2000; overflow-y: auto;
+  background: var(--bg, #09090f);
+  display: flex; flex-direction: column; align-items: center;
+  padding: 4.5rem 1.2rem 3rem;
+  animation: flIn 0.18s ease-out;
+}
+@keyframes flIn { from { opacity: 0; } to { opacity: 1; } }
+.fl-bar {
+  position: fixed; top: 0; left: 0; right: 0; height: 3.4rem; z-index: 2001;
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: 0 1.2rem; background: var(--bg, #09090f);
+  border-bottom: 1px solid var(--border, rgba(255,255,255,0.07));
+}
+.fl-title { font-family: var(--font-h, inherit); font-weight: 700; font-size: 0.95rem; color: var(--text, #f1f0ff); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fl-close {
+  flex-shrink: 0; background: var(--surface, #1a1a2e); border: 1px solid var(--border2, rgba(255,255,255,0.13));
+  color: var(--text2, #a0a0c0); border-radius: 100px; padding: 0.45rem 1rem; font-size: 0.8rem; font-weight: 600;
+  cursor: pointer; font-family: var(--font-b, inherit);
+}
+.fl-actions { display: flex; gap: 0.5rem; margin-left: auto; }
+.fl-act { font-weight: 600; }
+@media (max-width: 560px) { .fl-actions { display: none; } }
+.fl-close:hover { color: var(--text, #f1f0ff); border-color: var(--purple, #7c6dfa); }
+.fl-body { width: 100%; max-width: 760px; }
+.fl-body .rc-section { padding: 1.4rem 1.5rem; }
+.fl-body .rc-item, .fl-body .rc-p { font-size: 0.95rem; line-height: 1.85; }
+.fl-plain { white-space: pre-wrap; word-break: break-word; font-size: 0.95rem; line-height: 1.9; color: var(--text2, #a0a0c0); }
+body.fl-open { overflow: hidden; }
+.focus-btn { white-space: nowrap; }
+
+/* ── Confirmation avant une génération coûteuse ── */
+.cost-confirm-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1500; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+.cost-confirm { background: var(--bg2, #0f0f1a); border: 1px solid rgba(124,109,250,0.35); border-radius: 20px; padding: 1.8rem; max-width: 420px; width: 100%; text-align: center; }
+.cost-confirm h3 { font-family: var(--font-h, inherit); font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--text, #f1f0ff); }
+.cost-confirm p { font-size: 0.85rem; color: var(--text2, #a0a0c0); line-height: 1.6; margin-bottom: 1.2rem; }
+.cost-confirm .cc-btns { display: flex; gap: 0.6rem; justify-content: center; flex-wrap: wrap; }
+.cost-confirm button { border-radius: 12px; padding: 0.7rem 1.2rem; font-weight: 700; font-size: 0.85rem; cursor: pointer; font-family: var(--font-b, inherit); }
+.cost-confirm .cc-ok { background: linear-gradient(135deg, var(--purple, #7c6dfa), var(--pink, #f472b6)); color: #fff; border: none; }
+.cost-confirm .cc-cancel { background: none; border: 1px solid var(--border2, rgba(255,255,255,0.13)); color: var(--text2, #a0a0c0); }
+.cost-confirm .cc-tip { font-size: 0.72rem; color: var(--text3, #6b6b8a); margin: 1rem 0 0; }
+
+/* ── Rappel des réglages actifs dans le générateur ── */
+.prefs-hint { font-size: 0.74rem; color: var(--text3, #6b6b8a); margin-top: 0.45rem; line-height: 1.5; }
+.prefs-hint a { color: var(--purple2, #a78bfa); text-decoration: underline; text-underline-offset: 2px; }

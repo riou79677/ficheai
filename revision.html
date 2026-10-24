@@ -6,6 +6,7 @@
 <title>Révision — FicheAI</title>
 <link rel="preload" href="/fonts/syne-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/fonts/dm-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/fonts/fonts.css">
+<script src="/prefs.js"></script>
 <style>
 :root{
   --bg:#07070f;--bg2:#0d0d1a;--surface:#181830;--border:rgba(255,255,255,0.06);
@@ -14,6 +15,14 @@
   --font-h:'Syne',sans-serif;--font-b:'DM Sans',sans-serif;--radius:18px;
 }
 *{margin:0;padding:0;box-sizing:border-box}
+.goal{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:16px 18px;margin-bottom:22px}
+.goal-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:10px;font-size:0.9rem}
+.goal-top b{font-family:var(--font-h)}
+.goal-top a{font-size:0.78rem;color:var(--purple2);text-decoration:underline;text-underline-offset:2px}
+.goal-bar{height:8px;border-radius:100px;background:var(--surface);overflow:hidden}
+.goal-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--purple),var(--pink));transition:width .4s}
+.goal.done .goal-fill{background:linear-gradient(90deg,var(--green),var(--cyan))}
+.goal-msg{font-size:0.78rem;color:var(--text2);margin-top:8px}
 body{
   font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh;
   background-image:radial-gradient(ellipse at 20% 10%,rgba(108,92,231,0.08) 0%,transparent 50%),
@@ -127,6 +136,8 @@ h1{font-family:var(--font-h);font-size:2.1rem;font-weight:800;margin-bottom:6px}
 <meta name="apple-mobile-web-app-title" content="FicheAI">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="stylesheet" href="/ecrans.css">
+<link rel="stylesheet" href="/reglages.css">
+<link rel="stylesheet" href="/theme-clair.css">
 </head>
 <body>
 <div class="nav">
@@ -228,6 +239,9 @@ async function loadDashboard(){
         + '</div>';
     }
 
+    reviewedToday = data.reviewed_today || 0;
+    if(totalCards > 0){ html += goalHtml(reviewedToday); }
+
     if(data.total_due > 0){
       html += '<button class="big-review" onclick="startReview(null)">⚡ Réviser maintenant'
         + '<span><small>' + data.total_due + ' carte' + (data.total_due>1?'s':'') + ' à réviser</small></span></button>';
@@ -299,6 +313,16 @@ async function createCards(ficheId, btn){
   }
 }
 
+// ── Objectif du jour (réglable dans Paramètres → Révision) ──
+var reviewedToday = 0, sessionDone = 0;
+function dailyGoal(){ return window.FichePrefs ? FichePrefs.get('objectif') : 20; }
+function goalHtml(n){
+  var g = dailyGoal(), pct = Math.min(100, Math.round(n / g * 100)), done = n >= g;
+  return '<div class="goal' + (done ? ' done' : '') + '"><div class="goal-top"><span>🎯 Objectif du jour : <b>' + Math.min(n, 9999) + ' / ' + g + '</b> cartes</span><a href="/settings.html#revision">modifier</a></div>'
+    + '<div class="goal-bar"><div class="goal-fill" style="width:' + pct + '%"></div></div>'
+    + '<div class="goal-msg">' + (done ? 'Objectif atteint, bravo ! Tout ce que tu révises en plus consolide encore ta mémoire.' : 'Encore ' + (g - n) + ' carte' + (g - n > 1 ? 's' : '') + ' pour atteindre ton objectif.') + '</div></div>';
+}
+
 // ── Mode révision ──
 var queue = [], idx = 0, total = 0;
 
@@ -311,7 +335,10 @@ async function startReview(ficheId){
     queue = await r.json();
   }catch(e){ alert('Erreur de chargement.'); return; }
   if(!queue || queue.length === 0){ alert('Aucune carte à réviser pour le moment !'); return; }
-  idx = 0; total = queue.length;
+  if(window.FichePrefs && FichePrefs.get('ordre') === 'aleatoire'){
+    for(var i = queue.length - 1; i > 0; i--){ var j = Math.floor(Math.random() * (i + 1)); var t = queue[i]; queue[i] = queue[j]; queue[j] = t; }
+  }
+  idx = 0; total = queue.length; sessionDone = 0;
   document.getElementById('dashboard').style.display = 'none';
   document.getElementById('review').style.display = 'block';
   window.scrollTo(0,0);
@@ -383,7 +410,7 @@ async function rate(quality){
   })();
 
   // "Oubli" (rating 1) → on remet la carte à la fin de la file
-  if(quality === 1){ queue.push(c); }
+  if(quality === 1){ queue.push(c); } else { sessionDone++; }
 
   idx++;
   total = queue.length;
@@ -396,6 +423,7 @@ function finishReview(){
   document.getElementById('review').innerHTML =
     '<div class="done-screen"><div class="emoji">🎉</div><h2>Session terminée !</h2>'
     + '<p>Tu as revu ' + total + ' carte' + (total>1?'s':'') + '. Les cartes bien retenues reviendront plus tard, celles qui ont coincé reviendront vite.</p>'
+    + '<div style="max-width:420px;margin:0 auto 18px;text-align:left">' + goalHtml(reviewedToday + sessionDone) + '</div>'
     + '<button class="btn" onclick="backToDash()">Retour aux paquets</button></div>';
 }
 

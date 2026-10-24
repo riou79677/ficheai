@@ -62,7 +62,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Configuration serveur incomplète' });
   }
 
-  const { course, format, language, instructions, diagrams, images: reqImages } = req.body || {};
+  const { course, format, language, instructions, diagrams, images: reqImages, longueur, nombre } = req.body || {};
 
   if (!course || !format) {
     return res.status(400).json({ error: 'Paramètres manquants' });
@@ -410,8 +410,31 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
   };
   const niveauInstruction = niveauMap[user.niveau_scolaire] || niveauMap.lycee;
 
-  // Consignes libres de l'étudiant (optionnel) : espaces normalisés, limitées à 500 caractères.
-  const userInstructions = String(instructions || '').replace(/\s+/g, ' ').trim().substring(0, 500);
+  // Consignes libres de l'étudiant (optionnel, consignes permanentes des Paramètres comprises) :
+  // espaces normalisés, limitées à 720 caractères.
+  const userInstructions = String(instructions || '').replace(/\s+/g, ' ').trim().substring(0, 720);
+
+  // Réglages de l'élève (Paramètres → Génération) : nombre de questions et longueur des fiches.
+  const COUNT_OPTIONS = { quiz: [6, 10], flash: [10, 20], questions: [6, 10] };
+  const countOptions = COUNT_OPTIONS[format] || null;
+  const itemCount = countOptions ? (countOptions.includes(Number(nombre)) ? Number(nombre) : countOptions[0]) : null;
+  const lengthMode = format === 'fiche' && ['synthetique', 'detaillee'].includes(longueur) ? longueur : 'normale';
+  let promptText = prompts[format];
+  if (format === 'quiz' && itemCount !== 6) {
+    promptText = promptText.replace('Génère un QUIZ de 6 questions', 'Génère un QUIZ de ' + itemCount + ' questions')
+      .replace('Niveaux : 2 faciles, 2 moyennes, 2 difficiles.', 'Niveaux : 3 faciles, 4 moyennes, 3 difficiles.');
+  }
+  if (format === 'flash' && itemCount !== 10) promptText = promptText.replace('Génère 10 FLASHCARDS', 'Génère ' + itemCount + ' FLASHCARDS');
+  if (format === 'questions' && itemCount !== 6) promptText = promptText.replace('Génère 6 QUESTIONS OUVERTES', 'Génère ' + itemCount + ' QUESTIONS OUVERTES');
+  if (lengthMode === 'synthetique') {
+    promptText += '\n\nLONGUEUR DEMANDÉE : version SYNTHÉTIQUE. Garde la même structure, mais uniquement l\'essentiel : définitions clés, formules, dates ou points à retenir, en puces très courtes. Environ deux fois plus court qu\'une fiche normale, sans perdre une information indispensable pour l\'examen.';
+  } else if (lengthMode === 'detaillee') {
+    promptText += '\n\nLONGUEUR DEMANDÉE : version DÉTAILLÉE. Garde la même structure, mais développe davantage chaque notion importante : une explication plus complète, un exemple concret et le piège fréquent à éviter. Reste aéré, en puces, sans pavés de texte.';
+  }
+  const lengthFactor = (format === 'quiz' && itemCount === 10) ? 1.6
+    : (format === 'flash' && itemCount === 20) ? 1.8
+    : (format === 'questions' && itemCount === 10) ? 1.5
+    : (lengthMode === 'detaillee') ? 1.25 : 1;
   // Schémas (option Pro/Ultimate) : l'IA ajoute des diagrammes Mermaid que le site dessine ensuite.
   const wantDiagrams = !!diagrams && user.plan !== 'starter' && ['fiche', 'chrono'].includes(format);
   const diagramBlock = wantDiagrams
@@ -422,8 +445,8 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
     : '';
 
   try {
-    const baseTokens = Math.round(((MAX_TOKENS[format] || 3000) + (wantDiagrams ? 900 : 0)) * (String(course).length > 12000 ? 1.25 : 1));
-    const userBody = prompts[format] + '\n\n---COURS---\n' + String(course).substring(0, charLimit) + '\n---FIN COURS---' + instructionsBlock + diagramBlock;
+    const baseTokens = Math.min(12000, Math.round(((MAX_TOKENS[format] || 3000) * lengthFactor + (wantDiagrams ? 900 : 0)) * (String(course).length > 12000 ? 1.25 : 1)));
+    const userBody = promptText + '\n\n---COURS---\n' + String(course).substring(0, charLimit) + '\n---FIN COURS---' + instructionsBlock + diagramBlock;
     const finalLine = '\n\nGénère maintenant le contenu demandé.';
 
     // Schémas et images du PDF (plans Pro et Ultimate) : les pages concernées arrivent en images JPEG/PNG,
@@ -531,11 +554,11 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
       const count = (re) => (text.match(re) || []).length;
       const courseLen = String(course).length;
       const checks = {
-        fiche: () => /🎯/.test(text) && /🧠/.test(text) && /⚡/.test(text) && text.length >= Math.min(2500, courseLen * 0.25),
-        quiz: () => count(/❓\s*Question/gi) >= 6 && count(/✅/g) >= 6,
-        flash: () => count(/🃏/g) >= 10 && count(/VERSO/gi) >= 10,
+        fiche: () => /🎯/.test(text) && /🧠/.test(text) && /⚡/.test(text) && text.length >= (lengthMode === 'synthetique' ? Math.min(1200, courseLen * 0.12) : Math.min(2500, courseLen * 0.25)),
+        quiz: () => count(/❓\s*Question/gi) >= itemCount && count(/✅/g) >= itemCount,
+        flash: () => count(/🃏/g) >= itemCount && count(/VERSO/gi) >= itemCount,
         mindmap: () => count(/BRANCHE/gi) >= 4,
-        questions: () => count(/💬/g) >= 6,
+        questions: () => count(/💬/g) >= itemCount,
         chrono: () => /📅/.test(text) && /⚡/.test(text),
         examen: () => text.length >= 2000
       };

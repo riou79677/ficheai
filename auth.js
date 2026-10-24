@@ -91,6 +91,33 @@
     };
   })();
 
+  // Déconnexion automatique après une période d'inactivité (réglable dans Paramètres → Sécurité,
+  // propre à chaque appareil : 30 min par défaut, 2 h, 8 h ou jamais).
+  (function () {
+    var pages = ['/home.html', '/app.html', '/dashboard.html', '/revision.html', '/settings.html'];
+    if (pages.indexOf(location.pathname) === -1) return;
+    var timer = null;
+    function minutes() {
+      var v = 30;
+      try { var s = localStorage.getItem('ficheai_autologout'); if (s !== null) v = parseInt(s, 10); } catch (e) {}
+      return [0, 30, 120, 480].indexOf(v) === -1 ? 30 : v;
+    }
+    function arm() {
+      clearTimeout(timer);
+      var m = minutes();
+      if (!m || !readUser()) return;
+      timer = setTimeout(function () {
+        try { localStorage.removeItem('ficheai_user'); } catch (e) {}
+        location.href = '/login.html';
+      }, m * 60 * 1000);
+    }
+    ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(function (ev) {
+      window.addEventListener(ev, arm, { passive: true });
+    });
+    window.addEventListener('ficheai-prefs', arm);
+    arm();
+  })();
+
   // Configuration du compte : à la première visite d'une page de l'espace connecté,
   // on envoie l'utilisateur sur /onboarding.html tant qu'il n'a pas choisi son niveau.
   (function () {

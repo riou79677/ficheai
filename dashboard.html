@@ -6,6 +6,7 @@
 <title>FicheAI — Ma bibliothèque</title>
 <link rel="preload" href="/fonts/syne-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/fonts/dm-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/fonts/fonts.css">
+<script src="/prefs.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--bg:#09090f;--bg2:#0f0f1a;--bg3:#13131f;--surface:#1a1a2e;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);--purple:#7c6dfa;--purple2:#a78bfa;--pink:#f472b6;--cyan:#22d3ee;--gold:#fbbf24;--text:#f1f0ff;--text2:#a0a0c0;--text3:#82829f;--font-h:'Syne',sans-serif;--font-b:'DM Sans',sans-serif;}
@@ -95,6 +96,8 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
 <meta name="apple-mobile-web-app-title" content="FicheAI">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="stylesheet" href="/ecrans.css">
+<link rel="stylesheet" href="/reglages.css">
+<link rel="stylesheet" href="/theme-clair.css">
 </head>
 <body>
 <nav>
@@ -124,6 +127,7 @@ FicheAI
 <div class="modal-header">
 <div class="modal-title" id="modal-title">Fiche</div>
 <div class="modal-actions">
+<button class="fiche-btn focus-btn" onclick="focusModal()" title="Lire la fiche en plein écran, sans distraction">🎯 Concentration</button>
 <button class="fiche-btn" id="modal-copy-btn" onclick="copyModal()">📋 Copier</button>
 <button class="fiche-btn" onclick="downloadModal()">⬇️ TXT</button>
 <button class="fiche-btn" onclick="downloadModalPDF()">📄 PDF</button>
@@ -245,7 +249,12 @@ document.getElementById('main-content').innerHTML=html;
 }
 function setFilter(f){currentFilter=f;renderPage();}
 function getFicheById(id){return allFiches.find(function(f){return f.id===id;});}
-function openFiche(id){var fiche=getFicheById(id);if(!fiche)return;modalContent=fiche.contenu;modalTitle=(fiche.format_icon||'📄')+' '+(fiche.titre||'Fiche');document.getElementById('modal-title').textContent=modalTitle;document.getElementById('modal-content').textContent=fiche.contenu;document.getElementById('fiche-modal').classList.add('open');}
+function openFiche(id){var fiche=getFicheById(id);if(!fiche)return;modalContent=fiche.contenu;modalTitle=(fiche.format_icon||'📄')+' '+(fiche.titre||'Fiche');document.getElementById('modal-title').textContent=modalTitle;document.getElementById('modal-content').textContent=fiche.contenu;
+  // Réglage « Ouvrir les fiches en mode concentration »
+  if(window.FichePrefs&&FichePrefs.get('concentration')&&window.FicheLecture){FicheLecture.open({title:modalTitle,text:fiche.contenu,actions:focusActions()});return;}
+  document.getElementById('fiche-modal').classList.add('open');}
+function focusActions(){return [{label:'📋 Copier',onClick:function(b){navigator.clipboard.writeText(modalContent).then(function(){b.textContent='✅ Copié';setTimeout(function(){b.textContent='📋 Copier';},1800);});}},{label:'📄 PDF',onClick:function(){downloadModalPDF();}}];}
+function focusModal(){if(!window.FicheLecture)return;document.getElementById('fiche-modal').classList.remove('open');FicheLecture.open({title:modalTitle,text:modalContent,actions:focusActions()});}
 document.getElementById('fiche-modal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
 function copyModal(){navigator.clipboard.writeText(modalContent).then(function(){var btn=document.getElementById('modal-copy-btn');btn.textContent='✅ Copié !';setTimeout(function(){btn.textContent='📋 Copier';},2000);});}
 function downloadModal(){var blob=new Blob([modalContent+'\n\n— Contenu généré par intelligence artificielle avec FicheAI. Il peut contenir des erreurs : vérifie-le avec ton cours.'],{type:'text/plain;charset=utf-8'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='FicheAI_fiche.txt';a.click();}
@@ -255,9 +264,7 @@ function confirmerSuppression(id){document.getElementById('confirm-title').textC
 function closeConfirm(){document.getElementById('confirm-overlay').classList.remove('open');}
 async function supprimerFiche(id){closeConfirm();await fetch(SUPABASE_URL+'/rest/v1/rpc/delete_my_fiche',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+((await ficheaiToken())||SUPABASE_KEY),'Content-Type':'application/json'},body:JSON.stringify({p_email:currentUser.email,p_fiche_id:id})});allFiches=allFiches.filter(function(f){return f.id!==id;});renderPage();showToast('🗑️ Fiche supprimée');}
 function showToast(msg){var t=document.createElement('div');t.textContent=msg;t.style.cssText='position:fixed;bottom:calc(2rem + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:#13131f;border:1px solid rgba(124,109,250,0.4);color:#f1f0ff;padding:0.7rem 1.5rem;border-radius:100px;font-size:0.85rem;font-weight:600;z-index:1000;box-shadow:0 4px 20px rgba(0,0,0,0.4);';document.body.appendChild(t);setTimeout(function(){t.remove();},2500);}
-var inactivityTimer;
-function resetTimer(){clearTimeout(inactivityTimer);inactivityTimer=setTimeout(function(){localStorage.removeItem('ficheai_user');window.location.href='/login.html';},30*60*1000);}
-document.addEventListener('mousemove',resetTimer);document.addEventListener('keypress',resetTimer);document.addEventListener('click',resetTimer);resetTimer();
+// Déconnexion automatique : gérée par auth.js (durée réglable dans les Paramètres).
 // ═══════════════════════════════════════════
 // EXPORT PDF DESIGNÉ — Plan Pro/Ultimate
 // ═══════════════════════════════════════════
@@ -349,6 +356,7 @@ if (!fiche) return;
 exportToPDF(fiche.contenu, (fiche.format_icon||'📄')+' '+(fiche.titre||'Fiche'), fiche.format);
 }
 </script>
+<script src="/lecture.js"></script>
 <script src="/va.js" defer></script>
 <script src="/maintenance.js" defer></script>
 <script src="/messages.js" defer></script>

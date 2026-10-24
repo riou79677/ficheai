@@ -1,0 +1,146 @@
+/* Thème clair de FicheAI (Paramètres → Affichage → Thème).
+   Même identité que le thème sombre : violet et rose, coins arrondis, mais sur un fond lavande lumineux.
+   Activé par l'attribut data-theme="clair" posé sur <html> par prefs.js. */
+
+html[data-theme="clair"] {
+  color-scheme: light;
+  --bg: #f6f4ff;
+  --bg2: #ffffff;
+  --bg3: #f3f0fe;
+  --surface: #eeeafd;
+  --border: rgba(70, 55, 160, 0.10);
+  --border2: rgba(70, 55, 160, 0.18);
+  --purple: #6c5ce7;
+  --purple2: #5848d6;
+  --pink: #d43d87;
+  --cyan: #0b8fa3;
+  --gold: #a86b05;
+  --green: #0c8f63;
+  --text: #1b1733;
+  --text2: #4a4566;
+  --text3: #6c6889;
+}
+
+/* ── Fond de page et barres de navigation ── */
+html[data-theme="clair"] body {
+  background-color: var(--bg) !important;
+  color: var(--text);
+  background-image: radial-gradient(ellipse at 15% 0%, rgba(108, 92, 231, 0.10) 0%, transparent 55%),
+                    radial-gradient(ellipse at 90% 100%, rgba(244, 114, 182, 0.08) 0%, transparent 55%) !important;
+}
+html[data-theme="clair"] nav,
+html[data-theme="clair"] .nav {
+  background: rgba(246, 244, 255, 0.86) !important;
+  border-bottom-color: var(--border) !important;
+}
+html[data-theme="clair"] .user-menu {
+  background: #ffffff !important;
+  border-color: var(--border2) !important;
+  box-shadow: 0 12px 30px rgba(50, 35, 130, 0.14) !important;
+}
+html[data-theme="clair"] .user-menu a { color: var(--text2) !important; }
+html[data-theme="clair"] .user-menu a:hover { background: var(--bg3) !important; color: var(--text) !important; }
+html[data-theme="clair"] .user-menu hr { border-top-color: var(--border) !important; }
+html[data-theme="clair"] footer,
+html[data-theme="clair"] .legal-mini { color: var(--text3) !important; }
+
+/* ── Cartes, fenêtres et bulles construites avec des couleurs fixes ── */
+html[data-theme="clair"] .onboarding-box,
+html[data-theme="clair"] .signup-popup,
+html[data-theme="clair"] .dev-toggle,
+html[data-theme="clair"] .modal-fiche,
+html[data-theme="clair"] .cost-confirm,
+html[data-theme="clair"] .confirm-box {
+  background: #ffffff !important;
+  box-shadow: 0 20px 50px rgba(50, 35, 130, 0.16);
+}
+html[data-theme="clair"] .msg.ai .msg-content,
+html[data-theme="clair"] .typing-bubble {
+  background: #ffffff !important;
+  color: var(--text2) !important;
+}
+html[data-theme="clair"] .chat-input:focus { background: #ffffff !important; }
+html[data-theme="clair"] .rc-diagram { background: #ffffff !important; }
+
+/* Styles écrits directement dans les éléments (fenêtres créées par le site) */
+html[data-theme="clair"] [style*="background:#0f0f1a"],
+html[data-theme="clair"] [style*="background:#0d0d1a"],
+html[data-theme="clair"] [style*="background:#13131f"],
+html[data-theme="clair"] [style*="background: #13131f"],
+html[data-theme="clair"] [style*="background:#0b0b14"],
+html[data-theme="clair"] [style*="background:#09090f"],
+html[data-theme="clair"] [style*="background:#07070f"] {
+  background: #ffffff !important;
+}
+html[data-theme="clair"] [style*="background:#181830"],
+html[data-theme="clair"] [style*="background:#1a1a2e"],
+html[data-theme="clair"] [style*="background:#111120"] {
+  background: var(--bg3) !important;
+  color: var(--text) !important;
+}
+html[data-theme="clair"] [style*="color:#a0a0c0"],
+html[data-theme="clair"] [style*="color:#9898b8"],
+html[data-theme="clair"] [style*="color:#b8b8d0"],
+html[data-theme="clair"] [style*="color:#8a88a8"] { color: var(--text2) !important; }
+html[data-theme="clair"] [style*="color:#82829f"],
+html[data-theme="clair"] [style*="color:#6b6b8a"] { color: var(--text3) !important; }
+html[data-theme="clair"] [style*="color:#f1f0ff"],
+html[data-theme="clair"] [style*="color:#f0efff"] { color: var(--text) !important; }
+html[data-theme="clair"] [style*="border:1px solid rgba(255,255,255"],
+html[data-theme="clair"] [style*="border:1.5px solid rgba(255,255,255"] { border-color: var(--border2) !important; }
+
+/* ── Champs de saisie ── */
+html[data-theme="clair"] input:not([type="checkbox"]):not([type="radio"]),
+html[data-theme="clair"] select,
+html[data-theme="clair"] textarea {
+  color: var(--text);
+}
+html[data-theme="clair"] select option { background: #ffffff; color: var(--text); }
+html[data-theme="clair"] ::placeholder { color: #8f8aab; }
+
+/* Boutons secondaires et pastilles sur fond clair */
+html[data-theme="clair"] .toggle-slider { background: #ddd7f6; border-color: var(--border2); }
+html[data-theme="clair"] .toggle input:checked + .toggle-slider { background: var(--purple); }
+
+/* Les textes en dégradé (logo, titres) gardent leurs couleurs ; un violet un peu plus soutenu reste lisible. */
+html[data-theme="clair"] .logo { filter: saturate(1.15); }
+
+/* Mode concentration et fenêtre de confirmation */
+html[data-theme="clair"] .fl-overlay,
+html[data-theme="clair"] .fl-bar { background: var(--bg) !important; }
+html[data-theme="clair"] .cost-confirm-bg { background: rgba(40, 30, 90, 0.35) !important; }
+
+/* Ombres douces à la place des lueurs du thème sombre */
+html[data-theme="clair"] .settings-card,
+html[data-theme="clair"] .sidebar-card,
+html[data-theme="clair"] .result-card,
+html[data-theme="clair"] .rc-section,
+html[data-theme="clair"] .stat-box,
+html[data-theme="clair"] .deck,
+html[data-theme="clair"] .card,
+html[data-theme="clair"] .goal,
+html[data-theme="clair"] .howto,
+html[data-theme="clair"] .fiche-card {
+  box-shadow: 0 1px 2px rgba(50, 35, 130, 0.05), 0 6px 18px rgba(50, 35, 130, 0.05);
+}
+
+/* Cartes posées directement sur le fond de page : blanches, comme les cartes des Paramètres */
+html[data-theme="clair"] .stat-box,
+html[data-theme="clair"] .howto,
+html[data-theme="clair"] .deck,
+html[data-theme="clair"] .stat-card,
+html[data-theme="clair"] .fiche-card,
+html[data-theme="clair"] #review .card,
+html[data-theme="clair"] .filter-btn:not(.active) {
+  background: #ffffff !important;
+}
+html[data-theme="clair"] .fiche-card:hover { box-shadow: 0 10px 28px rgba(50, 35, 130, 0.12) !important; }
+
+/* Textes dorés et cyan : versions plus foncées pour rester lisibles sur fond clair */
+html[data-theme="clair"] [style*="color:#fbbf24"],
+html[data-theme="clair"] [style*="color:#fdcb6e"] { color: #a86b05 !important; }
+html[data-theme="clair"] [style*="color:#00cec9"],
+html[data-theme="clair"] [style*="color:#22d3ee"] { color: #0b8fa3 !important; }
+html[data-theme="clair"] [style*="color:#4ade80"] { color: #0c8f63 !important; }
+html[data-theme="clair"] .msg-success { color: #0c8f63 !important; }
+html[data-theme="clair"] .msg-error { color: #c0306f !important; }

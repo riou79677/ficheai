@@ -6,6 +6,7 @@
 <title>FicheAI — Générateur de fiches IA</title>
 <link rel="preload" href="/fonts/syne-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/fonts/dm-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/fonts/fonts.css">
+<script src="/prefs.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="/auth.js"></script>
 <script src="/checkout.js"></script>
@@ -274,6 +275,8 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
 <meta name="apple-mobile-web-app-title" content="FicheAI">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="stylesheet" href="/ecrans.css">
+<link rel="stylesheet" href="/reglages.css">
+<link rel="stylesheet" href="/theme-clair.css">
 </head>
 <body>
 
@@ -370,6 +373,7 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
       <div class="instr-zone">
         <label for="instructions-input">🎯 Consignes pour l’IA <span>(optionnel)</span></label>
         <input type="text" id="instructions-input" maxlength="500" placeholder="Ex : fais-le plus court, insiste sur les formules, explique comme à un débutant…">
+        <div class="prefs-hint" id="prefs-hint" style="display:none"></div>
       </div>
       <div class="instr-zone">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="diagrams-input" style="width:auto"> <span>📊 Ajouter des schémas aux fiches et chronologies <span id="diagrams-hint" style="color:var(--text3)">(Pro et Ultimate)</span></span></label>
@@ -396,6 +400,7 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
         <div class="result-header">
           <div><div class="result-title" id="result-title">📄 Fiche de révision</div><div class="ai-label" data-ai-generated="true" style="font-size:0.72rem;color:var(--text3);margin-top:2px">🤖 Généré par IA · vérifie avec ton cours</div></div>
           <div class="result-actions">
+            <button id="focus-btn" class="focus-btn" onclick="openFocus()" title="Lire la fiche en plein écran, sans distraction">🎯 Concentration</button>
             <button id="copy-btn">📋 Copier</button>
             <button id="download-btn">⬇️ TXT</button>
             <button id="pdf-btn" onclick="exportToPDF(lastResult,currentFormatIcon+' '+currentFormatName,currentFormatName)">📄 PDF</button>
@@ -562,15 +567,18 @@ var genMode=null;
 function offertsLeft(){return savedUser&&savedUser.offerts!==undefined?savedUser.offerts:0;}
 function defaultGenMode(){
   if(getPlan()==='starter')return offertsLeft()>0?'approfondi':'rapide';
+  var q=window.FichePrefs?FichePrefs.get('qualite'):'';
+  if(q==='rapide'||q==='approfondi')return q;
   try{var m=localStorage.getItem('ficheai_mode');if(m==='rapide'||m==='approfondi')return m;}catch(e){}
   return 'approfondi';
 }
 function setGenMode(m){
+  window.__genModeTouched=true;
   if(m==='approfondi'&&getPlan()==='starter'&&offertsLeft()<=0){
     showLimitModal('Tes fiches Approfondi offertes sont utilisées. Avec Pro, tu choisis la qualité Approfondi à chaque génération.','approfondi');return;
   }
   genMode=m;
-  if(getPlan()!=='starter'){try{localStorage.setItem('ficheai_mode',m);}catch(e){}}
+  if(getPlan()!=='starter'){try{localStorage.setItem('ficheai_mode',m);}catch(e){}if(window.FichePrefs)FichePrefs.set({qualite:m});}
   renderGenMode();
 }
 function renderGenMode(){
@@ -717,7 +725,8 @@ function updateQuotaUI(){
   }
 
   var banner=document.getElementById('quota-banner');
-  if(pct>=80){
+  var alerte=window.FichePrefs?FichePrefs.get('alerte_credits'):20;
+  if(alerte>0&&pct>=100-alerte){
     banner.style.display='flex';
     banner.classList.toggle('critical',pct>=95);
     document.getElementById('quota-banner-msg').innerHTML=pct>=95
@@ -794,9 +803,7 @@ async function loadFichesCount(){
   try{var r=await fetch('/api/fiches',{headers:{'Authorization':'Bearer '+((await ficheaiToken())||'')}});var data=await r.json();if(Array.isArray(data))document.getElementById('stat-fiches').textContent=data.length;}catch(e){}
 }
 
-var inactivityTimer;
-function resetTimer(){clearTimeout(inactivityTimer);inactivityTimer=setTimeout(function(){localStorage.removeItem('ficheai_user');window.location.href='/login.html';},30*60*1000);}
-document.addEventListener('mousemove',resetTimer);document.addEventListener('keypress',resetTimer);document.addEventListener('click',resetTimer);resetTimer();
+// Déconnexion automatique : gérée par auth.js (durée réglable dans les Paramètres).
 
 function switchMode(mode){
   currentMode=mode;
@@ -1116,6 +1123,49 @@ function renderResultAsCards(text){
   return html;
 }
 
+// Quiz, flashcards et questions ouvertes : la réponse reste cachée jusqu'au clic (réglage « Correction »).
+function renderQA(text,fmt){
+  var startRe={quiz:/^[\s*#]*❓/,flash:/^[\s*#]*🃏/,questions:/^[\s*#]*💬/}[fmt];
+  var ansRe={quiz:/^[\s*#]*✅/,flash:/^[\s*#]*\**\s*VERSO\b/i,questions:/^[\s*#]*📝/}[fmt];
+  if(!startRe)return null;
+  var lines=String(text||'').replace(/\r/g,'').split('\n'),pre=[],blocks=[],cur=null;
+  lines.forEach(function(l){
+    var t=l.trim();
+    if(startRe.test(t)){cur={q:[t],a:[],inA:false};blocks.push(cur);return;}
+    if(!cur){pre.push(l);return;}
+    if(!cur.inA&&ansRe.test(t))cur.inA=true;
+    (cur.inA?cur.a:cur.q).push(t);
+  });
+  if(blocks.length<2||blocks.some(function(b){return !b.a.length;}))return null; // format inattendu : affichage classique
+  function line(t){
+    t=t.replace(/^#{1,4}\s+/,'');
+    if(!t||/^([━─=_*-]\s*){3,}$/.test(t))return '';
+    if(/^[A-D]\)\s/.test(t))return '<div class="rc-opt">'+boldifyRc(t)+'</div>';
+    var bm=t.match(/^[▸→✦•\-]\s*(.+)/);
+    if(bm)return '<div class="rc-item">'+boldifyRc(bm[1])+'</div>';
+    return '<div class="rc-p">'+boldifyRc(t)+'</div>';
+  }
+  var html=pre.join('').trim()?renderResultAsCards(pre.join('\n')):'';
+  blocks.forEach(function(b){
+    html+='<div class="rc-section rc-qa"><div class="rc-qa-title">'+boldifyRc(b.q[0].replace(/^#{1,4}\s+/,'').replace(/\*\*/g,''))+'</div>'
+      +b.q.slice(1).map(line).join('')
+      +'<details class="rc-answer"><summary><span class="rc-answer-show">👀 Voir la réponse</span><span class="rc-answer-hide">Masquer la réponse</span></summary>'
+      +b.a.map(line).join('')+'</details></div>';
+  });
+  return html;
+}
+function renderResult(text,fmt){
+  if((fmt==='quiz'||fmt==='flash'||fmt==='questions')&&(!window.FichePrefs||FichePrefs.get('correction')==='cachee')){
+    var h=renderQA(text,fmt);if(h)return h;
+  }
+  return renderResultAsCards(text);
+}
+function openFocus(){
+  if(!window.FicheLecture)return;
+  var r=generatedResults[activeResultIndex]||null;
+  FicheLecture.open({title:r?r.name:currentFormatName,html:document.getElementById('result-content').innerHTML});
+}
+
 function renderResultTabs(){
   var el=document.getElementById('result-tabs');
   if(generatedResults.length<2){el.style.display='none';el.innerHTML='';return;}
@@ -1126,11 +1176,21 @@ function setActiveResultTab(i){
   var r=generatedResults[i];if(!r)return;
   activeResultIndex=i;
   lastResult=r.result;currentFormat=r.fmt;currentFormatName=r.name;currentFormatIcon=r.icon;
-  document.getElementById('result-content').innerHTML=renderResultAsCards(r.result);
+  document.getElementById('result-content').innerHTML=renderResult(r.result,r.fmt);
   document.getElementById('result-title').textContent=r.icon+' '+r.name;
   renderResultTabs();
 }
 
+var costConfirmed=false;
+function showCostConfirm(cost,n){
+  var bg=document.createElement('div');bg.className='cost-confirm-bg';
+  bg.innerHTML='<div class="cost-confirm" role="dialog" aria-modal="true"><h3>Confirmer la génération ?</h3><p>Cette génération va utiliser <b>'+cost+' crédits</b>'+(n>1?' ('+n+' formats)':'')+'. Il t\'en restera '+Math.max(0,tokensLeft-cost)+'.</p><div class="cc-btns"><button class="cc-cancel" type="button">Annuler</button><button class="cc-ok" type="button">Générer ('+cost+' crédits)</button></div><p class="cc-tip">Tu peux changer ce seuil dans Paramètres → Abonnement et crédits.</p></div>';
+  bg.querySelector('.cc-cancel').onclick=function(){bg.remove();};
+  bg.addEventListener('click',function(e){if(e.target===bg)bg.remove();});
+  bg.querySelector('.cc-ok').onclick=function(){bg.remove();costConfirmed=true;document.getElementById('gen-btn').click();};
+  document.body.appendChild(bg);
+  try{bg.querySelector('.cc-ok').focus();}catch(e){}
+}
 document.getElementById('gen-btn').addEventListener('click',async function(){
   var input=document.getElementById('course-input').value.trim();
   var errBox=document.getElementById('error-box');
@@ -1146,8 +1206,15 @@ document.getElementById('gen-btn').addEventListener('click',async function(){
     errBox.textContent='⚠️ Il te reste '+tokensLeft+' crédit'+(tokensLeft>1?'s':'')+' et cette génération en demande '+needed+'. Retire un format'+(genMode==='approfondi'?', passe en Rapide (1 crédit par format)':'')+' ou recharge tes crédits.';
     errBox.style.display='block';return;
   }
+  var seuil=window.FichePrefs?FichePrefs.get('confirmation_cout'):0;
+  if(seuil>0&&needed>=seuil&&!costConfirmed){showCostConfirm(needed,formats.length);return;}
+  costConfirmed=false;
   var btn=this;btn.disabled=true;
   var instructions=(document.getElementById('instructions-input').value||'').trim();
+  var permanentes=window.FichePrefs?FichePrefs.get('consignes'):'';
+  if(permanentes)instructions=permanentes+(instructions?' — '+instructions:'');
+  var longueur=window.FichePrefs?FichePrefs.get('longueur'):'normale';
+  var nombres=window.FichePrefs?{quiz:FichePrefs.get('nb_quiz'),flash:FichePrefs.get('nb_flash'),questions:FichePrefs.get('nb_questions')}:{};
   var langSel=document.getElementById('lang-sel').value;
   var resultCard=document.getElementById('result-card'),spinner=document.getElementById('result-spinner'),content=document.getElementById('result-content');
   generatedResults=[];activeResultIndex=0;renderResultTabs();
@@ -1158,7 +1225,7 @@ document.getElementById('gen-btn').addEventListener('click',async function(){
     var f=formats[k],meta=formatMeta(f);
     btn.textContent=formats.length>1?('Génération '+(k+1)+'/'+formats.length+'…'):'Génération en cours…';
     try{
-      var response=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+((await ficheaiToken())||'')},body:JSON.stringify({course:input,format:f,mode:genMode,language:langSel,instructions:instructions,diagrams:!!(document.getElementById('diagrams-input')&&document.getElementById('diagrams-input').checked),images:pdfImagesFor(input)})});
+      var response=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+((await ficheaiToken())||'')},body:JSON.stringify({course:input,format:f,mode:genMode,language:langSel,instructions:instructions,longueur:longueur,nombre:nombres[f]||null,diagrams:!!(document.getElementById('diagrams-input')&&document.getElementById('diagrams-input').checked),images:pdfImagesFor(input)})});
       var data=await readResponseSafely(response,'génération');
       if(data.error){
         if(response.status===403&&(data.reason==='limit_reached'||data.reason==='daily_limit_reached'||/limite|crédits/i.test(data.error||''))&&generatedResults.length===0){
@@ -1526,11 +1593,44 @@ window.addEventListener('load',function(){if(location.hash==='#chat'&&typeof ope
 <script src="/va.js" defer></script>
 <script src="/maintenance.js" defer></script>
 <script src="/messages.js" defer></script>
+<script src="/lecture.js"></script>
 <script>
-// Format par défaut choisi dans les Paramètres
-(function(){try{var pr=JSON.parse(localStorage.getItem('ficheai_prefs')||'{}');var f=pr.format;if(!f||f==='fiche')return;
-var el=document.querySelector('[data-fmt="'+f+'"]');var fi=document.querySelector('[data-fmt="fiche"]');if(!el||!fi)return;
-if(el.dataset.premium==='1'&&getPlan()==='starter')return;selectFormat(el);if(selectedFormats.indexOf(f)!==-1)selectFormat(fi);}catch(e){}})();
+// Réglages choisis dans les Paramètres : format, langue, rappel des réglages actifs
+(function(){
+  function P(k){return window.FichePrefs?FichePrefs.get(k):null;}
+  try{
+    var f=P('format');
+    if(f&&f!=='fiche'){
+      var el=document.querySelector('[data-fmt="'+f+'"]'),fi=document.querySelector('[data-fmt="fiche"]');
+      if(el&&fi&&!(el.dataset.premium==='1'&&getPlan()==='starter')){selectFormat(el);if(selectedFormats.indexOf(f)!==-1)selectFormat(fi);}
+    }
+  }catch(e){}
+  var langTouched=false;
+  function applyLang(){try{var ls=document.getElementById('lang-sel'),lg=P('langue');if(ls&&lg&&!langTouched)ls.value=lg;}catch(e){}}
+  applyLang();
+  try{document.getElementById('lang-sel').addEventListener('change',function(){langTouched=true;});}catch(e){}
+  function hint(){
+    try{
+      var dq=document.querySelector('[data-fmt="quiz"] .fmt-desc'),df=document.querySelector('[data-fmt="flash"] .fmt-desc'),dqo=document.querySelector('[data-fmt="questions"] .fmt-desc');
+      if(dq)dq.textContent=P('nb_quiz')+' questions & corrections';
+      if(df)df.textContent=P('nb_flash')+' cartes recto/verso';
+      if(dqo&&P('nb_questions')!==6)dqo.textContent=P('nb_questions')+' questions pour les oraux';
+    }catch(e){}
+    var box=document.getElementById('prefs-hint');if(!box||!window.FichePrefs)return;
+    var parts=[];
+    if(P('longueur')==='synthetique')parts.push('fiches synthétiques');
+    if(P('longueur')==='detaillee')parts.push('fiches détaillées');
+    if(P('nb_quiz')!==6)parts.push('quiz de '+P('nb_quiz')+' questions');
+    if(P('nb_flash')!==10)parts.push(P('nb_flash')+' flashcards');
+    if(P('nb_questions')!==6)parts.push(P('nb_questions')+' questions ouvertes');
+    if(P('consignes'))parts.push('consignes permanentes : « '+P('consignes')+' »');
+    if(!parts.length){box.style.display='none';return;}
+    box.style.display='block';
+    box.innerHTML='⚙️ Tes réglages : '+parts.map(function(x){var d=document.createElement('span');d.textContent=x;return d.innerHTML;}).join(' · ')+' — <a href="/settings.html#generation">modifier</a>';
+  }
+  hint();
+  window.addEventListener('ficheai-prefs',function(){hint();applyLang();if(typeof updateGenCostNote==='function')updateGenCostNote();if(typeof renderGenMode==='function'){if(!window.__genModeTouched)genMode=null;renderGenMode();}if(typeof updateQuotaUI==='function')updateQuotaUI();});
+})();
 </script>
 </body>
 </html>

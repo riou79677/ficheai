@@ -215,20 +215,24 @@ export default async function handler(req, res) {
     try {
       const [fr, cr] = await Promise.all([
         fetch(SUPABASE_URL + '/rest/v1/fiches?user_email=eq.' + encodeURIComponent(email) + '&select=id,titre,created_at&order=created_at.desc', { headers: sb }),
-        fetch(SUPABASE_URL + '/rest/v1/flashcards?user_email=eq.' + encodeURIComponent(email) + '&select=fiche_id,due_date', { headers: sb })
+        fetch(SUPABASE_URL + '/rest/v1/flashcards?user_email=eq.' + encodeURIComponent(email) + '&select=fiche_id,due_date,last_review', { headers: sb })
       ]);
       const fiches = await fr.json();
       const cards = await cr.json();
       const now = Date.now();
 
       const byFiche = {};
-      let totalDue = 0, totalCards = 0;
+      let totalDue = 0, totalCards = 0, reviewedToday = 0;
+      // Cartes déjà révisées aujourd'hui (heure de Paris) : sert à l'objectif quotidien du Mode Révision.
+      const day = (d) => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Paris' }).format(new Date(d));
+      const today = day(Date.now());
       (Array.isArray(cards) ? cards : []).forEach(c => {
         const key = c.fiche_id || 'none';
         if (!byFiche[key]) byFiche[key] = { total: 0, due: 0 };
         byFiche[key].total += 1;
         totalCards += 1;
         if (new Date(c.due_date).getTime() <= now) { byFiche[key].due += 1; totalDue += 1; }
+        if (c.last_review && day(c.last_review) === today) reviewedToday += 1;
       });
 
       const decks = (Array.isArray(fiches) ? fiches : []).map(f => ({
@@ -238,7 +242,7 @@ export default async function handler(req, res) {
         due_cards: byFiche[f.id] ? byFiche[f.id].due : 0
       }));
 
-      return res.status(200).json({ decks: decks, total_due: totalDue, total_cards: totalCards });
+      return res.status(200).json({ decks: decks, total_due: totalDue, total_cards: totalCards, reviewed_today: reviewedToday });
     } catch (e) {
       console.error('Erreur tableau de bord révision:', e);
       return res.status(200).json({ decks: [], total_due: 0, total_cards: 0 });

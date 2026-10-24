@@ -6,6 +6,7 @@
 <title>FicheAI — Paramètres</title>
 <link rel="preload" href="/fonts/syne-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/fonts/dm-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/fonts/fonts.css">
+<script src="/prefs.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--bg:#09090f;--bg2:#0f0f1a;--bg3:#13131f;--surface:#1a1a2e;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);--purple:#7c6dfa;--purple2:#a78bfa;--pink:#f472b6;--cyan:#22d3ee;--gold:#fbbf24;--text:#f1f0ff;--text2:#a0a0c0;--text3:#82829f;--font-h:'Syne',sans-serif;--font-b:'DM Sans',sans-serif;}
@@ -106,6 +107,23 @@ main{flex:1;display:flex;gap:0;max-width:900px;margin:0 auto;width:100%;padding:
 .session-dev{color:var(--text);font-weight:600}
 .session-meta{color:var(--text3);font-size:0.75rem;margin-top:2px}
 .session-here{font-size:0.7rem;font-weight:700;color:#4ade80;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.25);border-radius:100px;padding:0.15rem 0.55rem;white-space:nowrap}
+.pref-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:0.9rem 1rem;margin-bottom:0.4rem}
+.pref-grid .form-group{min-width:0}
+.pref-note{font-size:0.78rem !important;color:var(--text3);margin:0.6rem 0 0 !important}
+.form-group textarea{width:100%;background:var(--bg3);border:1.5px solid var(--border2);border-radius:10px;padding:0.7rem 1rem;font-size:0.88rem;color:var(--text);font-family:var(--font-b);outline:none;resize:vertical;line-height:1.5}
+.form-group textarea:focus{border-color:var(--purple)}
+.pref-row-end{display:flex;align-items:center;justify-content:flex-end;gap:0.8rem;margin-top:0.7rem}
+.pref-count{font-size:0.75rem;color:var(--text3)}
+.theme-pick{display:grid;grid-template-columns:repeat(3,1fr);gap:0.6rem}
+.theme-opt{display:flex;flex-direction:column;align-items:center;gap:0.5rem;padding:0.8rem 0.5rem;border-radius:14px;border:1.5px solid var(--border2);background:var(--bg3);color:var(--text2);font-size:0.82rem;font-weight:600;cursor:pointer;font-family:var(--font-b);transition:border-color .2s,color .2s}
+.theme-opt:hover{color:var(--text)}
+.theme-opt.on{border-color:var(--purple);color:var(--purple2);box-shadow:0 0 0 3px rgba(124,109,250,0.15)}
+.theme-swatch{width:100%;max-width:120px;height:56px;border-radius:10px;border:1px solid var(--border2);display:block}
+.sw-dark{background:linear-gradient(135deg,#09090f 0 55%,#1a1a2e 55%),#09090f;box-shadow:inset 0 -14px 0 rgba(124,109,250,0.35)}
+.sw-light{background:linear-gradient(135deg,#f7f5ff 0 55%,#ece8ff 55%),#f7f5ff;box-shadow:inset 0 -14px 0 rgba(124,109,250,0.35)}
+.sw-auto{background:linear-gradient(90deg,#09090f 0 50%,#f7f5ff 50%);box-shadow:inset 0 -14px 0 rgba(124,109,250,0.35)}
+.pref-toast{position:fixed;left:50%;bottom:1.5rem;transform:translateX(-50%) translateY(20px);opacity:0;background:var(--surface);border:1px solid rgba(74,222,128,0.35);color:#4ade80;border-radius:100px;padding:0.55rem 1.1rem;font-size:0.82rem;font-weight:600;transition:all .25s;z-index:900;pointer-events:none}
+.pref-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .not-logged{text-align:center;padding:4rem 2rem;width:100%;}
 .not-logged h2{font-family:var(--font-h);font-size:1.4rem;margin-bottom:0.8rem;}
 .not-logged p{color:var(--text2);margin-bottom:2rem;}
@@ -137,6 +155,8 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
 <meta name="apple-mobile-web-app-title" content="FicheAI">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="stylesheet" href="/ecrans.css">
+<link rel="stylesheet" href="/reglages.css">
+<link rel="stylesheet" href="/theme-clair.css">
 </head>
 <body>
 <nav>
@@ -172,8 +192,10 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
     <div class="settings-sidebar">
       <div class="sidebar-title">Paramètres</div>
       <button class="sidebar-item active" onclick="showSection('compte',this)"><span class="sidebar-icon">👤</span> Mon compte</button>
-      <button class="sidebar-item" onclick="showSection('abonnement',this)"><span class="sidebar-icon">💳</span> Abonnement</button>
-      <button class="sidebar-item" onclick="showSection('preferences',this)"><span class="sidebar-icon">🎨</span> Préférences</button>
+      <button class="sidebar-item" onclick="showSection('abonnement',this)"><span class="sidebar-icon">💳</span> Abonnement et crédits</button>
+      <button class="sidebar-item" onclick="showSection('generation',this)"><span class="sidebar-icon">✨</span> Génération</button>
+      <button class="sidebar-item" onclick="showSection('affichage',this)"><span class="sidebar-icon">🎨</span> Affichage</button>
+      <button class="sidebar-item" onclick="showSection('revision',this)"><span class="sidebar-icon">🧠</span> Révision</button>
       <button class="sidebar-item" onclick="showSection('securite',this)"><span class="sidebar-icon">🔒</span> Sécurité</button>
       <button class="sidebar-item" onclick="showSection('compte-actions',this)"><span class="sidebar-icon" style="color:var(--pink)">⚠️</span> <span style="color:var(--pink)">Actions du compte</span></button>
     </div>
@@ -216,12 +238,29 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
           <div id="plan-display-zone"></div>
         </div>
         <div id="plan-actions-zone"></div>
+        <div class="settings-card">
+          <h3>Alertes de crédits</h3><p>Pour ne jamais être surpris pendant tes révisions.</p>
+          <div class="pref-grid">
+            <div class="form-group"><label for="pref-alerte">Me prévenir quand il me reste</label>
+              <select id="pref-alerte" data-pref="alerte_credits" data-num="1">
+                <option value="20">20 % de mes crédits</option>
+                <option value="10">10 % de mes crédits</option>
+                <option value="0">Jamais</option>
+              </select></div>
+            <div class="form-group"><label for="pref-confirm">Demander confirmation avant une génération de</label>
+              <select id="pref-confirm" data-pref="confirmation_cout" data-num="1">
+                <option value="5">5 crédits ou plus</option>
+                <option value="10">10 crédits ou plus</option>
+                <option value="0">Jamais</option>
+              </select></div>
+          </div>
+        </div>
       </div>
 
-      <!-- PREFERENCES -->
-      <div class="settings-section" id="section-preferences">
-        <div class="section-title">Préférences</div>
-        <div class="section-desc">Personnalise ton expérience FicheAI.</div>
+      <!-- GENERATION -->
+      <div class="settings-section" id="section-generation">
+        <div class="section-title">Génération</div>
+        <div class="section-desc">Ce que FicheAI prépare par défaut quand tu génères. Tes réglages te suivent sur tous tes appareils.</div>
         <div class="settings-card">
           <h3>Niveau scolaire</h3><p>FicheAI adapte le vocabulaire et la difficulté de tes fiches à ton niveau.</p>
           <div class="form-group">
@@ -235,16 +274,116 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
           <div id="niveau-msg" style="display:none;font-size:0.8rem;margin-top:0.5rem"></div>
         </div>
         <div class="settings-card">
-          <h3>Format par défaut</h3><p>Le format sélectionné automatiquement sur le générateur.</p>
+          <h3>Par défaut dans le générateur</h3><p>Tu peux toujours changer ces choix au moment de générer.</p>
+          <div class="pref-grid">
+            <div class="form-group"><label for="pref-format">Format</label>
+              <select id="pref-format" data-pref="format">
+                <option value="fiche">📄 Fiche de révision</option>
+                <option value="quiz">✅ Quiz QCM</option>
+                <option value="flash">🃏 Flashcards</option>
+                <option value="mindmap">🧠 Mind Map</option>
+                <option value="questions">💬 Questions ouvertes</option>
+                <option value="chrono">📅 Chronologie</option>
+              </select></div>
+            <div class="form-group"><label for="pref-qualite">Qualité</label>
+              <select id="pref-qualite" data-pref="qualite">
+                <option value="">Selon mon forfait</option>
+                <option value="approfondi">✨ Approfondi (2 crédits)</option>
+                <option value="rapide">⚡ Rapide (1 crédit)</option>
+              </select></div>
+            <div class="form-group"><label for="pref-langue">Langue de sortie</label>
+              <select id="pref-langue" data-pref="langue">
+                <option value="auto">🌍 Langue du cours</option>
+                <option value="fr">🇫🇷 Français</option>
+                <option value="en">🇬🇧 English</option>
+                <option value="es">🇪🇸 Español</option>
+                <option value="de">🇩🇪 Deutsch</option>
+              </select></div>
+          </div>
+          <p class="pref-note" id="qualite-note" style="display:none">En Starter, la qualité Approfondi est réservée à tes fiches offertes. Ensuite, FicheAI passe en Rapide.</p>
+        </div>
+        <div class="settings-card">
+          <h3>Longueur et quantité</h3><p>Une fiche synthétique va droit à l'essentiel, une fiche détaillée ajoute des exemples et les pièges à éviter. Même nombre de crédits dans tous les cas.</p>
+          <div class="pref-grid">
+            <div class="form-group"><label for="pref-longueur">Fiches de révision</label>
+              <select id="pref-longueur" data-pref="longueur">
+                <option value="synthetique">Synthétique</option>
+                <option value="normale">Normale</option>
+                <option value="detaillee">Détaillée</option>
+              </select></div>
+            <div class="form-group"><label for="pref-nbquiz">Quiz QCM</label>
+              <select id="pref-nbquiz" data-pref="nb_quiz" data-num="1">
+                <option value="6">6 questions</option>
+                <option value="10">10 questions</option>
+              </select></div>
+            <div class="form-group"><label for="pref-nbflash">Flashcards</label>
+              <select id="pref-nbflash" data-pref="nb_flash" data-num="1">
+                <option value="10">10 cartes</option>
+                <option value="20">20 cartes</option>
+              </select></div>
+            <div class="form-group"><label for="pref-nbquestions">Questions ouvertes</label>
+              <select id="pref-nbquestions" data-pref="nb_questions" data-num="1">
+                <option value="6">6 questions</option>
+                <option value="10">10 questions</option>
+              </select></div>
+          </div>
+        </div>
+        <div class="settings-card">
+          <h3>Consignes permanentes</h3><p>Ajoutées automatiquement à chacune de tes générations. Exemples : « toujours un exemple concret par notion », « phrases courtes », « insiste sur les formules ».</p>
           <div class="form-group">
-            <select id="pref-format" onchange="savePref('format',this.value)">
-              <option value="fiche">📄 Fiche de révision</option>
-              <option value="quiz">✅ Quiz QCM</option>
-              <option value="flash">🃏 Flashcards</option>
-              <option value="mindmap">🧠 Mind Map</option>
-              <option value="questions">💬 Questions ouvertes</option>
-              <option value="chrono">📅 Chronologie</option>
-            </select>
+            <textarea id="pref-consignes" maxlength="200" rows="3" placeholder="Tes consignes pour l'IA (facultatif)"></textarea>
+          </div>
+          <div class="pref-row-end"><span class="pref-count" id="consignes-count">0 / 200</span><button class="btn btn-primary" type="button" onclick="saveConsignes()">Enregistrer</button></div>
+        </div>
+      </div>
+
+      <!-- AFFICHAGE -->
+      <div class="settings-section" id="section-affichage">
+        <div class="section-title">Affichage</div>
+        <div class="section-desc">L'apparence de FicheAI et le confort de lecture de tes fiches.</div>
+        <div class="settings-card">
+          <h3>Thème</h3><p>Le thème clair garde les couleurs de FicheAI, sur un fond lumineux. « Automatique » suit le réglage de ton appareil.</p>
+          <div class="theme-pick" id="theme-pick">
+            <button type="button" class="theme-opt" data-theme-val="sombre"><span class="theme-swatch sw-dark"></span>Sombre</button>
+            <button type="button" class="theme-opt" data-theme-val="clair"><span class="theme-swatch sw-light"></span>Clair</button>
+            <button type="button" class="theme-opt" data-theme-val="auto"><span class="theme-swatch sw-auto"></span>Automatique</button>
+          </div>
+        </div>
+        <div class="settings-card">
+          <h3>Lecture des fiches</h3><p>S'applique dans le générateur, la bibliothèque, le mode concentration et le Mode Révision.</p>
+          <div class="pref-grid">
+            <div class="form-group"><label for="pref-texte">Taille du texte</label>
+              <select id="pref-texte" data-pref="texte">
+                <option value="normal">Normale</option>
+                <option value="grand">Grande</option>
+                <option value="tres_grand">Très grande</option>
+              </select></div>
+          </div>
+          <div class="toggle-row"><div class="toggle-info"><div class="toggle-title">Police lisible</div><div class="toggle-desc">Une police pensée pour faciliter la lecture, avec des lettres plus espacées. Utile notamment en cas de dyslexie.</div></div><label class="toggle"><input type="checkbox" data-pref="police" data-on="lisible" data-off="standard"><span class="toggle-slider"></span></label></div>
+          <div class="toggle-row"><div class="toggle-info"><div class="toggle-title">Ouvrir mes fiches en mode concentration</div><div class="toggle-desc">Dans la bibliothèque, la fiche s'ouvre en plein écran, sans rien autour. Échap pour revenir.</div></div><label class="toggle"><input type="checkbox" data-pref="concentration"><span class="toggle-slider"></span></label></div>
+          <div class="toggle-row"><div class="toggle-info"><div class="toggle-title">Cacher les réponses des quiz et flashcards</div><div class="toggle-desc">Chaque réponse s'affiche d'un clic, pour que tu cherches d'abord par toi-même.</div></div><label class="toggle"><input type="checkbox" data-pref="correction" data-on="cachee" data-off="visible"><span class="toggle-slider"></span></label></div>
+        </div>
+      </div>
+
+      <!-- REVISION -->
+      <div class="settings-section" id="section-revision">
+        <div class="section-title">Révision</div>
+        <div class="section-desc">Les réglages du Mode Révision et de tes flashcards.</div>
+        <div class="settings-card">
+          <h3>Objectif du jour</h3><p>Le nombre de cartes que tu veux réviser chaque jour. Ta progression s'affiche dans le Mode Révision.</p>
+          <div class="pref-grid">
+            <div class="form-group"><label for="pref-objectif">Cartes par jour</label>
+              <select id="pref-objectif" data-pref="objectif" data-num="1">
+                <option value="10">10 cartes · léger</option>
+                <option value="20">20 cartes · régulier</option>
+                <option value="30">30 cartes · soutenu</option>
+                <option value="50">50 cartes · intensif</option>
+              </select></div>
+            <div class="form-group"><label for="pref-ordre">Ordre des cartes</label>
+              <select id="pref-ordre" data-pref="ordre">
+                <option value="echeance">Les plus urgentes d'abord</option>
+                <option value="aleatoire">Au hasard</option>
+              </select></div>
           </div>
         </div>
       </div>
@@ -282,8 +421,16 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
           <div id="msg-sessions" class="msg"></div>
         </div>
         <div class="settings-card">
-          <h3>Déconnexion automatique</h3><p>Ton compte se déconnecte automatiquement après 30 minutes d'inactivité.</p>
-          <div style="background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);border-radius:10px;padding:0.7rem 1rem;font-size:0.82rem;color:#4ade80;">✅ Activé — Déconnexion après 30 min d'inactivité</div>
+          <h3>Déconnexion automatique</h3><p>Sur cet appareil, FicheAI te déconnecte après une période sans activité. Choisis « Jamais » seulement sur un appareil personnel.</p>
+          <div class="pref-grid">
+            <div class="form-group"><label for="pref-autologout">Me déconnecter après</label>
+              <select id="pref-autologout">
+                <option value="30">30 minutes d'inactivité</option>
+                <option value="120">2 heures d'inactivité</option>
+                <option value="480">8 heures d'inactivité</option>
+                <option value="0">Jamais sur cet appareil</option>
+              </select></div>
+          </div>
         </div>
       </div>
 
@@ -291,6 +438,11 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
       <div class="settings-section" id="section-compte-actions">
         <div class="section-title">Actions du compte</div>
         <div class="section-desc">Gère ou supprime tes données personnelles.</div>
+        <div class="settings-card">
+          <h3>Télécharger mes données</h3><p>Un fichier avec tout ce que FicheAI conserve sur toi : ton compte, tes fiches, tes flashcards, tes conversations, ton historique d'utilisation et tes appareils connectés.</p>
+          <button class="btn btn-secondary" type="button" id="export-btn" onclick="exportData()">⬇️ Télécharger mes données</button>
+          <div id="msg-export" class="msg"></div>
+        </div>
         <div class="settings-card critical-zone">
           <h3>Supprimer toutes mes fiches</h3><p>Supprime définitivement toutes les fiches de ta bibliothèque. Ton compte et ton abonnement sont conservés.</p>
           <button class="btn btn-danger" onclick="confirmer('fiches')">🗑️ Supprimer toutes mes fiches</button>
@@ -422,9 +574,8 @@ function initSettings() {
   document.getElementById('current-email').value = savedUser.email;
   var plan = savedUser.plan || 'starter';
   renderPlanSection(plan);
-  var prefs = {};
-  try { prefs = JSON.parse(localStorage.getItem('ficheai_prefs') || '{}'); } catch(e) {}
-  if (prefs.format) document.getElementById('pref-format').value = prefs.format;
+  bindPrefs();
+  openSectionFromHash();
   loadMfaStatus();
   loadSessions();
 }
@@ -461,10 +612,103 @@ function renderPlanSection(plan) {
 }
 
 function showSection(name, btn) {
+  var sec = document.getElementById('section-' + name);
+  if (!sec) return;
   document.querySelectorAll('.settings-section').forEach(function(s) { s.classList.remove('active'); });
   document.querySelectorAll('.sidebar-item').forEach(function(b) { b.classList.remove('active'); });
-  document.getElementById('section-' + name).classList.add('active');
-  btn.classList.add('active');
+  sec.classList.add('active');
+  if (!btn) btn = document.querySelector('.sidebar-item[onclick*="\'' + name + '\'"]');
+  if (btn) btn.classList.add('active');
+  try { history.replaceState(null, '', '#' + name); } catch (e) {}
+}
+// Lien direct vers une rubrique : /settings.html#generation, #affichage, #revision, #securite…
+function openSectionFromHash() {
+  var h = (location.hash || '').replace('#', '');
+  var alias = { preferences: 'generation', 'compte-actions': 'compte-actions' };
+  h = alias[h] || h;
+  if (h && document.getElementById('section-' + h)) showSection(h);
+}
+
+// ── Préférences (synchronisées avec le compte) ──
+var prefToastTimer = null;
+function prefSaved(ok) {
+  var t = document.getElementById('pref-toast');
+  if (!t) { t = document.createElement('div'); t.id = 'pref-toast'; t.className = 'pref-toast'; document.body.appendChild(t); }
+  t.textContent = ok === false ? '⚠️ Enregistré sur cet appareil seulement (connexion au compte impossible)' : '✓ Réglage enregistré';
+  t.style.borderColor = ok === false ? 'rgba(244,114,182,0.4)' : '';
+  t.style.color = ok === false ? '#f09595' : '';
+  t.classList.add('show');
+  clearTimeout(prefToastTimer);
+  prefToastTimer = setTimeout(function () { t.classList.remove('show'); }, 2200);
+}
+async function savePrefs(obj) {
+  var r = await FichePrefs.set(obj);
+  prefSaved(!!(r && r.success));
+}
+function fillPrefs() {
+  document.querySelectorAll('[data-pref]').forEach(function (el) {
+    if (document.activeElement === el) return;
+    var k = el.dataset.pref, v = FichePrefs.get(k);
+    if (el.type === 'checkbox') el.checked = el.dataset.on ? v === el.dataset.on : !!v;
+    else el.value = String(v);
+  });
+  var c = document.getElementById('pref-consignes');
+  if (c && document.activeElement !== c) { c.value = FichePrefs.get('consignes'); countConsignes(); }
+  document.querySelectorAll('.theme-opt').forEach(function (b) { b.classList.toggle('on', b.dataset.themeVal === FichePrefs.get('theme')); });
+  var al = document.getElementById('pref-autologout');
+  if (al) al.value = String(FichePrefs.device.autoLogout());
+  var qn = document.getElementById('qualite-note');
+  if (qn) qn.style.display = (savedUser && (savedUser.plan || 'starter') === 'starter') ? 'block' : 'none';
+}
+function bindPrefs() {
+  if (!window.FichePrefs) return;
+  document.querySelectorAll('[data-pref]').forEach(function (el) {
+    el.addEventListener('change', function () {
+      var k = el.dataset.pref, val;
+      if (el.type === 'checkbox') val = el.dataset.on ? (el.checked ? el.dataset.on : el.dataset.off) : el.checked;
+      else val = el.dataset.num ? parseInt(el.value, 10) : el.value;
+      var o = {}; o[k] = val; savePrefs(o);
+    });
+  });
+  document.querySelectorAll('.theme-opt').forEach(function (b) {
+    b.addEventListener('click', function () { savePrefs({ theme: b.dataset.themeVal }); fillPrefs(); });
+  });
+  var al = document.getElementById('pref-autologout');
+  if (al) al.addEventListener('change', function () { FichePrefs.device.setAutoLogout(parseInt(al.value, 10)); prefSaved(true); });
+  var c = document.getElementById('pref-consignes');
+  if (c) c.addEventListener('input', countConsignes);
+  fillPrefs();
+  window.addEventListener('ficheai-prefs', fillPrefs);
+}
+function countConsignes() {
+  var c = document.getElementById('pref-consignes'), n = document.getElementById('consignes-count');
+  if (c && n) n.textContent = c.value.length + ' / 200';
+}
+function saveConsignes() {
+  var c = document.getElementById('pref-consignes');
+  savePrefs({ consignes: c.value });
+}
+
+// ── Export des données (RGPD) ──
+async function exportData() {
+  var btn = document.getElementById('export-btn');
+  btn.disabled = true; btn.textContent = 'Préparation du fichier…';
+  try {
+    var t = await ficheaiToken();
+    var r = await fetch(SUPABASE_URL + '/rest/v1/rpc/export_my_data', { method: 'POST', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + t, 'Content-Type': 'application/json' }, body: '{}' });
+    var d = await r.json();
+    if (!r.ok || !d || d.erreur) throw new Error();
+    var blob = new Blob([JSON.stringify(d, null, 2)], { type: 'application/json' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'ficheai-mes-donnees-' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+    showMsg('msg-export', '✅ Fichier téléchargé : ' + (d.fiches || []).length + ' fiche(s), ' + (d.flashcards || []).length + ' flashcard(s).', false);
+  } catch (e) {
+    showMsg('msg-export', '⚠️ Impossible de préparer le fichier pour le moment. Réessaie dans un instant.', true);
+  }
+  btn.disabled = false; btn.textContent = '⬇️ Télécharger mes données';
 }
 
 async function saveNiveau(niveau){
