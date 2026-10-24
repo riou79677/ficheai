@@ -92,3 +92,13 @@ body.fl-open { overflow: hidden; }
 /* ── Rappel des réglages actifs dans le générateur ── */
 .prefs-hint { font-size: 0.74rem; color: var(--text3, #6b6b8a); margin-top: 0.45rem; line-height: 1.5; }
 .prefs-hint a { color: var(--purple2, #a78bfa); text-decoration: underline; text-underline-offset: 2px; }
+
+/* ── Animations réduites (Paramètres → Affichage) ── */
+html[data-anim="reduites"] *,
+html[data-anim="reduites"] *::before,
+html[data-anim="reduites"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}

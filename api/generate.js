@@ -67,6 +67,10 @@ export default async function handler(req, res) {
   if (!course || !format) {
     return res.status(400).json({ error: 'Paramètres manquants' });
   }
+  // Format vérifié avant tout débit de crédits.
+  if (!['fiche', 'quiz', 'flash', 'mindmap', 'questions', 'chrono', 'examen'].includes(String(format))) {
+    return res.status(400).json({ error: 'Format inconnu' });
+  }
 
   const authHeader = req.headers['authorization'] || '';
   const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
@@ -394,6 +398,7 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
   };
 
   if (!prompts[format]) {
+    await refundGeneration();
     return res.status(400).json({ error: 'Format inconnu' });
   }
 

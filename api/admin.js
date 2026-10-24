@@ -1,3 +1,4 @@
+import { cancelAllSubscriptions } from './_stripe.js';
 import { mfaMissing, MFA_REQUIRED } from './_mfa.js';
 // API réservée à l'administrateur du site. Toute action nécessite un token Supabase valide
 // appartenant à un compte ayant is_dev = true en base (vérifié à chaque appel).
@@ -67,6 +68,14 @@ export default async function handler(req, res) {
           u.credits_used = 0; u.generations_used = 0; u.chat_messages_used = 0; u.flashcards_used = 0;
         }
       });
+      // Comptes protégés par la double authentification (date d'activation)
+      try {
+        const mr = await fetch(SUPABASE_URL + '/rest/v1/rpc/admin_mfa_users', { method: 'POST', headers: sb, body: '{}' });
+        const mfa = await mr.json();
+        const since = {};
+        (Array.isArray(mfa) ? mfa : []).forEach(m => { if (m && m.email) since[String(m.email).toLowerCase()] = m.since; });
+        users.forEach(u => { u.mfa_since = since[String(u.email || '').toLowerCase()] || null; });
+      } catch (e) { /* information facultative */ }
       const fichesR = await fetch(SUPABASE_URL + '/rest/v1/fiches?select=id&limit=1', { headers: { ...sb, 'Prefer': 'count=exact' } });
       const fichesCount = fichesR.headers.get('content-range')?.split('/')[1] || '0';
       return res.status(200).json({
@@ -236,6 +245,11 @@ export default async function handler(req, res) {
     if (action === 'delete_account') {
       const { email } = payload || {};
       if (!email) return res.status(400).json({ error: 'Email manquant' });
+      // Abonnement Stripe résilié d'abord : un compte supprimé ne doit plus être prélevé.
+      const cu = await fetch(SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=stripe_customer_id', { headers: sb });
+      const cuRows = await cu.json().catch(() => []);
+      const cancel = await cancelAllSubscriptions(Array.isArray(cuRows) && cuRows[0] ? cuRows[0].stripe_customer_id : null, process.env.STRIPE_SECRET_KEY);
+      if (!cancel.ok) return res.status(502).json({ error: 'Résiliation Stripe impossible, compte conservé : ' + cancel.error });
       await fetch(SUPABASE_URL + '/rest/v1/chat_conversations?user_email=eq.' + encodeURIComponent(email), { method: 'DELETE', headers: sb }).catch(() => {});
       await fetch(SUPABASE_URL + '/rest/v1/api_usage?user_email=eq.' + encodeURIComponent(email), { method: 'DELETE', headers: sb }).catch(() => {});
       const r = await fetch(SUPABASE_URL + '/rest/v1/rpc/delete_account_by_email', {

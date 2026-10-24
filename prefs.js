@@ -24,7 +24,9 @@
     objectif: 20,             // cartes à réviser par jour (Mode Révision)
     ordre: 'echeance',        // echeance | aleatoire
     alerte_credits: 20,       // alerte quand il reste ce pourcentage de crédits ; 0 = jamais
-    confirmation_cout: 10     // confirmation avant une génération de ce nombre de crédits ou plus ; 0 = jamais
+    confirmation_cout: 10,    // confirmation avant une génération de ce nombre de crédits ou plus ; 0 = jamais
+    animations: 'normales',   // normales | reduites
+    pdf: 'auto'               // export PDF : auto (comme le thème) | clair | sombre
   };
   var VALID = {
     theme: ['sombre', 'clair', 'auto'],
@@ -42,7 +44,9 @@
     objectif: [10, 20, 30, 50],
     ordre: ['echeance', 'aleatoire'],
     alerte_credits: [0, 10, 20],
-    confirmation_cout: [0, 5, 10]
+    confirmation_cout: [0, 5, 10],
+    animations: ['normales', 'reduites'],
+    pdf: ['auto', 'clair', 'sombre']
   };
 
   var cache = {};
@@ -79,6 +83,7 @@
     h.setAttribute('data-theme', resolvedTheme());
     h.setAttribute('data-texte', get('texte'));
     h.setAttribute('data-police', get('police'));
+    h.setAttribute('data-anim', get('animations'));
     try {
       var m = document.querySelector('meta[name="theme-color"]');
       if (m) m.setAttribute('content', resolvedTheme() === 'clair' ? '#f7f5ff' : '#09090f');

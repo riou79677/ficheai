@@ -258,8 +258,9 @@ async function submitMfa(){
     if(resumeMode){
       FicheMFA.storeSession(s);
       successBox.textContent='✅ Connexion confirmée ! Redirection...';successBox.style.display='block';
-      var next=new URLSearchParams(location.search).get('next')||'/home.html';
-      if(next.charAt(0)!=='/'||next.charAt(1)==='/')next='/home.html';
+      // Retour uniquement vers une page de FicheAI (pas de redirection vers un autre site)
+      var next=new URLSearchParams(location.search).get('next')||'';
+      if(!/^\/[a-zA-Z0-9_\-]+\.html(\?[a-zA-Z0-9_=&%.\-]*)?(#[a-zA-Z0-9_\-]*)?$/.test(next))next='/home.html';
       setTimeout(function(){location.replace(next);},500);
       return;
     }

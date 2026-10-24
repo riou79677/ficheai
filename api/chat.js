@@ -159,6 +159,20 @@ export default async function handler(req, res) {
     return res.status(503).json({ error: 'Service momentanément indisponible' });
   }
 
+  // Rembourse le crédit du message (une seule fois) si l'IA n'a rien répondu.
+  let wroteText = false, refunded = false;
+  const refundChat = async () => {
+    if (refunded || !debit) return;
+    refunded = true;
+    try {
+      await fetch(SUPABASE_URL + '/rest/v1/rpc/refund_credits', {
+        method: 'POST',
+        headers: { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ p_email: email, p_from_month: debit.from_month || 0, p_from_bonus: debit.from_bonus || 0, p_offert: false })
+      });
+    } catch (e) { console.error('Remboursement chat:', e && e.message); }
+  };
+
   const langMap = { fr: 'français', en: 'English', es: 'Español', de: 'Deutsch' };
   const langInstruction = !language || language === 'auto'
     ? 'Réponds dans la même langue que l\'étudiant.'
@@ -262,6 +276,7 @@ Style de réponse :
     const decoder = new TextDecoder();
     let buffer = '';
     let inTok = 0, outTok = 0;
+    wroteText = false;
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
@@ -276,25 +291,26 @@ Style de réponse :
           if (evt.type === 'message_delta' && evt.usage) outTok = evt.usage.output_tokens || outTok;
           if (evt.type === 'content_block_delta' && evt.delta && evt.delta.type === 'text_delta') {
             res.write(evt.delta.text);
+            if (evt.delta.text) wroteText = true;
           }
         } catch (err) { /* ligne non JSON ignorée */ }
       }
     }
     await logApiUsage(SERVICE_KEY, email, 'chat', modelFor(user.plan), inTok, outTok);
+    // Réponse vide : le crédit est rendu (l'élève voit « Réponse vide, réessaie »).
+    if (!wroteText) await refundChat();
     return res.end();
 
   } catch (error) {
     console.error('Erreur API chat:', error);
     await logApiUsage(SERVICE_KEY, email, 'erreur:chat:' + String((error && error.message) || error).slice(0, 90), modelFor(user.plan), 0, 0);
-    if (res.headersSent) return res.end();
+    if (res.headersSent) {
+      // Coupure en cours de réponse : crédit rendu seulement si aucun texte n'a été envoyé.
+      if (!wroteText) await refundChat();
+      return res.end();
+    }
     // Aucune réponse n'a été envoyée : le crédit est rendu.
-    try {
-      if (debit) await fetch(SUPABASE_URL + '/rest/v1/rpc/refund_credits', {
-        method: 'POST',
-        headers: { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ p_email: email, p_from_month: debit.from_month || 0, p_from_bonus: debit.from_bonus || 0, p_offert: false })
-      });
-    } catch (e) { console.error('Remboursement chat:', e && e.message); }
+    await refundChat();
     return res.status(500).json({ error: "L'IA est momentanément indisponible. Réessaie dans un instant." });
   }
 }

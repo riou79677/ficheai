@@ -1,4 +1,5 @@
 import { mfaMissing, MFA_REQUIRED } from './_mfa.js';
+import { cancelAllSubscriptions } from './_stripe.js';
 const SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
 
 export default async function handler(req, res) {
@@ -37,6 +38,34 @@ export default async function handler(req, res) {
     'apikey': SUPABASE_SERVICE_KEY,
     'Authorization': 'Bearer ' + SUPABASE_SERVICE_KEY
   };
+
+  // ── Suppression du compte (Paramètres → Actions du compte) ──
+  // L'abonnement éventuel est résilié d'abord ; si Stripe refuse, le compte n'est PAS supprimé
+  // (sinon l'élève continuerait d'être prélevé sans compte).
+  if (req.body && req.body.action === 'delete_account') {
+    try {
+      const ur = await fetch(SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=stripe_customer_id', { headers: sb });
+      const rows = await ur.json();
+      const cust = Array.isArray(rows) && rows[0] ? rows[0].stripe_customer_id : null;
+      const c = await cancelAllSubscriptions(cust, STRIPE_SECRET_KEY);
+      if (!c.ok) {
+        console.error('Suppression de compte : résiliation Stripe impossible :', c.error);
+        return res.status(502).json({ error: 'Impossible de résilier ton abonnement pour le moment, ton compte n\'a donc pas été supprimé. Réessaie dans quelques minutes ou écris-nous via la page Contact.' });
+      }
+      const d = await fetch(SUPABASE_URL + '/rest/v1/rpc/delete_account_by_email', {
+        method: 'POST', headers: { ...sb, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_email: email })
+      });
+      const out = await d.json().catch(() => null);
+      if (!d.ok || !out || !out.success) {
+        console.error('Suppression de compte échouée :', out);
+        return res.status(500).json({ error: 'La suppression a échoué. Réessaie ou écris-nous via la page Contact.', canceled: c.canceled });
+      }
+      return res.status(200).json({ success: true, canceled: c.canceled });
+    } catch (e) {
+      console.error('Suppression de compte :', e);
+      return res.status(503).json({ error: 'Service momentanément indisponible. Réessaie dans quelques minutes.' });
+    }
+  }
 
   let customerId;
   try {

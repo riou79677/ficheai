@@ -211,6 +211,14 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
           <div class="form-group"><input type="email" id="current-email" readonly style="opacity:0.6;cursor:not-allowed;"></div>
         </div>
         <div class="settings-card">
+          <h3>Mon pseudo</h3><p>Le nom affiché sur ton compte FicheAI. Lettres, chiffres et _ uniquement, 3 caractères minimum.</p>
+          <div class="form-row">
+            <div class="form-group"><label for="pseudo-input">Pseudo</label><input type="text" id="pseudo-input" maxlength="30" autocomplete="nickname" placeholder="ton_pseudo"></div>
+            <button class="btn btn-primary" type="button" onclick="savePseudo()">Enregistrer</button>
+          </div>
+          <div id="msg-pseudo" class="msg"></div>
+        </div>
+        <div class="settings-card">
           <h3>Changer mon email</h3><p>Un email de confirmation sera envoyé à ta nouvelle adresse.</p>
           <div class="form-row">
             <div class="form-group"><label>Nouvel email</label><input type="email" id="new-email" placeholder="nouveau@email.com"></div>
@@ -361,7 +369,24 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
           </div>
           <div class="toggle-row"><div class="toggle-info"><div class="toggle-title">Police lisible</div><div class="toggle-desc">Une police pensée pour faciliter la lecture, avec des lettres plus espacées. Utile notamment en cas de dyslexie.</div></div><label class="toggle"><input type="checkbox" data-pref="police" data-on="lisible" data-off="standard"><span class="toggle-slider"></span></label></div>
           <div class="toggle-row"><div class="toggle-info"><div class="toggle-title">Ouvrir mes fiches en mode concentration</div><div class="toggle-desc">Dans la bibliothèque, la fiche s'ouvre en plein écran, sans rien autour. Échap pour revenir.</div></div><label class="toggle"><input type="checkbox" data-pref="concentration"><span class="toggle-slider"></span></label></div>
+          <div class="toggle-row"><div class="toggle-info"><div class="toggle-title">Réduire les animations</div><div class="toggle-desc">Supprime les mouvements et transitions à l'écran. Plus reposant pour les yeux.</div></div><label class="toggle"><input type="checkbox" data-pref="animations" data-on="reduites" data-off="normales"><span class="toggle-slider"></span></label></div>
           <div class="toggle-row"><div class="toggle-info"><div class="toggle-title">Cacher les réponses des quiz et flashcards</div><div class="toggle-desc">Chaque réponse s'affiche d'un clic, pour que tu cherches d'abord par toi-même.</div></div><label class="toggle"><input type="checkbox" data-pref="correction" data-on="cachee" data-off="visible"><span class="toggle-slider"></span></label></div>
+        </div>
+
+        <div class="settings-card">
+          <h3>Export PDF</h3><p>L'apparence de tes fiches exportées en PDF. La version claire utilise beaucoup moins d'encre si tu imprimes.</p>
+          <div class="pref-grid">
+            <div class="form-group"><label for="pref-pdf">Fond du PDF</label>
+              <select id="pref-pdf" data-pref="pdf">
+                <option value="auto">Comme le thème du site</option>
+                <option value="clair">Clair (idéal pour imprimer)</option>
+                <option value="sombre">Sombre</option>
+              </select></div>
+          </div>
+        </div>
+        <div class="settings-card">
+          <h3>Rétablir les réglages par défaut</h3><p>Remet tous les réglages de Génération, Affichage, Révision et alertes de crédits comme au départ. Tes fiches et ton compte ne sont pas touchés.</p>
+          <button class="btn btn-secondary" type="button" onclick="resetPrefs()">↺ Rétablir les réglages</button>
         </div>
       </div>
 
@@ -449,7 +474,7 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
           <div id="msg-delete-fiches" class="msg"></div>
         </div>
         <div class="settings-card critical-zone">
-          <h3>Supprimer mon compte</h3><p>Supprime définitivement ton compte et toutes tes données. Pense à annuler ton abonnement Stripe avant.</p>
+          <h3>Supprimer mon compte</h3><p>Supprime définitivement ton compte et toutes tes données. Si tu as un abonnement, il est résilié automatiquement au même moment : tu n'as rien d'autre à faire.</p>
           <button class="btn btn-danger" onclick="confirmer('compte')">⚠️ Supprimer mon compte définitivement</button>
           <div id="msg-delete-account" class="msg"></div>
         </div>
@@ -576,6 +601,7 @@ function initSettings() {
   renderPlanSection(plan);
   bindPrefs();
   openSectionFromHash();
+  try { document.getElementById('pseudo-input').value = savedUser.username || ''; } catch (e) {}
   loadMfaStatus();
   loadSessions();
 }
@@ -687,6 +713,36 @@ function countConsignes() {
 function saveConsignes() {
   var c = document.getElementById('pref-consignes');
   savePrefs({ consignes: c.value });
+}
+
+// ── Réinitialisation des réglages ──
+async function resetPrefs() {
+  if (!window.FichePrefs) return;
+  var d = {};
+  for (var k in FichePrefs.defaults) d[k] = FichePrefs.defaults[k];
+  FichePrefs.device.setAutoLogout(30);
+  await savePrefs(d);
+  fillPrefs();
+}
+
+// ── Pseudo ──
+async function savePseudo() {
+  var v = document.getElementById('pseudo-input').value.trim();
+  if (v.length < 3) { showMsg('msg-pseudo', '⚠️ Le pseudo doit contenir au moins 3 caractères.', true); return; }
+  if (!/^[a-zA-Z0-9_]+$/.test(v)) { showMsg('msg-pseudo', '⚠️ Lettres, chiffres et _ uniquement.', true); return; }
+  try {
+    var r = await fetch(SUPABASE_URL + '/rest/v1/rpc/set_username', { method: 'POST', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + ((await ficheaiToken()) || ''), 'Content-Type': 'application/json' }, body: JSON.stringify({ p_email: savedUser.email, p_username: v }) });
+    var res = await r.json();
+    if (res && res.success) {
+      savedUser.username = v;
+      try { localStorage.setItem('ficheai_user', JSON.stringify(savedUser)); } catch (e) {}
+      if (typeof updateBadgeDisplay === 'function') updateBadgeDisplay();
+      showMsg('msg-pseudo', '✅ Pseudo enregistré.', false);
+    } else {
+      var m = { deja_pris: 'Ce pseudo est déjà pris, essaie-en un autre.', trop_court: 'Le pseudo doit contenir au moins 3 caractères.', caracteres_invalides: 'Lettres, chiffres et _ uniquement.' };
+      showMsg('msg-pseudo', '⚠️ ' + (m[res && res.reason] || 'Une erreur est survenue, réessaie.'), true);
+    }
+  } catch (e) { showMsg('msg-pseudo', '⚠️ Erreur réseau. Réessaie.', true); }
 }
 
 // ── Export des données (RGPD) ──
@@ -911,10 +967,12 @@ async function loadSessions() {
     var list = await r.json();
     if (!r.ok || !Array.isArray(list)) throw new Error();
     if (!list.length) { box.textContent = 'Aucun appareil connecté.'; return; }
+    function e(t) { var d = document.createElement('div'); d.textContent = t == null ? '' : String(t); return d.innerHTML; }
     box.innerHTML = list.map(function (x) {
+      var sid = /^[0-9a-f-]{36}$/i.test(String(x.id)) ? x.id : '';
       return '<div class="session-row"><div class="session-main"><div class="session-dev">' + describeDevice(x.user_agent) + (x.aal === 'aal2' ? ' 🔐' : '') + '</div>'
-        + '<div class="session-meta">Connecté le ' + new Date(x.created_at).toLocaleDateString('fr-FR') + ' · actif ' + ago(x.last_active) + (x.ip ? ' · IP ' + maskIp(x.ip) : '') + '</div></div>'
-        + (x.current ? '<span class="session-here">Cet appareil</span>' : '<button class="btn btn-secondary" style="padding:0.45rem 0.9rem;font-size:0.78rem" onclick="revokeSession(\'' + x.id + '\')">Déconnecter</button>')
+        + '<div class="session-meta">Connecté le ' + new Date(x.created_at).toLocaleDateString('fr-FR') + ' · actif ' + ago(x.last_active) + (x.ip ? ' · IP ' + e(maskIp(x.ip)) : '') + '</div></div>'
+        + (x.current ? '<span class="session-here">Cet appareil</span>' : (sid ? '<button class="btn btn-secondary" style="padding:0.45rem 0.9rem;font-size:0.78rem" onclick="revokeSession(\'' + sid + '\')">Déconnecter</button>' : ''))
         + '</div>';
     }).join('');
   } catch (e) { box.textContent = 'Impossible de charger la liste des appareils pour le moment.'; }
@@ -938,8 +996,10 @@ function confirmer(type) {
     document.getElementById('confirm-ok').textContent = 'Supprimer mes fiches';
   } else {
     document.getElementById('confirm-title').textContent = 'Supprimer mon compte ?';
-    document.getElementById('confirm-text').textContent = 'ATTENTION : Toutes tes données seront définitivement supprimées. Pense à annuler ton abonnement Stripe avant.';
-    document.getElementById('confirm-ok').textContent = 'Supprimer mon compte';
+    var paid = savedUser && (savedUser.plan === 'pro' || savedUser.plan === 'ultimate');
+    document.getElementById('confirm-text').textContent = 'Ton compte, tes fiches, tes flashcards et tes conversations seront définitivement supprimés.'
+      + (paid ? ' Ton abonnement est résilié automatiquement en même temps : aucun prélèvement ne suivra. Abonné depuis moins de 14 jours ? Utilise plutôt « Renoncer au contrat » (en bas de page) pour être remboursé.' : '');
+    document.getElementById('confirm-ok').textContent = 'Supprimer définitivement';
   }
   document.getElementById('confirm-overlay').classList.add('open');
 }
@@ -956,15 +1016,16 @@ document.getElementById('confirm-ok').addEventListener('click', async function()
       else { showMsg('msg-delete-fiches', '⚠️ Une erreur est survenue. Réessaie.', true); }
     } catch(e) { showMsg('msg-delete-fiches', '⚠️ Erreur réseau. Réessaie.', true); }
   } else if (actionEnCours === 'compte') {
+    // La suppression passe par le serveur : il résilie d'abord l'abonnement Stripe, puis efface le compte.
+    showMsg('msg-delete-account', 'Suppression en cours…', false);
     try {
-      try { await fetch(SUPABASE_URL + '/rest/v1/chat_conversations?user_email=eq.' + encodeURIComponent(savedUser.email), { method: 'DELETE', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + ((await ficheaiToken()) || SUPABASE_KEY) } }); } catch (e) {}
-      var r2 = await fetch(SUPABASE_URL + '/rest/v1/rpc/delete_account_by_email', { method: 'POST', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + ((await ficheaiToken()) || SUPABASE_KEY), 'Content-Type': 'application/json' }, body: JSON.stringify({ p_email: savedUser.email }) });
-      var res2 = await r2.json();
-      if (res2 && res2.success) {
-        localStorage.removeItem('ficheai_user');
-        showMsg('msg-delete-account', '✅ Compte supprimé définitivement. Redirection...', false);
+      var r2 = await fetch('/api/customer-portal', { method: 'POST', headers: { 'Authorization': 'Bearer ' + ((await ficheaiToken()) || ''), 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'delete_account' }) });
+      var res2 = await r2.json().catch(function () { return null; });
+      if (r2.ok && res2 && res2.success) {
+        try { localStorage.removeItem('ficheai_user'); localStorage.removeItem('ficheai_prefs_cache'); } catch (e) {}
+        showMsg('msg-delete-account', '✅ Compte supprimé définitivement' + (res2.canceled ? ' et abonnement résilié' : '') + '. Redirection...', false);
         setTimeout(function() { window.location.href = '/'; }, 2000);
-      } else { showMsg('msg-delete-account', '⚠️ Une erreur est survenue. Réessaie ou contacte le support.', true); }
+      } else { showMsg('msg-delete-account', '⚠️ ' + ((res2 && res2.error) || 'Une erreur est survenue. Réessaie ou contacte le support.'), true); }
     } catch(e) { showMsg('msg-delete-account', '⚠️ Erreur réseau. Réessaie.', true); }
   }
 });

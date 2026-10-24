@@ -5,6 +5,8 @@
   var URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
   var KEY = 'sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ';
 
+  var wrongCodes = 0;
+
   function headers(token) {
     return { 'Content-Type': 'application/json', 'apikey': KEY, 'Authorization': 'Bearer ' + token };
   }
@@ -20,7 +22,14 @@
     if (low.indexOf('not_enabled') !== -1 || low.indexOf('disabled') !== -1) return 'La double authentification n\'est pas encore disponible sur FicheAI. Réessaie plus tard.';
     if (status === 401 || status === 403 || low.indexOf('jwt') !== -1) return 'Ta session a expiré. Reconnecte-toi puis réessaie.';
     if (low.indexOf('expired') !== -1) return 'Le code a expiré. Entre le nouveau code affiché dans ton application.';
-    if (low.indexOf('invalid') !== -1 || low.indexOf('verification') !== -1 || status === 422 || status === 400) return 'Code incorrect. Vérifie que l\'heure de ton téléphone est réglée automatiquement, puis entre le nouveau code.';
+    if (low.indexOf('invalid') !== -1 || low.indexOf('verification') !== -1 || status === 422 || status === 400) {
+      wrongCodes++;
+      // Après plusieurs refus d'affilée, la cause la plus fréquente est l'horloge du téléphone :
+      // les codes sont calculés à partir de l'heure, un téléphone en retard donne des codes refusés.
+      return wrongCodes >= 3
+        ? 'Code encore refusé. Vérifie que la date et l\'heure de ton téléphone sont en réglage automatique (les codes en dépendent), puis entre le code affiché en ce moment.'
+        : 'Code incorrect. Entre le code à 6 chiffres affiché en ce moment dans ton application : il change toutes les 30 secondes.';
+    }
     return 'Une erreur est survenue. Réessaie dans quelques instants.';
   }
 
@@ -59,6 +68,7 @@
       var ch = await call('POST', '/auth/v1/factors/' + factorId + '/challenge', token, {});
       var s = await call('POST', '/auth/v1/factors/' + factorId + '/verify', token, { challenge_id: ch.id, code: code });
       if (!s || !s.access_token) throw new Error('Une erreur est survenue. Réessaie dans quelques instants.');
+      wrongCodes = 0;
       if (!s.expires_at) s.expires_at = Math.floor(Date.now() / 1000) + (s.expires_in || 3600);
       return s;
     },

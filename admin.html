@@ -188,27 +188,15 @@ tr.clickable-row:hover{background:rgba(108,92,231,0.08)}
 </div>
 
 <div class="section">
-<h2>🔐 Double authentification d'un élève</h2>
-<p class="mini-note">Si un élève a perdu son téléphone, tu peux désactiver sa double authentification. Fais-le uniquement après avoir vérifié que c'est bien lui (par exemple en lui écrivant à l'adresse email de son compte).</p>
+<h2>🔐 Double authentification</h2>
+<div id="mfa-list" class="mini-note" style="margin-bottom:0.9rem">Chargement…</div>
+<p class="mini-note">Téléphone perdu : tu peux désactiver la double authentification d'un élève. Fais-le uniquement après avoir vérifié que c'est bien lui (par exemple en lui écrivant à l'adresse email de son compte).</p>
 <input type="email" id="mfa-email" list="um-emails" placeholder="Email du compte" style="width:100%;max-width:360px;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;color:var(--text);padding:0.6rem 0.8rem;font-family:inherit">
 <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.6rem">
 <button class="btn-sm" style="padding:0.55rem 1.1rem" onclick="checkMfa()">Voir l'état</button>
 <button class="btn-sm" style="padding:0.55rem 1.1rem;background:rgba(244,114,182,0.12);border-color:rgba(244,114,182,0.35);color:#f472b6" onclick="resetMfa()">Désactiver sa 2FA</button>
 </div>
 <div class="msg" id="mfa-admin-msg"></div>
-</div>
-
-<div class="section">
-<h2>💸 Consommation de crédit IA (30 derniers jours)</h2>
-<p class="mini-note" id="usage-total">Chargement...</p>
-<table>
-<thead><tr><th>Utilisateur</th><th>Crédits utilisés*</th><th>⚡ Rapide</th><th>🎓 Approfondi</th><th>💬 Chat</th><th>🔁 Révision</th><th>Coût réel</th></tr></thead>
-<tbody id="usage-table"></tbody>
-</table>
-<p class="mini-note">* Estimation à partir du journal de l'IA : Rapide 1, Approfondi 2, chat 1, révision 1. Une fiche Approfondi offerte compte ici 2 sans avoir rien coûté à l'élève. Le solde exact de chaque élève est dans « Utilisateurs ».</p>
-
-<div class="msg" id="usage-msg"></div>
-<p class="mini-note">Coût calculé à partir des tokens réellement facturés par Anthropic (2 $ / M en entrée, 10 $ / M en sortie). Seuls les appels faits après la mise en ligne de cette version sont comptés.</p>
 </div>
 
 <div class="section">
@@ -219,11 +207,14 @@ tr.clickable-row:hover{background:rgba(108,92,231,0.08)}
 <div class="section">
 <h2>👥 Utilisateurs</h2>
 <input type="text" id="search-input" placeholder="🔍 Rechercher par pseudo ou email..." style="width:100%;background:var(--bg3);border:1.5px solid var(--border2);border-radius:10px;padding:0.7rem 1rem;font-size:0.85rem;color:var(--text);font-family:inherit;outline:none;margin-bottom:1rem" oninput="filterUsers(this.value)">
+<p class="mini-note" id="usage-total">Consommation IA des 30 derniers jours : chargement…</p>
 <table>
-<thead><tr><th>Utilisateur</th><th>Plan</th><th>Crédits du mois</th><th>Inscrit le</th><th>Actions</th></tr></thead>
+<thead><tr><th>Utilisateur</th><th>Plan</th><th>Crédits du mois</th><th title="Générations des 30 derniers jours : ⚡ Rapide · 🎓 Approfondi · 💬 Chat · 🔁 Révision">IA · 30 jours</th><th title="Coût réel facturé par Anthropic sur 30 jours">Coût IA</th><th>Inscrit le</th><th>Actions</th></tr></thead>
 <tbody id="users-table"></tbody>
 </table>
 <div class="msg" id="users-msg"></div>
+<div class="msg" id="usage-msg"></div>
+<p class="mini-note">🔐 = double authentification activée. « IA · 30 jours » vient du journal de l'IA (Rapide 1 crédit, Approfondi 2, chat 1, révision 1) ; une fiche Approfondi offerte y compte 2 sans avoir rien coûté à l'élève. Coût calculé à partir des tokens réellement facturés par Anthropic.</p>
 <button class="btn-sm" onclick="exportCSV()" style="margin-top:1rem">⬇️ Exporter en CSV</button>
 </div>
 
@@ -418,7 +409,16 @@ async function sendUserMessage(){
     showMsg('um-msg','✅ Message enregistré : il s\'affichera à sa prochaine visite.','ok');loadUserMessages();
   }catch(e){if(e.message!=='WRONG_SECRET')showMsg('um-msg','⚠️ '+e.message,'error');}
 }
-// ── Double authentification d'un élève ──
+// ── Double authentification ──
+function renderMfaList(users){
+  var el=document.getElementById('mfa-list');if(!el)return;
+  var on=(users||[]).filter(function(u){return u.mfa_since;}).sort(function(a,b){return new Date(b.mfa_since)-new Date(a.mfa_since);});
+  if(!on.length){el.textContent='Aucun compte n\'a encore activé la double authentification.';return;}
+  el.innerHTML='<b>'+on.length+' compte'+(on.length>1?'s':'')+' protégé'+(on.length>1?'s':'')+'</b> par la double authentification :'
+    +'<table style="margin-top:0.6rem"><thead><tr><th>Utilisateur</th><th>Forfait</th><th>Activée le</th></tr></thead><tbody>'
+    +on.map(function(u){return '<tr><td>'+(u.username?'<b>@'+escH(u.username)+'</b> <span style="color:var(--text3);font-size:0.75rem">('+escH(u.email)+')</span>':escH(u.email))+'</td><td><span class="plan-tag plan-'+escH(u.plan)+'">'+escH(u.plan)+'</span></td><td>'+new Date(u.mfa_since).toLocaleDateString('fr-FR')+'</td></tr>';}).join('')
+    +'</tbody></table>';
+}
 async function checkMfa(){
   var email=document.getElementById('mfa-email').value.trim();
   if(!email){showMsg('mfa-admin-msg','⚠️ Indique l\'email du compte.','error');return;}
@@ -501,7 +501,7 @@ async function loadStats(){
       '<div class="stat-card" onclick="showDetail(\'ultimate\')"><div class="val">'+data.par_plan.ultimate+'</div><div class="lbl">Ultimate</div></div>'+
       '<div class="stat-card" onclick="scrollToFiches()"><div class="val">'+data.total_fiches+'</div><div class="lbl">Fiches générées</div></div>'+
       '<div class="stat-card" onclick="showDetail(\'bannis\')"><div class="val">'+data.bannis+'</div><div class="lbl">Comptes bannis</div></div>';
-    allUsersData=data.users;renderUsers(data.users);renderQuotaAlerts(data.users);loadMaintenanceStatus();loadUserMessages();
+    allUsersData=data.users;renderUsers(data.users);renderMfaList(data.users);renderQuotaAlerts(data.users);loadMaintenanceStatus();loadUserMessages();
   }catch(e){if(e.message!=='WRONG_SECRET'){document.getElementById('lock-err').textContent='Erreur : '+e.message;document.getElementById('lock-err').style.display='block';}}
 }
 
@@ -570,9 +570,13 @@ function renderUsers(users){
     if(u.banned){banInfo=' 🚫';if(u.banned_until)banInfo+=' (jusqu\'au '+new Date(u.banned_until).toLocaleDateString('fr-FR')+')';else banInfo+=' (indéfini)';}
     var displayName=u.username?('<b>@'+escH(u.username)+'</b> <span style="color:var(--text3);font-size:0.75rem">('+escH(u.email)+')</span>'):'<span style="color:var(--text3)">Sans pseudo — '+escH(u.email)+'</span>';
     html+='<tr class="clickable-row'+(u.banned?' banned-row':'')+'" onclick="openUserModal('+jsArg(u.email)+')">';
-    html+='<td>'+displayName+banInfo+'</td>';
+    var mfaBadge=u.mfa_since?' <span title="Double authentification activée depuis le '+new Date(u.mfa_since).toLocaleDateString('fr-FR')+'">🔐</span>':'';
+    var us=usageByEmail[String(u.email).toLowerCase()];
+    html+='<td>'+displayName+mfaBadge+banInfo+'</td>';
     html+='<td><span class="plan-tag plan-'+escH(u.plan)+'">'+escH(u.plan)+'</span></td>';
     html+='<td>'+credLine(u)+'</td>';
+    html+='<td style="white-space:nowrap">'+(us?('<b>'+(us.credits||0)+'</b> <span style="color:var(--text3);font-size:0.75rem">⚡'+(us.rapide||0)+' 🎓'+(us.approfondi||0)+' 💬'+(us.chats||0)+' 🔁'+(us.revision||0)+'</span>'):'<span style="color:var(--text3)">—</span>')+'</td>';
+    html+='<td>'+(us?'$'+Number(us.cost_usd||0).toFixed(3):'<span style="color:var(--text3)">—</span>')+'</td>';
     html+='<td>'+new Date(u.created_at).toLocaleDateString('fr-FR')+'</td>';
     html+='<td>';
     if(u.banned){html+='<button class="btn-sm" onclick="event.stopPropagation();debanUser('+jsArg(u.email)+')">Débannir</button>';}
@@ -598,6 +602,8 @@ function openUserModal(email){
     ['Niveau',niveaux[user.niveau_scolaire]||'Non renseigné'],
     ['Inscrit le',new Date(user.created_at).toLocaleDateString('fr-FR')],
     ['Crédits du mois',credLine(user)],
+    ['IA sur 30 jours',(function(){var us=usageByEmail[String(user.email).toLowerCase()];return us?((us.credits||0)+' crédits · ⚡'+(us.rapide||0)+' 🎓'+(us.approfondi||0)+' 💬'+(us.chats||0)+' 🔁'+(us.revision||0)+' · $'+Number(us.cost_usd||0).toFixed(3)):'Aucune utilisation';})()],
+    ['Double authentification',user.mfa_since?'🔐 Activée le '+new Date(user.mfa_since).toLocaleDateString('fr-FR'):'Non activée'],
     ['Fiches Approfondi offertes restantes',String(user.approfondi_offerts??0)],
     ['Banni',user.banned?'🚫 Oui'+(user.banned_reason?' — '+escH(user.banned_reason):''):'✅ Non'],
   ].map(function(f){return '<div class="modal-field"><label>'+f[0]+'</label><span>'+f[1]+'</span></div>';}).join('');
@@ -748,21 +754,22 @@ async function deleteUser(email){
 }
 
 function exportCSV(){
-  var rows=[['Email','Pseudo','Plan','Crédits utilisés','Crédits par mois','Inscrit le','Banni']];
-  allUsersData.forEach(function(u){rows.push([u.email,u.username||'',u.plan,(u.credits_used??0),u.credits_limit,new Date(u.created_at).toLocaleDateString('fr-FR'),u.banned?'oui':'non']);});
+  var rows=[['Email','Pseudo','Plan','Crédits utilisés','Crédits par mois','Crédits IA 30 j','Coût IA 30 j ($)','2FA','Inscrit le','Banni']];
+  allUsersData.forEach(function(u){var us=usageByEmail[String(u.email).toLowerCase()]||{};rows.push([u.email,u.username||'',u.plan,(u.credits_used??0),u.credits_limit,us.credits||0,Number(us.cost_usd||0).toFixed(3),u.mfa_since?'oui':'non',new Date(u.created_at).toLocaleDateString('fr-FR'),u.banned?'oui':'non']);});
   var csv=rows.map(function(r){return r.map(function(v){var t=String(v);if(/^[=+\-@\t\r]/.test(t))t="'"+t;return '"'+t.replace(/"/g,'""')+'"';}).join(',');}).join('\n');
   var a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));a.download='ficheai_utilisateurs_'+new Date().toISOString().split('T')[0]+'.csv';a.click();
 }
 
+var usageByEmail={};
 async function loadUsage(){
   try{
     var d=await callAdmin('get_api_usage');
-    function esc(t){return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-    function usd(n){return '$'+Number(n||0).toFixed(3);}
-    document.getElementById('usage-total').textContent='Total : '+usd(d.total_cost_usd)+' (≈ '+(Number(d.total_cost_usd||0)*0.86).toFixed(2)+' €) sur 30 jours.';
-    var t=document.getElementById('usage-table');
-    t.innerHTML=(d.users&&d.users.length)?d.users.map(function(u){return '<tr><td>'+esc(u.email)+'</td><td><b>'+(u.credits||0)+'</b></td><td>'+(u.rapide||0)+'</td><td>'+(u.approfondi||0)+'</td><td>'+u.chats+'</td><td>'+(u.revision||0)+'</td><td><b>'+usd(u.cost_usd)+'</b></td></tr>';}).join(''):'<tr><td colspan="7" style="color:var(--text3)">Aucune donnée pour l\'instant.</td></tr>';
-  }catch(e){if(e.message!=='WRONG_SECRET'){var m=document.getElementById('usage-msg');m.textContent='⚠️ Impossible de charger la consommation : '+e.message;m.className='msg error';}}
+    usageByEmail={};
+    (d.users||[]).forEach(function(u){usageByEmail[String(u.email).toLowerCase()]=u;});
+    var tot=Number(d.total_cost_usd||0);
+    document.getElementById('usage-total').textContent='Consommation IA des 30 derniers jours : $'+tot.toFixed(3)+' (≈ '+(tot*0.86).toFixed(2)+' €) au total.';
+    if(allUsersData){var q=document.getElementById('search-input');filterUsers(q?q.value:'');}
+  }catch(e){if(e.message!=='WRONG_SECRET'){var m=document.getElementById('usage-msg');m.textContent='⚠️ Impossible de charger la consommation : '+e.message;m.className='msg error';m.style.display='block';}}
 }
 
 async function loadFiches(){
