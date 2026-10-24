@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Aperçu : animation au défilement · FicheAI</title>
+<link rel="stylesheet" href="/fonts/fonts.css">
+<style>
+:root{--bg:#07070f;--bg2:#0d0d1a;--bg3:#13131f;--purple:#7c6dfa;--purple2:#a78bfa;--pink:#f472b6;--text:#f1f0ff;--text2:#a0a0c0;--text3:#6b6b8a;--border:rgba(255,255,255,0.08)}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--bg)}
+body{font-family:'DM Sans',system-ui,sans-serif;color:var(--text);background:var(--bg);overflow-x:hidden}
+.intro,.outro{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem}
+h1,.big{font-family:'Syne',sans-serif;font-weight:800;letter-spacing:-0.02em}
+.intro h1{font-size:clamp(2.2rem,6vw,4.5rem);line-height:1.05}
+.grad{background:linear-gradient(135deg,var(--purple2),var(--pink));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.intro p{color:var(--text2);margin-top:1rem;font-size:1.1rem}
+.hint{margin-top:3rem;color:var(--text3);font-size:0.85rem;animation:bob 1.8s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(6px)}}
+.tag{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:50;background:rgba(124,109,250,0.15);border:1px solid rgba(124,109,250,0.4);color:var(--purple2);font-size:0.72rem;font-weight:700;padding:0.3rem 0.8rem;border-radius:100px}
+
+/* Scène figée pendant le défilement */
+.scroller{height:520vh;position:relative}
+.stage{position:sticky;top:0;height:100vh;overflow:hidden;display:flex;align-items:center;justify-content:center;perspective:1400px}
+.glow{position:absolute;width:60vmax;height:60vmax;border-radius:50%;background:radial-gradient(circle,rgba(124,109,250,0.28),transparent 60%);filter:blur(20px);opacity:0}
+.caption{position:absolute;bottom:9vh;left:0;right:0;text-align:center;font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(1.4rem,3.6vw,2.6rem);padding:0 1.5rem;opacity:0}
+.caption small{display:block;font-family:'DM Sans',sans-serif;font-weight:400;font-size:0.95rem;color:var(--text2);margin-top:0.5rem}
+
+/* 1. Le cours */
+.doc{position:absolute;width:min(420px,78vw);background:#f4f2fb;color:#2b2840;border-radius:14px;padding:26px 26px 30px;box-shadow:0 30px 80px rgba(0,0,0,0.5);transform-style:preserve-3d;will-change:transform,opacity}
+.doc h4{font-size:0.95rem;margin-bottom:10px;color:#1b1733}
+.line{height:8px;border-radius:4px;background:#d9d5ea;margin:7px 0}
+.word{display:inline-block;margin-right:0.28em;will-change:transform,opacity}
+
+/* 2. La fiche */
+.fiche{position:absolute;width:min(440px,82vw);background:var(--bg2);border:1px solid rgba(124,109,250,0.35);border-radius:20px;padding:20px;box-shadow:0 30px 90px rgba(124,109,250,0.18);will-change:transform,opacity}
+.fiche-t{font-family:'Syne',sans-serif;font-weight:800;font-size:1.05rem;margin-bottom:12px}
+.blk{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:8px;will-change:transform,opacity}
+.blk b{display:block;font-size:0.8rem;color:var(--purple2);margin-bottom:4px}
+.blk span{font-size:0.78rem;color:var(--text2)}
+
+/* 3. Les formats */
+.fmt{position:absolute;width:min(230px,44vw);height:150px;border-radius:18px;background:var(--bg2);border:1px solid rgba(124,109,250,0.3);padding:14px;will-change:transform,opacity;opacity:0}
+.fmt .ic{font-size:1.6rem}
+.fmt .n{font-weight:700;margin-top:8px}
+.fmt .d{font-size:0.75rem;color:var(--text2);margin-top:4px}
+
+/* 4. La carte de révision */
+.cardwrap{position:absolute;width:min(360px,76vw);height:220px;opacity:0;perspective:1000px}.card{position:absolute;inset:0;transform-style:preserve-3d;will-change:transform}
+.face{position:absolute;inset:0;border-radius:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.front{background:var(--bg2);border:1px solid rgba(124,109,250,0.4)}
+.back{background:linear-gradient(135deg,#7c6dfa,#f472b6);transform:rotateY(180deg)}
+.face small{font-size:0.7rem;letter-spacing:0.1em;color:var(--text2);text-transform:uppercase}
+.back small{color:rgba(255,255,255,0.8)}
+.face div{font-size:1.25rem;font-weight:700;margin-top:10px}
+.goalbar{position:absolute;top:calc(50% + 140px);width:min(360px,76vw);opacity:0}
+.goalbar .t{font-size:0.8rem;color:var(--text2);margin-bottom:6px}
+.goalbar .b{height:8px;border-radius:100px;background:#1a1a2e;overflow:hidden}
+.goalbar .f{height:100%;width:0;background:linear-gradient(90deg,var(--purple),var(--pink));border-radius:100px}
+
+.outro .btn{margin-top:2rem;display:inline-block;padding:1rem 2rem;border-radius:100px;background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff;font-weight:700;text-decoration:none}
+@media (prefers-reduced-motion: reduce){.scroller{height:auto}.stage{position:relative}}
+</style>
+</head>
+<body>
+<div class="tag">Aperçu · fais défiler</div>
+
+<section class="intro">
+  <h1>Ton cours.<br><span class="grad">Prêt à réviser.</span></h1>
+  <p>Fais défiler pour voir ce que FicheAI en fait.</p>
+  <div class="hint">↓ Descends avec la molette</div>
+</section>
+
+<div class="scroller" id="scroller">
+  <div class="stage">
+    <div class="glow" id="glow"></div>
+
+    <div class="doc" id="doc">
+      <h4>Chapitre 3 · Les fonctions dérivées</h4>
+      <div id="words"></div>
+      <div class="line" style="width:96%"></div><div class="line" style="width:88%"></div><div class="line" style="width:92%"></div>
+      <div class="line" style="width:70%"></div><div class="line" style="width:94%"></div><div class="line" style="width:80%"></div>
+    </div>
+
+    <div class="fiche" id="fiche" style="opacity:0">
+      <div class="fiche-t">📚 Les fonctions dérivées</div>
+      <div class="blk"><b>🎯 L'essentiel</b><span>La dérivée mesure la vitesse de variation d'une fonction.</span></div>
+      <div class="blk"><b>🧠 Notions clés</b><span>(xⁿ)' = n·xⁿ⁻¹ · dérivée d'une somme · d'un produit</span></div>
+      <div class="blk"><b>⚡ À retenir</b><span>f' &gt; 0 sur un intervalle ⇒ f est croissante.</span></div>
+    </div>
+
+    <div class="fmt" id="f1"><div class="ic">✅</div><div class="n">Quiz QCM</div><div class="d">Questions et corrections</div></div>
+    <div class="fmt" id="f2"><div class="ic">🃏</div><div class="n">Flashcards</div><div class="d">Recto, verso, astuces</div></div>
+    <div class="fmt" id="f3"><div class="ic">🧠</div><div class="n">Carte mentale</div><div class="d">Toutes les notions reliées</div></div>
+    <div class="fmt" id="f4"><div class="ic">📝</div><div class="n">Sujet d'examen</div><div class="d">Noté et corrigé</div></div>
+
+    <div class="cardwrap" id="cardwrap"><div class="card" id="card">
+      <div class="face front"><small>Question</small><div>Dérivée de x² ?</div></div>
+      <div class="face back"><small>Réponse</small><div>2x</div></div>
+    </div></div>
+    <div class="goalbar" id="goal"><div class="t">🎯 Objectif du jour</div><div class="b"><div class="f" id="goalf"></div></div></div>
+
+    <div class="caption" id="c1">Un long cours.<small>Du texte, encore du texte.</small></div>
+    <div class="caption" id="c2">Devient une fiche claire.<small>L'essentiel, les notions clés, ce qu'il faut retenir.</small></div>
+    <div class="caption" id="c3">Puis sept façons de réviser.<small>Quiz, flashcards, carte mentale, sujets d'examen…</small></div>
+    <div class="caption" id="c4">Et tu retiens, vraiment.<small>Le Mode Révision te repose chaque carte au bon moment.</small></div>
+  </div>
+</div>
+
+<section class="outro">
+  <div class="big" style="font-size:clamp(1.8rem,5vw,3.4rem)">Essaie avec <span class="grad">ton propre cours.</span></div>
+  <a class="btn" href="/signup.html">Créer mon compte gratuit →</a>
+</section>
+
+<script>
+(function(){
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Mots du cours qui vont « s'envoler » vers la fiche
+  var txt = "La dérivée d'une fonction f en un point mesure la vitesse de variation de f autour de ce point. Pour une puissance, on multiplie par l'exposant puis on le diminue de un.";
+  var w = document.getElementById('words');
+  txt.split(' ').forEach(function(t,i){ var s=document.createElement('span'); s.className='word'; s.textContent=t; s.style.fontSize='0.82rem'; s.style.lineHeight='1.7'; s.dataset.r=(Math.random()*2-1).toFixed(3); s.dataset.r2=(Math.random()*2-1).toFixed(3); w.appendChild(s); });
+  var words = [].slice.call(document.querySelectorAll('.word'));
+  var $ = function(id){ return document.getElementById(id); };
+  var doc=$('doc'), fiche=$('fiche'), blks=[].slice.call(fiche.querySelectorAll('.blk')), glow=$('glow');
+  var fm=[$('f1'),$('f2'),$('f3'),$('f4')], card=$('card'), cardwrap=$('cardwrap'), goal=$('goal'), goalf=$('goalf');
+  var caps=[$('c1'),$('c2'),$('c3'),$('c4')], sc=$('scroller');
+  var clamp=function(x){return Math.max(0,Math.min(1,x));};
+  var seg=function(p,a,b){return clamp((p-a)/(b-a));};          // avancement de 0 à 1 entre a et b
+  var ease=function(t){return 1-Math.pow(1-t,3);};               // décélération douce
+  var bell=function(p,a,b,c,d){return Math.min(seg(p,a,b),1-seg(p,c,d));}; // apparaît puis disparaît
+  var target=0, cur=0;
+  function progress(){ var r=sc.getBoundingClientRect(); return clamp(-r.top/(r.height-innerHeight)); }
+  function render(p){
+    // 1. Le cours bascule en perspective
+    var a=ease(seg(p,0,0.16));
+    var out=ease(seg(p,0.2,0.36));
+    doc.style.transform='rotateX('+(a*18)+'deg) rotateY('+(-a*14)+'deg) scale('+(1-a*0.08-out*0.2)+')';
+    doc.style.opacity=String(1-seg(p,0.3,0.4));
+    glow.style.opacity=String(0.4+a*0.6);
+    // 2. Les mots s'envolent
+    words.forEach(function(s,i){ var t=ease(seg(p,0.18+i*0.003,0.34+i*0.003)); s.style.transform='translate('+(s.dataset.r*260*t)+'px,'+(-180*t+s.dataset.r2*120*t)+'px) rotate('+(s.dataset.r*90*t)+'deg)'; s.style.opacity=String(1-t); });
+    // … et la fiche se construit
+    var fi=ease(seg(p,0.3,0.42));
+    var fout=ease(seg(p,0.52,0.6));
+    fiche.style.opacity=String(fi*(1-fout));
+    fiche.style.transform='translateY('+((1-fi)*40)+'px) scale('+(0.94+fi*0.06-fout*0.15)+')';
+    blks.forEach(function(b,i){ var t=ease(seg(p,0.34+i*0.035,0.42+i*0.035)); b.style.opacity=String(t); b.style.transform='translateX('+((1-t)*-30)+'px)'; });
+    // 3. La fiche se démultiplie en éventail
+    var spread=ease(seg(p,0.54,0.68)), fo=ease(seg(p,0.76,0.84));
+    var mob=innerWidth<640, dx=mob?95:250, dy=mob?120:110;
+    var pos=[[-dx,-dy,-8],[dx,-dy,8],[-dx,dy,-5],[dx,dy,5]];
+    fm.forEach(function(el,i){ var q=pos[i]; el.style.opacity=String(spread*(1-fo)); el.style.transform='translate('+(q[0]*spread)+'px,'+(q[1]*spread)+'px) rotate('+(q[2]*spread)+'deg) scale('+(0.6+spread*0.4-fo*0.2)+')'; });
+    // 4. Une carte se retourne et l'objectif se remplit
+    var ci=ease(seg(p,0.8,0.86)), flip=ease(seg(p,0.87,0.93));
+    cardwrap.style.opacity=String(ci);
+    card.style.transform='translateY('+((1-ci)*60)+'px) rotateY('+(flip*180)+'deg) scale('+(0.9+ci*0.1)+')';
+    goal.style.opacity=String(ease(seg(p,0.9,0.94)));
+    goalf.style.width=(ease(seg(p,0.92,1))*100)+'%';
+    // Légendes
+    var c=[bell(p,0.02,0.07,0.2,0.25),bell(p,0.36,0.41,0.52,0.56),bell(p,0.58,0.63,0.76,0.8),bell(p,0.84,0.88,0.99,1.01)];
+    caps.forEach(function(el,i){ el.style.opacity=String(c[i]); el.style.transform='translateY('+((1-c[i])*16)+'px)'; });
+  }
+  // Lissage : l'animation suit la molette avec une légère inertie, comme une vidéo qu'on fait avancer
+  function loop(){ cur+= (target-cur)*0.12; if(Math.abs(target-cur)<0.0005)cur=target; render(cur); requestAnimationFrame(loop); }
+  addEventListener('scroll',function(){ target=progress(); },{passive:true});
+  addEventListener('resize',function(){ target=progress(); });
+  target=progress(); cur=target;
+  if(reduce){ render(0.4); return; }
+  loop();
+})();
+</script>
+</body>
+</html>
