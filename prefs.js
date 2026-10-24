@@ -23,7 +23,8 @@
     consignes: '',
     objectif: 20,             // cartes à réviser par jour (Mode Révision)
     ordre: 'echeance',        // echeance | aleatoire
-    alerte_credits: 20,       // alerte quand il reste ce pourcentage de crédits ; 0 = jamais
+    alerte_credits: 20,       // alerte quand il reste ce pourcentage de crédits (Pro, Ultimate) ; 0 = jamais
+    alerte_credits_n: 2,      // alerte quand il reste ce nombre de crédits (Starter, 10 crédits par mois) ; 0 = jamais
     confirmation_cout: 10,    // confirmation avant une génération de ce nombre de crédits ou plus ; 0 = jamais
     animations: 'normales',   // normales | reduites
     pdf: 'auto'               // export PDF : auto (comme le thème) | clair | sombre
@@ -44,7 +45,8 @@
     objectif: [10, 20, 30, 50],
     ordre: ['echeance', 'aleatoire'],
     alerte_credits: [0, 10, 20],
-    confirmation_cout: [0, 5, 10],
+    alerte_credits_n: [0, 1, 2, 3],
+    confirmation_cout: [0, 3, 5, 10],
     animations: ['normales', 'reduites'],
     pdf: ['auto', 'clair', 'sombre']
   };

@@ -728,10 +728,16 @@ function updateQuotaUI(){
 
   var banner=document.getElementById('quota-banner');
   var alerte=window.FichePrefs?FichePrefs.get('alerte_credits'):20;
-  if(alerte>0&&pct>=100-alerte){
+  // Starter : 10 crédits par mois, l'alerte se règle en nombre de crédits restants (pas en pourcentage)
+  var alerteN=window.FichePrefs?FichePrefs.get('alerte_credits_n'):2;
+  var starterAlert=getPlan()==='starter';
+  if(starterAlert?(alerteN>0&&tokensLeft<=alerteN):(alerte>0&&pct>=100-alerte)){
+    var crit=starterAlert?tokensLeft<=1:pct>=95;
     banner.style.display='flex';
-    banner.classList.toggle('critical',pct>=95);
-    document.getElementById('quota-banner-msg').innerHTML=pct>=95
+    banner.classList.toggle('critical',crit);
+    document.getElementById('quota-banner-msg').innerHTML=starterAlert
+      ? (tokensLeft<=0?'Tu as utilisé tous tes crédits de ce mois-ci ('+used+' / '+tokensLimit+').':'Plus que <b>'+tokensLeft+' crédit'+(tokensLeft>1?'s':'')+'</b> ce mois-ci ('+used+' / '+tokensLimit+' utilisés).')
+      : pct>=95
       ? 'Tu as utilisé <b>'+pct+'%</b> de tes crédits ce mois-ci ('+used+' / '+tokensLimit+'). Plus que '+tokensLeft+' crédit'+(tokensLeft>1?'s':'')+' !'
       : 'Tu approches de ta limite : <b>'+pct+'%</b> de tes crédits utilisés ce mois-ci ('+used+' / '+tokensLimit+').';
     var bp=getPlan();
@@ -1209,6 +1215,7 @@ document.getElementById('gen-btn').addEventListener('click',async function(){
     errBox.style.display='block';return;
   }
   var seuil=window.FichePrefs?FichePrefs.get('confirmation_cout'):0;
+  if(getPlan()==='starter'&&seuil>=10)seuil=5; // 10 crédits par mois : le seuil de 10 ne se déclencherait jamais
   if(seuil>0&&needed>=seuil&&!costConfirmed){showCostConfirm(needed,formats.length);return;}
   costConfirmed=false;
   var btn=this;btn.disabled=true;
