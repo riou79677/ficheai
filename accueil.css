@@ -638,3 +638,9 @@ footer{border-top:1px solid var(--trait);padding:3rem 2rem 2.5rem}
 @media(min-width:900px){
 .anim .scene > .pin > .split .h2{font-size:clamp(1.8rem,.9rem + 2vw,2.8rem)}
 }
+
+/* ═══ Écrans peu hauts : la scène est réduite pour tenir entièrement à l'écran ═══ */
+.hc-fit{transform-origin:50% 0}
+.anim .scene > .pin.fit > .split{width:calc(100% / var(--f));max-width:calc(1200px / var(--f));height:calc(100% / var(--f));margin:0;transform-origin:0 0;transform:translateX(var(--fx,0px)) scale(var(--f));padding-left:calc(var(--gut) / var(--f));padding-right:calc(var(--gut) / var(--f));padding-top:calc((var(--nav) + 2.5vh) / var(--f));padding-bottom:calc(2.5vh / var(--f))}
+.hero{overflow-x:clip}
+html:not(.anim) .hero{overflow:hidden}

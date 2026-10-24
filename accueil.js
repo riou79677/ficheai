@@ -7,6 +7,9 @@
   'use strict';
   var H = document.documentElement;
   var ANIM = H.classList.contains('anim');
+  // Écran très peu haut (téléphone en paysage…) : la page s'affiche en version fixe, lisible, sans scènes épinglées
+  var LOW = innerHeight < 480;
+  if (ANIM && LOW) { H.classList.remove('anim'); ANIM = false; }
   function $(s, r) { return (r || document).querySelector(s); }
   function $$(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
   function clamp(x, a, b) { return x < a ? a : x > b ? b : x; }
@@ -48,7 +51,14 @@
     return out;
   }
 
-  var vw = innerWidth, vh = innerHeight, pinH = vh, docH = 1, navH = 64;
+  // Le texte de l'ouverture est enveloppé pour pouvoir être réduit sans toucher à son animation
+  function fitWrap(el) {
+    if (!el || !ANIM) return null;
+    var d = document.createElement('div'); d.className = 'hc-fit';
+    while (el.firstChild) d.appendChild(el.firstChild);
+    el.appendChild(d); return d;
+  }
+  var vw = innerWidth, vh = innerHeight, pinH = vh, docH = 1, navH = 64, fitF = 1;
   var target = window.scrollY || 0, cur = target;
   var scenes = [];
   function scene(o) { o.lp = -1; o.top = 0; o.h = 1; o.pinned = false; scenes.push(o); return o; }
@@ -66,7 +76,7 @@
   /* ═══ Ouverture : FicheAI s'ouvre comme un écran, puis les formats défilent ═══ */
   (function () {
     var el = $('#top'); if (!el) return;
-    var pin = el.firstElementChild, copy = $('.hero-copy', el), wrap = $('.win-wrap', el), win = $('.win', el), glow = $('.hero-glow', el);
+    var pin = el.firstElementChild, copy = $('.hero-copy', el), hc = fitWrap(copy), wrap = $('.win-wrap', el), win = $('.win', el), glow = $('.hero-glow', el);
     var tabs = $$('.tab', el), panels = $$('.panel', el), pill = $('.tab-pill', el);
     var fiche = $$('.panel-fiche > *', el), quiz = $('.panel-quiz', el), flash = $('.fl-card', el);
     var paths = $$('.mm-links path', el), nodes = $$('.mm-c, .mm-n', el);
@@ -83,6 +93,8 @@
         // Arrivée : la fenêtre se centre dans l'espace sous la barre de navigation
         endY = (navH + (pin.offsetHeight - navH - wrap.offsetHeight) / 2) - wrap.offsetTop;
         if (!ANIM) showStatic(shown);
+        var fh = ANIM ? r3(clamp(pinH / (vw >= 900 ? 700 : vw < 360 ? 840 : 760), 0.6, 1)) : 1;
+        if (hc) { hc.style.transform = fh < 0.995 ? 'scale(' + fh + ')' : ''; }
       },
       update: function (p) {
         var a = eio(seg(p, 0, 0.42)), c = seg(p, 0, 0.26);
@@ -154,7 +166,8 @@
         var list = [paper, fiche].concat(fbs, ws);
         var saved = list.map(function (n) { var t = n.style.transform; n.style.transform = 'none'; return t; });
         var sr = sin.getBoundingClientRect(), pr = paper.getBoundingClientRect();
-        var at = function (n) { var r = n.getBoundingClientRect(); return [(r.left - sr.left + r.width / 2) / k, (r.top - sr.top + r.height / 2) / k, (r.top - pr.top) / k]; };
+        var kf = k * fitF;
+        var at = function (n) { var r = n.getBoundingClientRect(); return [(r.left - sr.left + r.width / 2) / kf, (r.top - sr.top + r.height / 2) / kf, (r.top - pr.top) / kf]; };
         var bl = fbs.map(at);
         wd = ws.map(function (w, i) {
           var q = at(w), b = bl[Math.min(bl.length - 1, Math.floor(i / ws.length * bl.length))];
@@ -466,6 +479,15 @@
     var nav = $('nav'); navH = nav ? nav.getBoundingClientRect().bottom : 64;
     var pin = $('.scene > .pin'); pinH = ANIM && pin ? pin.offsetHeight : vh;
     scenes.forEach(function (s) { if (s.setup) s.setup(); else s.pinned = ANIM && s.el.classList.contains('scene'); });
+    // Hauteur visible limitée (petit portable, barres du navigateur d'un téléphone) : chaque scène est calculée sur un écran
+    // virtuel plus grand, puis réduite pour tenir entièrement dans la hauteur disponible.
+    fitF = ANIM ? r3(clamp(pinH / (vw >= 900 ? 660 : 700), 0.62, 1)) : 1;
+    scenes.forEach(function (s) {
+      if (!s.pinned) return;
+      var pn = s.el.firstElementChild, on = fitF < 0.995;
+      pn.classList.toggle('fit', on);
+      if (on) { pn.style.setProperty('--f', fitF); pn.style.setProperty('--fx', Math.max(0, (pn.clientWidth - 1200) / 2) + 'px'); }
+    });
     scenes.forEach(function (s) {
       s.top = docTop(s.el); s.h = s.el.offsetHeight; s.lp = -1;
       try { if (s.measure) s.measure(); } catch (err) { if (window.console) console.warn('FicheAI mesure', err); }
@@ -494,6 +516,7 @@
   addEventListener('resize', function () {
     // La barre d'adresse des téléphones change un peu la hauteur en défilant : on l'ignore
     if (innerWidth === lastW && Math.abs(innerHeight - lastH) < 140) return;
+    if ((innerHeight < 480) !== LOW) { location.reload(); return; }
     lastW = innerWidth; lastH = innerHeight; later(120);
   });
   if (window.ResizeObserver) {
