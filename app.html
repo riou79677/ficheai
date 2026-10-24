@@ -724,7 +724,7 @@ function updateQuotaUI(){
       ? 'Tu as utilisé <b>'+pct+'%</b> de tes crédits ce mois-ci ('+used+' / '+tokensLimit+'). Plus que '+tokensLeft+' crédit'+(tokensLeft>1?'s':'')+' !'
       : 'Tu approches de ta limite : <b>'+pct+'%</b> de tes crédits utilisés ce mois-ci ('+used+' / '+tokensLimit+').';
     var bp=getPlan();
-    var rl='<a href="'+RECHARGE_50+'" target="_blank">+100 crédits — 6,99€</a><a href="'+RECHARGE_150+'" target="_blank">+300 crédits — 19,99€</a><a href="'+RECHARGE_400+'" target="_blank">+800 crédits — 49,99€</a>';
+    var rl='<a href="'+RECHARGE_400+'" target="_blank">⭐ +800 crédits — 49,99€ (meilleur prix)</a><a href="'+RECHARGE_150+'" target="_blank">+300 crédits — 19,99€</a><a href="'+RECHARGE_50+'" target="_blank">+100 crédits — 6,99€</a>';
     document.getElementById('quota-banner-links').innerHTML=bp==='starter'
       ? '<a href="'+PRO_M+'" target="_blank">⚡ Passer à Pro — 7,99€/mois</a><a href="'+ULT_M+'" target="_blank">👑 Ultimate</a>'
       : bp==='pro' ? '<a href="'+ULT_M+'" target="_blank">👑 Passer à Ultimate</a>'+rl : rl;
@@ -884,7 +884,11 @@ function limitOption(href,label,price,primary){
   return '<a href="'+href+'" target="_blank" style="'+(primary?'background:linear-gradient(135deg,#6c5ce7,#fd79a8);font-weight:700;':'background:#181830;border:1px solid rgba(255,255,255,0.13);font-weight:600;')+'color:#fff;padding:0.75rem 1rem;border-radius:12px;text-decoration:none;display:flex;justify-content:space-between"><span>'+label+'</span><span>'+price+'</span></a>';
 }
 function rechargeOptions(){
-  return limitOption(RECHARGE_50,'+100 crédits','6,99€',false)+limitOption(RECHARGE_150,'+300 crédits','19,99€',false)+limitOption(RECHARGE_400,'+800 crédits','49,99€',false);
+  // Le plus gros pack en premier : c'est le crédit le moins cher (prix réels, arrondis).
+  return '<div style="font-size:0.72rem;color:#fbbf24;font-weight:700;text-align:left;margin:0 0 -0.2rem 0.2rem">⭐ Meilleur prix : 0,062 € le crédit, 11 % moins cher que le pack de 100</div>'
+    +limitOption(RECHARGE_400,'+800 crédits · 0,062 €/crédit','49,99€',true)
+    +limitOption(RECHARGE_150,'+300 crédits · 0,067 €/crédit','19,99€',false)
+    +limitOption(RECHARGE_50,'+100 crédits · 0,070 €/crédit','6,99€',false);
 }
 // Fenêtre affichée quand la limite est atteinte : Starter -> abonnements, Pro -> Ultimate (+ recharges), Ultimate -> recharges.
 function showLimitModal(message,kind){
@@ -910,7 +914,7 @@ function showLimitModal(message,kind){
 function showRechargeModal(message){
   var modal=document.createElement('div');
   modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:999;display:flex;align-items:center;justify-content:center;padding:1.5rem';
-  modal.innerHTML='<div style="background:#0f0f1a;border:1px solid rgba(108,92,231,0.35);border-radius:20px;padding:2rem;max-width:440px;text-align:center"><div style="font-size:2.2rem;margin-bottom:0.8rem">🎉</div><h3 style="font-size:1.15rem;margin-bottom:0.6rem">Tu es sacrément assidu ce mois-ci !</h3><p style="font-size:0.85rem;color:#a0a0c0;line-height:1.6;margin-bottom:1.5rem">'+message+' En attendant la remise à zéro du mois prochain, tu peux débloquer plus de crédits dès maintenant (valables 12 mois) :</p><div style="display:flex;flex-direction:column;gap:0.6rem;margin-bottom:1rem"><a href="'+RECHARGE_50+'" target="_blank" style="background:#181830;border:1px solid rgba(255,255,255,0.13);color:#fff;padding:0.7rem 1rem;border-radius:12px;text-decoration:none;font-weight:600;display:flex;justify-content:space-between"><span>+100 crédits</span><span>6,99€</span></a><a href="'+RECHARGE_150+'" target="_blank" style="background:linear-gradient(135deg,#6c5ce7,#fd79a8);color:#fff;padding:0.7rem 1rem;border-radius:12px;text-decoration:none;font-weight:700;display:flex;justify-content:space-between"><span>+300 crédits</span><span>19,99€</span></a><a href="'+RECHARGE_400+'" target="_blank" style="background:#181830;border:1px solid rgba(255,255,255,0.13);color:#fff;padding:0.7rem 1rem;border-radius:12px;text-decoration:none;font-weight:600;display:flex;justify-content:space-between"><span>+800 crédits</span><span>49,99€</span></a></div><button onclick="this.closest(\'div[style*=fixed]\').remove()" style="background:none;border:1px solid rgba(255,255,255,0.15);color:#a0a0c0;padding:0.6rem 1.3rem;border-radius:100px;cursor:pointer;font-size:0.85rem">Plus tard</button></div>';
+  modal.innerHTML='<div style="background:#0f0f1a;border:1px solid rgba(108,92,231,0.35);border-radius:20px;padding:2rem;max-width:440px;text-align:center"><div style="font-size:2.2rem;margin-bottom:0.8rem">🎉</div><h3 style="font-size:1.15rem;margin-bottom:0.6rem">Tu es sacrément assidu ce mois-ci !</h3><p style="font-size:0.85rem;color:#a0a0c0;line-height:1.6;margin-bottom:1.5rem">'+message+' En attendant la remise à zéro du mois prochain, tu peux débloquer plus de crédits dès maintenant (valables 12 mois) :</p><div style="display:flex;flex-direction:column;gap:0.6rem;margin-bottom:1rem">'+rechargeOptions()+'</div><button onclick="this.closest(\'div[style*=fixed]\').remove()" style="background:none;border:1px solid rgba(255,255,255,0.15);color:#a0a0c0;padding:0.6rem 1.3rem;border-radius:100px;cursor:pointer;font-size:0.85rem">Plus tard</button></div>';
   document.body.appendChild(modal);
   modal.addEventListener('click',function(e){if(e.target===modal)modal.remove();});
 }
@@ -1522,5 +1526,11 @@ window.addEventListener('load',function(){if(location.hash==='#chat'&&typeof ope
 <script src="/va.js" defer></script>
 <script src="/maintenance.js" defer></script>
 <script src="/messages.js" defer></script>
+<script>
+// Format par défaut choisi dans les Paramètres
+(function(){try{var pr=JSON.parse(localStorage.getItem('ficheai_prefs')||'{}');var f=pr.format;if(!f||f==='fiche')return;
+var el=document.querySelector('[data-fmt="'+f+'"]');var fi=document.querySelector('[data-fmt="fiche"]');if(!el||!fi)return;
+if(el.dataset.premium==='1'&&getPlan()==='starter')return;selectFormat(el);if(selectedFormats.indexOf(f)!==-1)selectFormat(fi);}catch(e){}})();
+</script>
 </body>
 </html>
