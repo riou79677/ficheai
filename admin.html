@@ -69,6 +69,64 @@ tr.clickable-row:hover{background:rgba(108,92,231,0.08)}
 .modal-field{background:#111120;border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:0.7rem 0.9rem}
 .modal-field label{display:block;font-size:0.7rem;font-weight:700;color:#555570;letter-spacing:0.05em;text-transform:uppercase;margin-bottom:0.3rem}
 .modal-field span{font-size:0.87rem;color:#f0efff}
+
+/* Utilisateurs : liste épurée + fiche détaillée */
+.u-table th{padding:.7rem .9rem}
+.u-table td{padding:.85rem .9rem;vertical-align:middle}
+.u-cell{display:flex;align-items:center;gap:.8rem;min-width:0}
+.u-av{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,rgba(124,109,250,.35),rgba(124,109,250,.12));color:var(--purple2);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.95rem;flex-shrink:0;text-transform:uppercase}
+.u-name{font-weight:700;font-size:.9rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:320px}
+.u-mail{font-size:.75rem;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:320px}
+.u-flag{display:inline-block;font-size:.68rem;font-weight:700;padding:1px 7px;border-radius:100px;margin-left:.4rem;vertical-align:middle}
+.u-flag.ban{background:rgba(248,113,113,.14);color:var(--red)}
+.u-flag.exp{background:rgba(251,191,36,.14);color:var(--gold)}
+.bar{height:6px;border-radius:100px;background:rgba(255,255,255,.07);overflow:hidden;min-width:90px}
+.bar>i{display:block;height:100%;border-radius:100px;background:var(--purple2)}
+.bar>i.warn{background:var(--gold)}.bar>i.full{background:var(--red)}
+.u-cred{font-size:.8rem;color:var(--text2);margin-bottom:.35rem;white-space:nowrap}
+.u-go{color:var(--text3);font-size:1.1rem;text-align:right}
+tr.clickable-row:hover .u-go{color:var(--purple2)}
+.ud-box{max-width:1040px;min-width:0;padding:0;overflow:hidden;display:flex;flex-direction:column;max-height:92vh}
+.ud-head{display:flex;align-items:center;gap:1rem;padding:1.4rem 1.8rem;border-bottom:1px solid rgba(255,255,255,.08);flex-wrap:wrap}
+.ud-head .u-av{width:52px;height:52px;font-size:1.3rem;border-radius:16px}
+.ud-head h2{margin:0;font-size:1.2rem}
+.ud-sub{font-size:.8rem;color:var(--text3);margin-top:.15rem;word-break:break-all}
+.ud-x{margin-left:auto;background:transparent;border:1px solid rgba(255,255,255,.12);color:var(--text2);border-radius:10px;width:36px;height:36px;font-size:1rem;cursor:pointer}
+.ud-body{display:grid;grid-template-columns:340px minmax(0,1fr);min-height:0;overflow:hidden;flex:1}
+.ud-side{padding:1.4rem 1.6rem;border-right:1px solid rgba(255,255,255,.08);overflow-y:auto;background:rgba(255,255,255,.015)}
+.ud-main{padding:1.4rem 1.8rem;overflow-y:auto}
+.ud-h{font-size:.7rem;font-weight:700;color:#6b6b88;letter-spacing:.06em;text-transform:uppercase;margin:0 0 .6rem}
+.ud-h:not(:first-child){margin-top:1.4rem}
+.ud-act{display:flex;flex-direction:column;gap:.5rem}
+.ud-act .btn-sm{margin:0;padding:.65rem .9rem;text-align:left;font-size:.82rem;border-radius:10px;width:100%}
+.ud-kv{display:grid;grid-template-columns:auto 1fr;gap:.45rem 1rem;font-size:.82rem}
+.ud-kv dt{color:var(--text3);white-space:nowrap}.ud-kv dd{margin:0;color:var(--text);text-align:right}
+.ud-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:.7rem}
+.ud-tile{background:#111120;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:.9rem 1rem}
+.ud-tile b{display:block;font-family:var(--font-h);font-size:1.45rem;line-height:1.1}
+.ud-tile small{display:block;margin-top:.3rem;font-size:.72rem;color:var(--text3)}
+.ud-split{display:flex;height:10px;border-radius:100px;overflow:hidden;background:rgba(255,255,255,.06);margin:.7rem 0 .5rem}
+.ud-split i{display:block;height:100%}
+.ud-leg{display:flex;flex-wrap:wrap;gap:.4rem 1.1rem;font-size:.78rem;color:var(--text2)}
+.ud-leg span::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--c);margin-right:.4rem}
+.ud-list{list-style:none;padding:0;margin:0}
+.ud-list li{display:flex;gap:.8rem;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.82rem}
+.ud-list li:last-child{border:0}
+.ud-list em{font-style:normal;color:var(--text3);font-size:.75rem;white-space:nowrap}
+.ud-list span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ud-empty{color:var(--text3);font-size:.82rem}
+.ud-days{display:flex;align-items:flex-end;gap:3px;height:46px;margin-top:.4rem}
+.ud-days i{flex:1;background:var(--purple2);opacity:.75;border-radius:3px 3px 0 0;min-height:2px}
+.ud-days i.z{background:rgba(255,255,255,.08);opacity:1}
+.ud-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1.6rem;margin-top:1.4rem}
+@media(max-width:820px){
+  .ud-body{grid-template-columns:minmax(0,1fr);overflow-y:auto}
+  .ud-side{border-right:0;border-bottom:1px solid rgba(255,255,255,.08);overflow:visible}
+  .ud-main{overflow:visible}
+  .ud-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ud-cols{grid-template-columns:minmax(0,1fr)}
+  .u-hide-m{display:none}
+}
 .modal-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:1rem}
 .modal-close-btn{margin-top:1rem;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:0.4rem 1rem;color:#9898b8;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%}
 .plan-selector{display:grid;grid-template-columns:repeat(3,1fr);gap:0.6rem;margin:0.8rem 0}
@@ -208,13 +266,13 @@ tr.clickable-row:hover{background:rgba(108,92,231,0.08)}
 <h2>👥 Utilisateurs</h2>
 <input type="text" id="search-input" placeholder="🔍 Rechercher par pseudo ou email..." style="width:100%;background:var(--bg3);border:1.5px solid var(--border2);border-radius:10px;padding:0.7rem 1rem;font-size:0.85rem;color:var(--text);font-family:inherit;outline:none;margin-bottom:1rem" oninput="filterUsers(this.value)">
 <p class="mini-note" id="usage-total">Consommation IA des 30 derniers jours : chargement…</p>
-<table>
-<thead><tr><th>Utilisateur</th><th>Plan</th><th>Crédits du mois</th><th title="Générations des 30 derniers jours : ⚡ Rapide · 🎓 Approfondi · 💬 Chat · 🔁 Révision">IA · 30 jours</th><th title="Coût réel facturé par Anthropic sur 30 jours">Coût IA</th><th>Inscrit le</th><th>Actions</th></tr></thead>
+<table class="u-table">
+<thead><tr><th>Utilisateur</th><th>Forfait</th><th>Crédits du mois</th><th class="u-hide-m">Inscrit le</th><th></th></tr></thead>
 <tbody id="users-table"></tbody>
 </table>
 <div class="msg" id="users-msg"></div>
 <div class="msg" id="usage-msg"></div>
-<p class="mini-note">🔐 = double authentification activée. « IA · 30 jours » vient du journal de l'IA (Rapide 1 crédit, Approfondi 2, chat 1, révision 1) ; une fiche Approfondi offerte y compte 2 sans avoir rien coûté à l'élève. Coût calculé à partir des tokens réellement facturés par Anthropic.</p>
+<p class="mini-note">Clique sur un utilisateur pour ouvrir sa fiche complète : coût IA, générations, activité et toutes les actions (forfait, crédits, bannissement, suppression).</p>
 <button class="btn-sm" onclick="exportCSV()" style="margin-top:1rem">⬇️ Exporter en CSV</button>
 </div>
 
@@ -229,43 +287,11 @@ tr.clickable-row:hover{background:rgba(108,92,231,0.08)}
 </div>
 
 <div class="modal-overlay" id="user-modal-overlay" onclick="closeUserModal(event)">
-  <div class="modal-box">
-    <h2 id="modal-title">👤 Profil utilisateur</h2>
-    <div class="modal-grid" id="modal-grid"></div>
-    <div class="modal-actions" id="modal-actions"></div>
-    <button class="modal-close-btn" onclick="closeUserModalDirect()">Fermer</button>
-  </div>
-</div>
-
-<div class="modal-overlay" id="plan-modal-overlay">
-  <div class="modal-box" style="max-width:400px">
-    <h2>✏️ Changer le forfait</h2>
-    <p style="font-size:0.83rem;color:var(--text2);margin-bottom:0.3rem">Utilisateur : <strong id="plan-modal-email" style="color:var(--purple2)"></strong></p>
-    <p style="font-size:0.83rem;color:var(--text2);margin-bottom:1rem">Plan actuel : <strong id="plan-modal-current"></strong></p>
-    <p style="font-size:0.8rem;color:var(--text3);margin-bottom:0.3rem">Nouveau forfait :</p>
-    <div class="plan-selector">
-      <button class="plan-btn" id="plan-btn-starter" onclick="selectPlan('starter')">🆓 Starter</button>
-      <button class="plan-btn" id="plan-btn-pro" onclick="selectPlan('pro')">⚡ Pro</button>
-      <button class="plan-btn" id="plan-btn-ultimate" onclick="selectPlan('ultimate')">👑 Ultimate</button>
-    </div>
-    <div id="plan-duration-zone" style="display:none;margin:0.6rem 0">
-      <p style="font-size:0.8rem;color:var(--text3);margin-bottom:0.3rem">Durée de l'accès :</p>
-      <select id="plan-duration" style="width:100%;background:var(--bg3);border:1.5px solid var(--border2);border-radius:10px;padding:0.6rem 0.8rem;color:var(--text);font-family:inherit">
-        <option value="">Sans limite (jusqu'à changement manuel)</option>
-        <option value="7">7 jours puis retour automatique en Starter</option>
-        <option value="14">14 jours puis retour automatique en Starter</option>
-        <option value="30">30 jours puis retour automatique en Starter</option>
-      </select>
-    </div>
-    <p class="mini-note" id="plan-limits-note"></p>
-    <div id="plan-confirm-zone" style="display:none;margin-top:1rem">
-      <p style="font-size:0.78rem;color:var(--text3);margin-bottom:0.4rem">Code de confirmation : <strong id="plan-code-display" style="color:var(--purple2);letter-spacing:0.15em;font-size:1rem"></strong></p>
-      <input type="text" id="plan-code-input" placeholder="Entre le code ci-dessus" maxlength="6" style="width:100%;background:var(--bg3);border:1.5px solid var(--border2);border-radius:10px;padding:0.65rem 1rem;font-size:0.9rem;color:var(--text);font-family:inherit;outline:none;text-align:center;letter-spacing:0.15em">
-      <div id="plan-code-err" style="color:var(--red);font-size:0.78rem;margin-top:0.4rem;display:none"></div>
-      <button class="plan-confirm-btn" id="plan-confirm-btn" onclick="confirmPlanChange()">Confirmer le changement</button>
-    </div>
-    <div style="display:flex;gap:8px;margin-top:1rem">
-      <button onclick="closePlanModal()" style="flex:1;background:transparent;border:1px solid var(--border2);border-radius:10px;padding:0.65rem;color:var(--text2);cursor:pointer;font-family:inherit">Annuler</button>
+  <div class="modal-box ud-box" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="ud-head" id="ud-head"></div>
+    <div class="ud-body">
+      <aside class="ud-side" id="ud-side"></aside>
+      <div class="ud-main" id="ud-main"></div>
     </div>
   </div>
 </div>
@@ -565,65 +591,133 @@ function renderUsers(users){
     if(s)s.innerHTML='<div style="background:linear-gradient(135deg,rgba(253,203,110,0.08),rgba(225,112,85,0.05));border:1px solid rgba(253,203,110,0.25);border-radius:12px;padding:1rem 1.2rem;display:flex;align-items:center;gap:12px"><span style="font-size:1.5rem">👑</span><div><div style="font-weight:700;color:#fdcb6e;font-size:0.95rem">'+escH(adminUser.username?'@'+adminUser.username:adminUser.email)+'</div><div style="font-size:0.78rem;color:#9898b8;margin-top:2px">'+escH(adminUser.email)+' — Compte administrateur</div></div></div>';
   }
   var html='';
-  users.filter(function(u){return !DEV_EMAIL||String(u.email).toLowerCase()!==DEV_EMAIL;}).forEach(function(u){
-    var banInfo='';
-    if(u.banned){banInfo=' 🚫';if(u.banned_until)banInfo+=' (jusqu\'au '+new Date(u.banned_until).toLocaleDateString('fr-FR')+')';else banInfo+=' (indéfini)';}
-    var displayName=u.username?('<b>@'+escH(u.username)+'</b> <span style="color:var(--text3);font-size:0.75rem">('+escH(u.email)+')</span>'):'<span style="color:var(--text3)">Sans pseudo — '+escH(u.email)+'</span>';
-    html+='<tr class="clickable-row'+(u.banned?' banned-row':'')+'" onclick="openUserModal('+jsArg(u.email)+')">';
-    var mfaBadge=u.mfa_since?' <span title="Double authentification activée depuis le '+new Date(u.mfa_since).toLocaleDateString('fr-FR')+'">🔐</span>':'';
-    var us=usageByEmail[String(u.email).toLowerCase()];
-    html+='<td>'+displayName+mfaBadge+banInfo+'</td>';
+  var shown=users.filter(function(u){return !DEV_EMAIL||String(u.email).toLowerCase()!==DEV_EMAIL;});
+  shown.forEach(function(u){
+    var flags='';
+    if(u.banned)flags+='<span class="u-flag ban">Banni</span>';
+    if(u.plan_expires_at&&u.plan!=='starter')flags+='<span class="u-flag exp">jusqu\'au '+new Date(u.plan_expires_at).toLocaleDateString('fr-FR')+'</span>';
+    var name=u.username?'@'+u.username:(u.email||'').split('@')[0];
+    html+='<tr class="clickable-row'+(u.banned?' banned-row':'')+'" tabindex="0" onclick="openUserModal('+jsArg(u.email)+')" onkeydown="if(event.key===\'Enter\')openUserModal('+jsArg(u.email)+')">';
+    html+='<td><div class="u-cell"><div class="u-av">'+escH(name.replace('@','').charAt(0)||'?')+'</div><div style="min-width:0"><div class="u-name">'+escH(name)+flags+'</div><div class="u-mail">'+escH(u.email)+'</div></div></div></td>';
     html+='<td><span class="plan-tag plan-'+escH(u.plan)+'">'+escH(u.plan)+'</span></td>';
-    html+='<td>'+credLine(u)+'</td>';
-    html+='<td style="white-space:nowrap">'+(us?('<b>'+(us.credits||0)+'</b> <span style="color:var(--text3);font-size:0.75rem">⚡'+(us.rapide||0)+' 🎓'+(us.approfondi||0)+' 💬'+(us.chats||0)+' 🔁'+(us.revision||0)+'</span>'):'<span style="color:var(--text3)">—</span>')+'</td>';
-    html+='<td>'+(us?'$'+Number(us.cost_usd||0).toFixed(3):'<span style="color:var(--text3)">—</span>')+'</td>';
-    html+='<td>'+new Date(u.created_at).toLocaleDateString('fr-FR')+'</td>';
-    html+='<td>';
-    if(u.banned){html+='<button class="btn-sm" onclick="event.stopPropagation();debanUser('+jsArg(u.email)+')">Débannir</button>';}
-    else{html+='<button class="btn-sm danger" onclick="event.stopPropagation();openBanModal('+jsArg(u.email)+')">Bannir</button>';}
-    html+='<button class="btn-sm warn" onclick="event.stopPropagation();deleteUser('+jsArg(u.email)+')">Supprimer</button>';
-    html+='</td></tr>';
+    html+='<td style="min-width:150px">'+credBar(u)+'</td>';
+    html+='<td class="u-hide-m" style="color:var(--text2);white-space:nowrap">'+new Date(u.created_at).toLocaleDateString('fr-FR')+'</td>';
+    html+='<td class="u-go">›</td></tr>';
   });
+  if(!shown.length)html='<tr><td colspan="5" style="color:var(--text3)">Aucun utilisateur.</td></tr>';
   document.getElementById('users-table').innerHTML=html;
+  var ov=document.getElementById('user-modal-overlay');
+  if(currentModalUser&&ov&&ov.classList.contains('active')){
+    var fresh=allUsersData.find(function(x){return x.email===currentModalUser.email;});
+    if(fresh)renderUserDetail(fresh,false);else closeUserModalDirect();
+  }
 }
+
+function credBar(u){
+  var lim=u.credits_limit>=100000?null:(u.credits_limit||10),used=u.credits_used||0;
+  var pct=lim?Math.min(100,Math.round(used/lim*100)):0;
+  var cls=pct>=100?'full':pct>=80?'warn':'';
+  return '<div class="u-cred">'+used+' / '+(lim===null?'∞':lim)+'</div>'+(lim?'<div class="bar"><i class="'+cls+'" style="width:'+pct+'%"></i></div>':'');
+}
+
+var activityCache={};
+function fmtD(d){return new Date(d).toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'});}
+function fmtDT(d){return new Date(d).toLocaleString('fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});}
+function kindLabel(x){var k=String(x.kind||'');if(/^erreur:/.test(k))return '⚠️ Erreur';if(/^info:/.test(k))return 'ℹ️ Info';if(k.indexOf('chat')===0)return '💬 Chat';if(k.indexOf('flashcards')===0)return '🔁 Révision';return String(x.model||'').indexOf('haiku')>-1?'⚡ Rapide':'🎓 Approfondi';}
 
 function openUserModal(email){
   var user=allUsersData.find(function(u){return u.email===email;});
   if(!user)return;
   currentModalUser=user;
-  var isMe=!!myEmail()&&String(user.email).toLowerCase()===myEmail();
-  document.getElementById('modal-title').innerHTML=(isMe?'👑 ':'👤 ')+escH(user.username?'@'+user.username:user.email);
-  var niveaux={college:'Collège',lycee:'Lycée',prepa:'Prépa',superieur:'Supérieur'};
-  var planColors={starter:'#9898b8',pro:'#a29bfe',ultimate:'#fdcb6e'};
-  document.getElementById('modal-grid').innerHTML=[
-    ['Email',escH(user.email)],
-    ['Pseudo',user.username?'@'+escH(user.username):'Non défini'],
-    ['Forfait','<span style="color:'+(planColors[user.plan]||'#fff')+';font-weight:700">'+escH((user.plan||'starter').toUpperCase())+'</span>'],
-    ['Niveau',niveaux[user.niveau_scolaire]||'Non renseigné'],
-    ['Inscrit le',new Date(user.created_at).toLocaleDateString('fr-FR')],
-    ['Crédits du mois',credLine(user)],
-    ['IA sur 30 jours',(function(){var us=usageByEmail[String(user.email).toLowerCase()];return us?((us.credits||0)+' crédits · ⚡'+(us.rapide||0)+' 🎓'+(us.approfondi||0)+' 💬'+(us.chats||0)+' 🔁'+(us.revision||0)+' · $'+Number(us.cost_usd||0).toFixed(3)):'Aucune utilisation';})()],
-    ['Double authentification',user.mfa_since?'🔐 Activée le '+new Date(user.mfa_since).toLocaleDateString('fr-FR'):'Non activée'],
-    ['Fiches Approfondi offertes restantes',String(user.approfondi_offerts??0)],
-    ['Banni',user.banned?'🚫 Oui'+(user.banned_reason?' — '+escH(user.banned_reason):''):'✅ Non'],
-  ].map(function(f){return '<div class="modal-field"><label>'+f[0]+'</label><span>'+f[1]+'</span></div>';}).join('');
-  var actions=document.getElementById('modal-actions');
-  actions.innerHTML='';
-  if(!isMe){
-    actions.innerHTML+='<button class="btn-sm" onclick="openPlanModalFromProfile()">✏️ Changer le forfait</button>';
-    actions.innerHTML+='<button class="btn-sm gift" onclick="closeUserModalDirect();openGiftModal('+jsArg(user.email)+')">🎁 Offrir des crédits</button>';
-    if(user.banned){actions.innerHTML+='<button class="btn-sm" onclick="debanUser('+jsArg(user.email)+');closeUserModalDirect()">✅ Débannir</button>';}
-    else{actions.innerHTML+='<button class="btn-sm danger" onclick="closeUserModalDirect();openBanModal('+jsArg(user.email)+')">🚫 Bannir</button>';}
-    actions.innerHTML+='<button class="btn-sm warn" onclick="deleteUser('+jsArg(user.email)+');closeUserModalDirect()">🗑️ Supprimer</button>';
-  }
+  renderUserDetail(user,true);
   document.getElementById('user-modal-overlay').classList.add('active');
   document.body.style.overflow='hidden';
+}
+
+function renderUserDetail(user,loadAct){
+  currentModalUser=user;
+  var me=myEmail(),isMe=!!me&&String(user.email).toLowerCase()===me;
+  var niveaux={college:'Collège',lycee:'Lycée',prepa:'Prépa',superieur:'Supérieur'};
+  var name=user.username?'@'+user.username:String(user.email).split('@')[0];
+  var us=usageByEmail[String(user.email).toLowerCase()]||null;
+  document.getElementById('ud-head').innerHTML=
+    '<div class="u-av">'+escH(name.replace('@','').charAt(0))+'</div>'+
+    '<div style="min-width:0"><h2 id="modal-title">'+(isMe?'👑 ':'')+escH(name)+' <span class="plan-tag plan-'+escH(user.plan)+'" style="vertical-align:middle;margin-left:.3rem">'+escH((user.plan||'starter').toUpperCase())+'</span>'+(user.banned?'<span class="u-flag ban">Banni</span>':'')+'</h2><div class="ud-sub">'+escH(user.email)+'</div></div>'+
+    '<button class="ud-x" onclick="closeUserModalDirect()" aria-label="Fermer">✕</button>';
+
+  var bonus=(user.bonus_generations>0&&(!user.bonus_expires_at||new Date(user.bonus_expires_at)>new Date()))?user.bonus_generations:0;
+  var kv=[
+    ['Inscrit le',fmtD(user.created_at)],
+    ['Niveau',niveaux[user.niveau_scolaire]||'Non renseigné'],
+    ['Double authentification',user.mfa_since?'🔐 depuis le '+fmtD(user.mfa_since):'Non activée'],
+    ['Crédits de recharge',bonus?'+'+bonus:'0'],
+    ['Fiches Approfondi offertes',String(user.approfondi_offerts??0)]
+  ];
+  if(user.plan_expires_at&&user.plan!=='starter')kv.push(['Forfait jusqu\'au',fmtD(user.plan_expires_at)]);
+  if(user.banned)kv.push(['Bannissement',(user.banned_until?'jusqu\'au '+fmtD(user.banned_until):'indéfini')+(user.banned_reason?' — '+escH(user.banned_reason):'')]);
+  var side='';
+  if(!isMe){
+    side+='<p class="ud-h">Actions</p><div class="ud-act">'+
+      '<button class="btn-sm" onclick="openPlanModalFromProfile()">✏️ Changer le forfait</button>'+
+      '<button class="btn-sm gift" onclick="openGiftModal('+jsArg(user.email)+')">🎁 Offrir des crédits</button>'+
+      (user.banned?'<button class="btn-sm" onclick="debanUser('+jsArg(user.email)+')">✅ Débannir</button>':'<button class="btn-sm danger" onclick="openBanModal('+jsArg(user.email)+')">🚫 Bannir</button>')+
+      '<button class="btn-sm warn" onclick="deleteUser('+jsArg(user.email)+')">🗑️ Supprimer le compte</button></div>';
+  }
+  side+='<p class="ud-h">Compte</p><dl class="ud-kv">'+kv.map(function(r){return '<dt>'+r[0]+'</dt><dd>'+r[1]+'</dd>';}).join('')+'</dl>';
+  document.getElementById('ud-side').innerHTML=side;
+
+  var lim=user.credits_limit>=100000?null:(user.credits_limit||10),used=user.credits_used||0;
+  var main='<p class="ud-h">Crédits du mois</p><div style="display:flex;align-items:baseline;gap:.6rem"><b style="font-family:var(--font-h);font-size:1.6rem">'+used+'</b><span style="color:var(--text3)">sur '+(lim===null?'∞':lim)+(bonus?' · +'+bonus+' en recharge':'')+'</span></div>'+(lim?'<div class="bar" style="margin-top:.5rem;height:8px"><i class="'+(used>=lim?'full':used/lim>=.8?'warn':'')+'" style="width:'+Math.min(100,Math.round(used/lim*100))+'%"></i></div>':'');
+  main+='<p class="ud-h">Consommation IA · 30 jours</p>';
+  if(us){
+    var tot=(us.rapide||0)+(us.approfondi||0)+(us.chats||0)+(us.revision||0)||1;
+    var parts=[['Rapide',us.rapide||0,'#4ade80'],['Approfondi',us.approfondi||0,'#a29bfe'],['Chat',us.chats||0,'#60a5fa'],['Révision',us.revision||0,'#fbbf24']];
+    main+='<div class="ud-tiles">'+
+      '<div class="ud-tile"><b>$'+Number(us.cost_usd||0).toFixed(3)+'</b><small>Coût IA réel (≈ '+(Number(us.cost_usd||0)*0.86).toFixed(3)+' €)</small></div>'+
+      '<div class="ud-tile"><b>'+(us.generations||0)+'</b><small>Générations de fiches</small></div>'+
+      '<div class="ud-tile"><b>'+(us.credits||0)+'</b><small>Crédits consommés</small></div>'+
+      '<div class="ud-tile"><b>'+(us.chats||0)+'</b><small>Messages de chat</small></div></div>'+
+      '<div class="ud-split">'+parts.map(function(x){return '<i style="width:'+(x[1]/tot*100)+'%;background:'+x[2]+'"></i>';}).join('')+'</div>'+
+      '<div class="ud-leg">'+parts.map(function(x){return '<span style="--c:'+x[2]+'">'+x[0]+' '+x[1]+'</span>';}).join('')+(us.errors?'<span style="--c:#f87171">Erreurs '+us.errors+'</span>':'')+'</div>'+
+      '<p class="mini-note">'+(Number(us.input_tokens||0)+Number(us.output_tokens||0)).toLocaleString('fr-FR')+' tokens au total ('+Number(us.input_tokens||0).toLocaleString('fr-FR')+' en entrée, '+Number(us.output_tokens||0).toLocaleString('fr-FR')+' en sortie).</p>';
+  }else main+='<p class="ud-empty">Aucune utilisation de l\'IA sur les 30 derniers jours.</p>';
+  main+='<div id="ud-act"><p class="ud-empty" style="margin-top:1.4rem">Chargement de l\'activité…</p></div>';
+  document.getElementById('ud-main').innerHTML=main;
+  if(loadAct)loadUserActivity(user.email);
+  else if(activityCache[user.email])paintActivity(user.email,activityCache[user.email]);
+}
+
+async function loadUserActivity(email){
+  try{
+    var d=await callAdmin('get_user_activity',{email:email});
+    activityCache[email]=d;
+    paintActivity(email,d);
+  }catch(e){
+    var el=document.getElementById('ud-act');
+    if(el&&currentModalUser&&currentModalUser.email===email)el.innerHTML='<p class="ud-empty" style="margin-top:1.4rem">⚠️ Activité indisponible : '+escH(e.message)+'</p>';
+  }
+}
+
+function paintActivity(email,d){
+  var el=document.getElementById('ud-act');
+  if(!el||!currentModalUser||currentModalUser.email!==email)return;
+  var days=[],max=1;
+  for(var i=29;i>=0;i--){var k=new Date(Date.now()-i*864e5).toISOString().slice(0,10);var n=(d.per_day&&d.per_day[k])||0;days.push([k,n]);if(n>max)max=n;}
+  var h='<div class="ud-cols"><div><p class="ud-h">Activité sur 30 jours</p>'+
+    '<div class="ud-days">'+days.map(function(x){return '<i class="'+(x[1]?'':'z')+'" title="'+x[0]+' : '+x[1]+' action(s)" style="height:'+(x[1]?Math.max(8,x[1]/max*100):6)+'%"></i>';}).join('')+'</div>'+
+    '<p class="mini-note">Dernière action IA : '+(d.last_activity?fmtDT(d.last_activity):'aucune sur 30 jours')+' · '+(d.total_fiches||0)+' fiche(s) créée(s) au total'+(d.errors?' · '+d.errors+' erreur(s)':'')+'</p>'+
+    '<p class="ud-h">Fiches récentes</p>'+
+    (d.fiches&&d.fiches.length?'<ul class="ud-list">'+d.fiches.map(function(f){return '<li><span>'+escH(f.format_icon||'')+' '+escH(f.titre||f.format||'Sans titre')+'</span><em>'+fmtD(f.created_at)+'</em></li>';}).join('')+'</ul>':'<p class="ud-empty">Aucune fiche.</p>')+
+    '</div><div><p class="ud-h">Dernières actions IA</p>'+
+    (d.events&&d.events.length?'<ul class="ud-list">'+d.events.map(function(x){return '<li><span>'+kindLabel(x)+(/^(erreur|info):/.test(String(x.kind))?'':' · $'+Number(x.cost_usd||0).toFixed(4))+'</span><em>'+fmtDT(x.created_at)+'</em></li>';}).join('')+'</ul>':'<p class="ud-empty">Aucune action IA récente.</p>')+
+    '</div></div>';
+  el.innerHTML=h;
 }
 
 function closeUserModal(event){if(event&&event.target!==document.getElementById('user-modal-overlay'))return;closeUserModalDirect();}
 function closeUserModalDirect(){document.getElementById('user-modal-overlay').classList.remove('active');document.body.style.overflow='';}
 
-function openPlanModalFromProfile(){if(!currentModalUser)return;closeUserModalDirect();openPlanModal(currentModalUser.email,currentModalUser.plan);}
+function openPlanModalFromProfile(){if(!currentModalUser)return;openPlanModal(currentModalUser.email,currentModalUser.plan);}
 
 function openPlanModal(email,currentPlan){
   selectedPlan=null;planConfirmCode=null;
@@ -670,7 +764,7 @@ async function confirmPlanChange(){
   }catch(e){btn.textContent='Confirmer le changement';btn.disabled=false;errEl.textContent='Erreur : '+e.message;errEl.style.display='block';}
 }
 
-function closePlanModal(){document.getElementById('plan-modal-overlay').classList.remove('active');document.body.style.overflow='';selectedPlan=null;planConfirmCode=null;var b=document.getElementById('plan-confirm-btn');if(b){b.textContent='Confirmer le changement';b.disabled=false;}}
+function closePlanModal(){document.getElementById('plan-modal-overlay').classList.remove('active');document.body.style.overflow=(document.getElementById('user-modal-overlay').classList.contains('active')?'hidden':'');selectedPlan=null;planConfirmCode=null;var b=document.getElementById('plan-confirm-btn');if(b){b.textContent='Confirmer le changement';b.disabled=false;}}
 
 // ── Offrir des crédits ──
 function openGiftModal(email){
@@ -703,7 +797,7 @@ async function confirmGift(){
     await loadStats();
   }catch(e){btn.textContent='Offrir';btn.disabled=false;errEl.textContent='Erreur : '+e.message;errEl.style.display='block';}
 }
-function closeGiftModal(){document.getElementById('gift-modal-overlay').classList.remove('active');document.body.style.overflow='';giftTargetEmail=null;selectedGift=null;var b=document.getElementById('gift-confirm-btn');if(b)b.textContent='Offrir';}
+function closeGiftModal(){document.getElementById('gift-modal-overlay').classList.remove('active');document.body.style.overflow=(document.getElementById('user-modal-overlay').classList.contains('active')?'hidden':'');giftTargetEmail=null;selectedGift=null;var b=document.getElementById('gift-confirm-btn');if(b)b.textContent='Offrir';}
 
 function openBanModal(email){
   selectedBanDuration=undefined;
@@ -744,12 +838,12 @@ async function debanUser(email){
   catch(e){showMsg('users-msg','⚠️ Erreur : '+e.message,'error');}
 }
 
-function closeBanModal(){document.getElementById('ban-modal-overlay').classList.remove('active');document.body.style.overflow='';selectedBanDuration=undefined;}
+function closeBanModal(){document.getElementById('ban-modal-overlay').classList.remove('active');document.body.style.overflow=(document.getElementById('user-modal-overlay').classList.contains('active')?'hidden':'');selectedBanDuration=undefined;}
 
 async function deleteUser(email){
   if(!confirm('SUPPRIMER DÉFINITIVEMENT le compte '+email+' ? Action irréversible.'))return;
   if(!confirm('Es-tu vraiment sûr ? Toutes ses fiches seront perdues.'))return;
-  try{await callAdmin('delete_account',{email});showMsg('users-msg','✅ Compte supprimé.','ok');await loadStats();}
+  try{await callAdmin('delete_account',{email});showMsg('users-msg','✅ Compte supprimé.','ok');closeUserModalDirect();await loadStats();}
   catch(e){showMsg('users-msg','⚠️ Erreur : '+e.message,'error');}
 }
 

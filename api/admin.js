@@ -91,6 +91,32 @@ export default async function handler(req, res) {
       });
     }
 
+    // ── Détail d'un utilisateur : fiches récentes et journal IA ──
+    if (action === 'get_user_activity') {
+      const em = String((payload && payload.email) || '').trim().toLowerCase();
+      if (!em || em.length > 200 || !/^[^\s@]+@[^\s@]+$/.test(em)) return res.status(400).json({ error: 'Email invalide.' });
+      const q = encodeURIComponent('eq.' + em);
+      const since = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();
+      const [fR, cR, eR] = await Promise.all([
+        fetch(SUPABASE_URL + '/rest/v1/fiches?select=created_at,format,format_icon,titre&user_email=' + q + '&order=created_at.desc&limit=12', { headers: sb }),
+        fetch(SUPABASE_URL + '/rest/v1/fiches?select=id&user_email=' + q + '&limit=1', { headers: { ...sb, 'Prefer': 'count=exact' } }),
+        fetch(SUPABASE_URL + '/rest/v1/api_usage?select=created_at,kind,model,input_tokens,output_tokens,cost_usd&user_email=' + q + '&created_at=gte.' + since + '&order=created_at.desc&limit=400', { headers: sb })
+      ]);
+      const fiches = await fR.json();
+      const events = await eR.json();
+      const evList = Array.isArray(events) ? events : [];
+      const perDay = {};
+      evList.forEach(x => { if (/^(erreur|info):/.test(String(x.kind))) return; const d = String(x.created_at).slice(0, 10); perDay[d] = (perDay[d] || 0) + 1; });
+      return res.status(200).json({
+        total_fiches: parseInt((cR.headers.get('content-range') || '').split('/')[1], 10) || 0,
+        fiches: Array.isArray(fiches) ? fiches : [],
+        events: evList.slice(0, 15),
+        errors: evList.filter(x => /^erreur:/.test(String(x.kind))).length,
+        per_day: perDay,
+        last_activity: evList.length ? evList[0].created_at : null
+      });
+    }
+
     // ── Fiches générées récemment — pseudo affiché à la place de l'email ──
     if (action === 'get_recent_fiches') {
       const limit = Math.min(Math.max(parseInt(payload && payload.limit, 10) || 30, 1), 200);
