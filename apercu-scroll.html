@@ -2,173 +2,638 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="robots" content="noindex, nofollow">
-<title>Aperçu : animation au défilement · FicheAI</title>
+<title>FicheAI — Transforme tes cours en fiches de révision avec l'IA</title>
+<meta name="description" content="FicheAI génère automatiquement des fiches de révision, quiz, flashcards et mind maps à partir de tes cours grâce à l'IA. Essaie gratuitement.">
+<link rel="preload" href="/fonts/syne-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/fonts/dm-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/fonts/fonts.css">
-<style>
-:root{--bg:#07070f;--bg2:#0d0d1a;--bg3:#13131f;--purple:#7c6dfa;--purple2:#a78bfa;--pink:#f472b6;--text:#f1f0ff;--text2:#a0a0c0;--text3:#6b6b8a;--border:rgba(255,255,255,0.08)}
-*{box-sizing:border-box;margin:0;padding:0}
-html{background:var(--bg)}
-body{font-family:'DM Sans',system-ui,sans-serif;color:var(--text);background:var(--bg);overflow-x:hidden}
-.intro,.outro{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem}
-h1,.big{font-family:'Syne',sans-serif;font-weight:800;letter-spacing:-0.02em}
-.intro h1{font-size:clamp(2.2rem,6vw,4.5rem);line-height:1.05}
-.grad{background:linear-gradient(135deg,var(--purple2),var(--pink));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.intro p{color:var(--text2);margin-top:1rem;font-size:1.1rem}
-.hint{margin-top:3rem;color:var(--text3);font-size:0.85rem;animation:bob 1.8s ease-in-out infinite}
-@keyframes bob{50%{transform:translateY(6px)}}
-.tag{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:50;background:rgba(124,109,250,0.15);border:1px solid rgba(124,109,250,0.4);color:var(--purple2);font-size:0.72rem;font-weight:700;padding:0.3rem 0.8rem;border-radius:100px}
-
-/* Scène figée pendant le défilement */
-.scroller{height:520vh;position:relative}
-.stage{position:sticky;top:0;height:100vh;overflow:hidden;display:flex;align-items:center;justify-content:center;perspective:1400px}
-.glow{position:absolute;width:60vmax;height:60vmax;border-radius:50%;background:radial-gradient(circle,rgba(124,109,250,0.28),transparent 60%);filter:blur(20px);opacity:0}
-.caption{position:absolute;bottom:9vh;left:0;right:0;text-align:center;font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(1.4rem,3.6vw,2.6rem);padding:0 1.5rem;opacity:0}
-.caption small{display:block;font-family:'DM Sans',sans-serif;font-weight:400;font-size:0.95rem;color:var(--text2);margin-top:0.5rem}
-
-/* 1. Le cours */
-.doc{position:absolute;width:min(420px,78vw);background:#f4f2fb;color:#2b2840;border-radius:14px;padding:26px 26px 30px;box-shadow:0 30px 80px rgba(0,0,0,0.5);transform-style:preserve-3d;will-change:transform,opacity}
-.doc h4{font-size:0.95rem;margin-bottom:10px;color:#1b1733}
-.line{height:8px;border-radius:4px;background:#d9d5ea;margin:7px 0}
-.word{display:inline-block;margin-right:0.28em;will-change:transform,opacity}
-
-/* 2. La fiche */
-.fiche{position:absolute;width:min(440px,82vw);background:var(--bg2);border:1px solid rgba(124,109,250,0.35);border-radius:20px;padding:20px;box-shadow:0 30px 90px rgba(124,109,250,0.18);will-change:transform,opacity}
-.fiche-t{font-family:'Syne',sans-serif;font-weight:800;font-size:1.05rem;margin-bottom:12px}
-.blk{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:8px;will-change:transform,opacity}
-.blk b{display:block;font-size:0.8rem;color:var(--purple2);margin-bottom:4px}
-.blk span{font-size:0.78rem;color:var(--text2)}
-
-/* 3. Les formats */
-.fmt{position:absolute;width:min(230px,44vw);height:150px;border-radius:18px;background:var(--bg2);border:1px solid rgba(124,109,250,0.3);padding:14px;will-change:transform,opacity;opacity:0}
-.fmt .ic{font-size:1.6rem}
-.fmt .n{font-weight:700;margin-top:8px}
-.fmt .d{font-size:0.75rem;color:var(--text2);margin-top:4px}
-
-/* 4. La carte de révision */
-.cardwrap{position:absolute;width:min(360px,76vw);height:220px;opacity:0;perspective:1000px}.card{position:absolute;inset:0;transform-style:preserve-3d;will-change:transform}
-.face{position:absolute;inset:0;border-radius:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;backface-visibility:hidden;-webkit-backface-visibility:hidden}
-.front{background:var(--bg2);border:1px solid rgba(124,109,250,0.4)}
-.back{background:linear-gradient(135deg,#7c6dfa,#f472b6);transform:rotateY(180deg)}
-.face small{font-size:0.7rem;letter-spacing:0.1em;color:var(--text2);text-transform:uppercase}
-.back small{color:rgba(255,255,255,0.8)}
-.face div{font-size:1.25rem;font-weight:700;margin-top:10px}
-.goalbar{position:absolute;top:calc(50% + 140px);width:min(360px,76vw);opacity:0}
-.goalbar .t{font-size:0.8rem;color:var(--text2);margin-bottom:6px}
-.goalbar .b{height:8px;border-radius:100px;background:#1a1a2e;overflow:hidden}
-.goalbar .f{height:100%;width:0;background:linear-gradient(90deg,var(--purple),var(--pink));border-radius:100px}
-
-.outro .btn{margin-top:2rem;display:inline-block;padding:1rem 2rem;border-radius:100px;background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff;font-weight:700;text-decoration:none}
-@media (prefers-reduced-motion: reduce){.scroller{height:auto}.stage{position:relative}}
-</style>
+<script>
+// Animations au défilement : désactivées si l'appareil demande moins de mouvements ou si l'élève a choisi « Réduire les animations ».
+(function(){var d=document.documentElement,r=false;d.classList.add('js');try{r=matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){}try{var c=JSON.parse(localStorage.getItem('ficheai_prefs_cache')||'{}');if(c&&c.animations==='reduites')r=true}catch(e){}if(!r)d.classList.add('anim')})();
+</script>
+<link rel="stylesheet" href="/accueil.css">
+<script src="/auth.js"></script>
+<script src="/checkout.js"></script>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#07070f">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="FicheAI">
+<meta property="og:title" content="FicheAI — Transforme tes cours en fiches de révision avec l'IA">
+<meta property="og:description" content="FicheAI génère automatiquement des fiches de révision, quiz, flashcards et mind maps à partir de tes cours grâce à l'IA. Essaie gratuitement.">
+<meta property="og:url" content="https://studyai-kappa-swart.vercel.app/">
+<meta property="og:image" content="https://studyai-kappa-swart.vercel.app/og-image-v2.png">
+<meta property="og:image:alt" content="FicheAI : fiches de révision, flashcards et quiz générés par IA">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="FicheAI">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="stylesheet" href="/ecrans.css">
+<link rel="stylesheet" href="/animations.css">
+<script src="/animations.js"></script>
+<script>document.documentElement.classList.remove('fa-on');</script>
 </head>
-<body>
-<div class="tag">Aperçu · fais défiler</div>
+<body class="nav-fixe">
+<a class="skip" href="#contenu">Aller au contenu</a>
 
-<section class="intro">
-  <h1>Ton cours.<br><span class="grad">Prêt à réviser.</span></h1>
-  <p>Fais défiler pour voir ce que FicheAI en fait.</p>
-  <div class="hint">↓ Descends avec la molette</div>
-</section>
-
-<div class="scroller" id="scroller">
-  <div class="stage">
-    <div class="glow" id="glow"></div>
-
-    <div class="doc" id="doc">
-      <h4>Chapitre 3 · Les fonctions dérivées</h4>
-      <div id="words"></div>
-      <div class="line" style="width:96%"></div><div class="line" style="width:88%"></div><div class="line" style="width:92%"></div>
-      <div class="line" style="width:70%"></div><div class="line" style="width:94%"></div><div class="line" style="width:80%"></div>
-    </div>
-
-    <div class="fiche" id="fiche" style="opacity:0">
-      <div class="fiche-t">📚 Les fonctions dérivées</div>
-      <div class="blk"><b>🎯 L'essentiel</b><span>La dérivée mesure la vitesse de variation d'une fonction.</span></div>
-      <div class="blk"><b>🧠 Notions clés</b><span>(xⁿ)' = n·xⁿ⁻¹ · dérivée d'une somme · d'un produit</span></div>
-      <div class="blk"><b>⚡ À retenir</b><span>f' &gt; 0 sur un intervalle ⇒ f est croissante.</span></div>
-    </div>
-
-    <div class="fmt" id="f1"><div class="ic">✅</div><div class="n">Quiz QCM</div><div class="d">Questions et corrections</div></div>
-    <div class="fmt" id="f2"><div class="ic">🃏</div><div class="n">Flashcards</div><div class="d">Recto, verso, astuces</div></div>
-    <div class="fmt" id="f3"><div class="ic">🧠</div><div class="n">Carte mentale</div><div class="d">Toutes les notions reliées</div></div>
-    <div class="fmt" id="f4"><div class="ic">📝</div><div class="n">Sujet d'examen</div><div class="d">Noté et corrigé</div></div>
-
-    <div class="cardwrap" id="cardwrap"><div class="card" id="card">
-      <div class="face front"><small>Question</small><div>Dérivée de x² ?</div></div>
-      <div class="face back"><small>Réponse</small><div>2x</div></div>
-    </div></div>
-    <div class="goalbar" id="goal"><div class="t">🎯 Objectif du jour</div><div class="b"><div class="f" id="goalf"></div></div></div>
-
-    <div class="caption" id="c1">Un long cours.<small>Du texte, encore du texte.</small></div>
-    <div class="caption" id="c2">Devient une fiche claire.<small>L'essentiel, les notions clés, ce qu'il faut retenir.</small></div>
-    <div class="caption" id="c3">Puis sept façons de réviser.<small>Quiz, flashcards, carte mentale, sujets d'examen…</small></div>
-    <div class="caption" id="c4">Et tu retiens, vraiment.<small>Le Mode Révision te repose chaque carte au bon moment.</small></div>
-  </div>
+<nav>
+<a href="/" class="logo">
+<div class="logo-icon">
+<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+</svg>
+</div>
+FicheAI
+</a>
+<div class="nav-links">
+<a href="#comment">Comment ça marche</a>
+<a href="#formats">Formats</a>
+<a href="#tarifs">Tarifs</a>
+<a href="#faq">FAQ</a>
+</div>
+<button class="hamburger-btn" id="hamburger-btn" aria-label="Menu" aria-controls="mobile-menu" aria-expanded="false" onclick="toggleMenu()">
+<span></span><span></span><span></span>
+</button>
+<div class="nav-cta">
+<a href="/login.html" class="btn-ghost" id="nav-login">Se connecter</a>
+<a href="/signup.html" class="btn-primary" id="nav-signup">Essayer gratuitement</a>
+</div>
+<span class="nav-progress" aria-hidden="true"></span>
+</nav>
+<div class="mobile-menu" id="mobile-menu">
+<a href="#comment" onclick="closeMenu()">Comment ça marche</a>
+<a href="#formats" onclick="closeMenu()">Formats</a>
+<a href="#tarifs" onclick="closeMenu()">Tarifs</a>
+<a href="#faq" onclick="closeMenu()">FAQ</a>
+<a href="/login.html" class="mm-account" onclick="closeMenu()">Se connecter</a>
 </div>
 
-<section class="outro">
-  <div class="big" style="font-size:clamp(1.8rem,5vw,3.4rem)">Essaie avec <span class="grad">ton propre cours.</span></div>
-  <a class="btn" href="/signup.html">Créer mon compte gratuit →</a>
+<main id="contenu">
+
+<!-- ═══════════ Ouverture : le titre, puis FicheAI qui s'ouvre comme un écran ═══════════ -->
+<section class="scene hero" id="top" data-scene="hero">
+<div class="pin">
+<div class="hero-glow" aria-hidden="true"></div>
+<div class="hero-copy">
+<p class="pill"><span></span>Des fiches de révision générées par l'IA</p>
+<h1 class="h1"><span class="ln">Transforme tes cours</span> <span class="ln">en fiches claires</span> <span class="ln">grâce à l'IA</span></h1>
+<p class="hero-sub">Colle ton cours, choisis ton format : FicheAI génère automatiquement des fiches de révision, quiz, flashcards et mind maps structurés grâce à l'IA.</p>
+<div class="hero-btns">
+<a href="/app.html" class="btn-main">Essayer gratuitement</a>
+<a href="#comment" class="btn-link">Voir comment ça marche<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5"/></svg></a>
+</div>
+<ul class="checks"><li>Gratuit pour commencer</li><li>Aucune CB requise</li><li>Fiches, quiz et flashcards</li></ul>
+</div>
+<div class="win-wrap">
+<div class="win">
+<div class="win-bar" aria-hidden="true"><i></i><i></i><i></i><span>ficheai.fr/app</span></div>
+<div class="win-body">
+<aside class="win-side" aria-hidden="true">
+<div class="ws-label">Ton cours</div>
+<div class="ws-file"><span>📄</span>photosynthese.pdf</div>
+<div class="ws-paper"><b>Chapitre 4 : la photosynthèse</b>La photosynthèse est le processus par lequel les végétaux chlorophylliens produisent de la matière organique à partir de l'énergie lumineuse, du dioxyde de carbone et de l'eau.<i></i><i></i><i style="width:80%"></i><i></i><i style="width:64%"></i><i></i><i style="width:86%"></i></div>
+<div class="ws-gen">✨ Générer avec l'IA</div>
+</aside>
+<div class="win-main">
+<div class="tabs" role="tablist" aria-label="Formats de l'aperçu">
+<button type="button" role="tab" class="tab on" aria-selected="true">📄 Fiche</button>
+<button type="button" role="tab" class="tab" aria-selected="false">✅ Quiz</button>
+<button type="button" role="tab" class="tab" aria-selected="false">🃏 Flashcards</button>
+<button type="button" role="tab" class="tab" aria-selected="false">🧠 Mind Map</button>
+<span class="tab-pill" aria-hidden="true"></span>
+</div>
+<div class="panels">
+<div class="panel panel-fiche on" role="tabpanel">
+<div class="rc-title">📚 LA PHOTOSYNTHÈSE</div>
+<div class="rc"><b>🎯 L'essentiel en 30 secondes</b><p>▸ Les plantes fabriquent leur matière organique à partir de lumière, de CO₂ et d'eau.</p><p>▸ Elle a lieu dans les chloroplastes, qui contiennent la chlorophylle.</p></div>
+<div class="rc"><b>🧠 Notions clés</b><p>▸ <strong>Équation :</strong> 6CO₂ + 6H₂O + lumière → C₆H₁₂O₆ + 6O₂</p><p>▸ <strong>Deux phases :</strong> la phase claire, puis le cycle de Calvin</p></div>
+<div class="rc"><b>⚡ À retenir</b><p>✦ La chlorophylle absorbe surtout le rouge et le bleu</p></div>
+</div>
+<div class="panel panel-quiz" role="tabpanel">
+<div class="qz-q">❓ Question 1 : où se déroule la photosynthèse&nbsp;?</div>
+<ul class="qz">
+<li>A) Dans les mitochondries</li>
+<li class="ok">B) Dans les chloroplastes<span class="qz-ck" aria-hidden="true">✓</span></li>
+<li>C) Dans le noyau</li>
+<li>D) Dans les ribosomes</li>
+</ul>
+<div class="qz-a"><b>✅ Réponse : B.</b> Les chloroplastes contiennent la chlorophylle, qui capte la lumière.</div>
+<div class="qz-tip">💡 Astuce : chloroplaste et chlorophylle partagent la racine « chloro », le vert.</div>
+</div>
+<div class="panel panel-flash" role="tabpanel">
+<div class="fl-count">Carte 1 sur 10</div>
+<div class="fl-wrap"><div class="fl-card">
+<div class="fl-face"><small>Recto</small><span>Que produit la phase claire&nbsp;?</span></div>
+<div class="fl-face fl-back"><small>Verso</small><span>De l'ATP, du NADPH et du dioxygène (O₂).</span></div>
+</div></div>
+<div class="fl-tip">💡 Astuce mémo : la lumière « recharge les batteries » de la plante.</div>
+</div>
+<div class="panel panel-map" role="tabpanel">
+<svg class="mm" viewBox="0 0 640 360" role="img" aria-label="Carte mentale de la photosynthèse">
+<defs><linearGradient id="mmg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6c5ce7"/><stop offset="1" stop-color="#fd79a8"/></linearGradient></defs>
+<g class="mm-links" fill="none" stroke-width="2.5" stroke-linecap="round">
+<path pathLength="1" d="M245 180 C 205 180, 225 82, 190 82" stroke="#74b9ff"/>
+<path pathLength="1" d="M395 180 C 435 180, 415 82, 450 82" stroke="#a29bfe"/>
+<path pathLength="1" d="M245 180 C 205 180, 225 278, 190 278" stroke="#fdcb6e"/>
+<path pathLength="1" d="M395 180 C 435 180, 415 278, 450 278" stroke="#fd79a8"/>
+</g>
+<g class="mm-c"><rect x="245" y="157" width="150" height="46" rx="23"/><text x="320" y="186">Photosynthèse</text></g>
+<g class="mm-n"><rect x="30" y="60" width="160" height="44" rx="14"/><text x="110" y="87">🔵 Phase claire</text><text class="mm-sub" x="110" y="128">ATP, NADPH et O₂</text></g>
+<g class="mm-n"><rect x="450" y="60" width="160" height="44" rx="14"/><text x="530" y="87">🟣 Cycle de Calvin</text><text class="mm-sub" x="530" y="128">fixe le CO₂, forme le glucose</text></g>
+<g class="mm-n"><rect x="30" y="256" width="160" height="44" rx="14"/><text x="110" y="283">🟡 Chloroplaste</text><text class="mm-sub" x="110" y="324">thylakoïdes et stroma</text></g>
+<g class="mm-n"><rect x="450" y="256" width="160" height="44" rx="14"/><text x="530" y="283">🔴 Facteurs</text><text class="mm-sub" x="530" y="324">lumière, CO₂, eau</text></g>
+</svg>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
 </section>
 
-<script>
-(function(){
-  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  // Mots du cours qui vont « s'envoler » vers la fiche
-  var txt = "La dérivée d'une fonction f en un point mesure la vitesse de variation de f autour de ce point. Pour une puissance, on multiplie par l'exposant puis on le diminue de un.";
-  var w = document.getElementById('words');
-  txt.split(' ').forEach(function(t,i){ var s=document.createElement('span'); s.className='word'; s.textContent=t; s.style.fontSize='0.82rem'; s.style.lineHeight='1.7'; s.dataset.r=(Math.random()*2-1).toFixed(3); s.dataset.r2=(Math.random()*2-1).toFixed(3); w.appendChild(s); });
-  var words = [].slice.call(document.querySelectorAll('.word'));
-  var $ = function(id){ return document.getElementById(id); };
-  var doc=$('doc'), fiche=$('fiche'), blks=[].slice.call(fiche.querySelectorAll('.blk')), glow=$('glow');
-  var fm=[$('f1'),$('f2'),$('f3'),$('f4')], card=$('card'), cardwrap=$('cardwrap'), goal=$('goal'), goalf=$('goalf');
-  var caps=[$('c1'),$('c2'),$('c3'),$('c4')], sc=$('scroller');
-  var clamp=function(x){return Math.max(0,Math.min(1,x));};
-  var seg=function(p,a,b){return clamp((p-a)/(b-a));};          // avancement de 0 à 1 entre a et b
-  var ease=function(t){return 1-Math.pow(1-t,3);};               // décélération douce
-  var bell=function(p,a,b,c,d){return Math.min(seg(p,a,b),1-seg(p,c,d));}; // apparaît puis disparaît
-  var target=0, cur=0;
-  function progress(){ var r=sc.getBoundingClientRect(); return clamp(-r.top/(r.height-innerHeight)); }
-  function render(p){
-    // 1. Le cours bascule en perspective
-    var a=ease(seg(p,0,0.16));
-    var out=ease(seg(p,0.2,0.36));
-    doc.style.transform='rotateX('+(a*18)+'deg) rotateY('+(-a*14)+'deg) scale('+(1-a*0.08-out*0.2)+')';
-    doc.style.opacity=String(1-seg(p,0.3,0.4));
-    glow.style.opacity=String(0.4+a*0.6);
-    // 2. Les mots s'envolent
-    words.forEach(function(s,i){ var t=ease(seg(p,0.18+i*0.003,0.34+i*0.003)); s.style.transform='translate('+(s.dataset.r*260*t)+'px,'+(-180*t+s.dataset.r2*120*t)+'px) rotate('+(s.dataset.r*90*t)+'deg)'; s.style.opacity=String(1-t); });
-    // … et la fiche se construit
-    var fi=ease(seg(p,0.3,0.42));
-    var fout=ease(seg(p,0.52,0.6));
-    fiche.style.opacity=String(fi*(1-fout));
-    fiche.style.transform='translateY('+((1-fi)*40)+'px) scale('+(0.94+fi*0.06-fout*0.15)+')';
-    blks.forEach(function(b,i){ var t=ease(seg(p,0.34+i*0.035,0.42+i*0.035)); b.style.opacity=String(t); b.style.transform='translateX('+((1-t)*-30)+'px)'; });
-    // 3. La fiche se démultiplie en éventail
-    var spread=ease(seg(p,0.54,0.68)), fo=ease(seg(p,0.76,0.84));
-    var mob=innerWidth<640, dx=mob?95:250, dy=mob?120:110;
-    var pos=[[-dx,-dy,-8],[dx,-dy,8],[-dx,dy,-5],[dx,dy,5]];
-    fm.forEach(function(el,i){ var q=pos[i]; el.style.opacity=String(spread*(1-fo)); el.style.transform='translate('+(q[0]*spread)+'px,'+(q[1]*spread)+'px) rotate('+(q[2]*spread)+'deg) scale('+(0.6+spread*0.4-fo*0.2)+')'; });
-    // 4. Une carte se retourne et l'objectif se remplit
-    var ci=ease(seg(p,0.8,0.86)), flip=ease(seg(p,0.87,0.93));
-    cardwrap.style.opacity=String(ci);
-    card.style.transform='translateY('+((1-ci)*60)+'px) rotateY('+(flip*180)+'deg) scale('+(0.9+ci*0.1)+')';
-    goal.style.opacity=String(ease(seg(p,0.9,0.94)));
-    goalf.style.width=(ease(seg(p,0.92,1))*100)+'%';
-    // Légendes
-    var c=[bell(p,0.02,0.07,0.2,0.25),bell(p,0.36,0.41,0.52,0.56),bell(p,0.58,0.63,0.76,0.8),bell(p,0.84,0.88,0.99,1.01)];
-    caps.forEach(function(el,i){ el.style.opacity=String(c[i]); el.style.transform='translateY('+((1-c[i])*16)+'px)'; });
-  }
-  // Lissage : l'animation suit la molette avec une légère inertie, comme une vidéo qu'on fait avancer
-  function loop(){ cur+= (target-cur)*0.12; if(Math.abs(target-cur)<0.0005)cur=target; render(cur); requestAnimationFrame(loop); }
-  addEventListener('scroll',function(){ target=progress(); },{passive:true});
-  addEventListener('resize',function(){ target=progress(); });
-  target=progress(); cur=target;
-  if(reduce){ render(0.4); return; }
-  loop();
-})();
-</script>
+<!-- ═══════════ En bref ═══════════ -->
+<section class="stats" data-scene="stats" aria-label="FicheAI en bref">
+<div class="stat"><div class="stat-val" data-count="10">10</div><div class="stat-label">Crédits gratuits chaque mois</div></div>
+<div class="stat"><div class="stat-val" data-count="7">7</div><div class="stat-label">Formats de révision</div></div>
+<div class="stat"><div class="stat-val">Ton cours</div><div class="stat-label">Point de départ de chaque contenu</div></div>
+<div class="stat"><div class="stat-val">Gratuit</div><div class="stat-label">Pour commencer</div></div>
+</section>
+
+<!-- ═══════════ Comment ça marche : le cours devient une fiche ═══════════ -->
+<section class="scene steps" id="comment" data-scene="steps">
+<div class="pin">
+<div class="split">
+<div class="split-text">
+<div class="st-head">
+<span class="kicker">Comment ça marche</span>
+<h2 class="h2">Simple comme 1, 2, 3</h2>
+<p class="lead">Pas besoin de formation. Tu as ta fiche en quelques clics.</p>
+</div>
+<div class="steps-wrap">
+<span class="st-rail" aria-hidden="true"><i></i></span>
+<ol class="steps-list">
+<li class="st on"><span class="st-n">1</span><div><h3>Importe ton cours</h3><p>Colle ton texte ou importe un PDF. FicheAI lit et comprend tout type de contenu académique.</p></div></li>
+<li class="st"><span class="st-n">2</span><div><h3>Choisis ton format</h3><p>Fiche, quiz, flashcards, mind map, questions ouvertes ou chronologie : tu choisis ce dont tu as besoin.</p></div></li>
+<li class="st"><span class="st-n">3</span><div><h3>L'IA génère</h3><p>Tu reçois un contenu structuré et directement utilisable pour réviser.</p></div></li>
+</ol>
+</div>
+</div>
+<div class="split-vis">
+<div class="stage" data-w="560" data-h="560">
+<div class="stage-in">
+<div class="paper" aria-hidden="true">
+<div class="paper-bg"></div>
+<div class="paper-file"><span>📄</span>photosynthese.pdf</div>
+<div class="paper-in">
+<h4 class="paper-t">Chapitre 4 : la photosynthèse</h4>
+<p class="paper-p">La photosynthèse est le processus par lequel les végétaux chlorophylliens produisent de la matière organique à partir de l'énergie lumineuse. Elle utilise le dioxyde de carbone de l'air et l'eau puisée par les racines, et rejette du dioxygène. Elle se déroule dans les chloroplastes, en deux phases : la phase claire, puis le cycle de Calvin.</p>
+<div class="paper-lines"><i></i><i style="width:88%"></i><i></i><i style="width:72%"></i><i style="width:94%"></i><i style="width:60%"></i></div>
+</div>
+<div class="scan"></div>
+</div>
+<div class="chip chip-sel"><span>📄</span>Fiche de révision<b class="chip-ck">✓</b></div>
+<div class="chip"><span>✅</span>Quiz QCM</div>
+<div class="chip"><span>🃏</span>Flashcards</div>
+<div class="chip"><span>🧠</span>Mind Map</div>
+<div class="chip"><span>💬</span>Questions ouvertes</div>
+<div class="chip"><span>📅</span>Chronologie</div>
+<div class="chip"><span>📝</span>Sujet d'examen</div>
+<div class="fiche">
+<div class="fiche-t">📚 LA PHOTOSYNTHÈSE</div>
+<div class="fb"><b>🎯 L'essentiel en 30 secondes</b><span>Les plantes fabriquent leur matière organique grâce à la lumière.</span></div>
+<div class="fb"><b>🧠 Notions clés</b><span>Dans les chloroplastes : la phase claire, puis le cycle de Calvin.</span></div>
+<div class="fb"><b>⚡ À retenir</b><span>6CO₂ + 6H₂O + lumière → C₆H₁₂O₆ + 6O₂</span></div>
+<div class="fb"><b>❓ Questions probables</b><span>Où se déroule la photosynthèse&nbsp;? Que produit la phase claire&nbsp;?</span></div>
+</div>
+<div class="toast"><b>✓</b>Enregistrée dans ta bibliothèque</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- ═══════════ Formats : la fiche se démultiplie ═══════════ -->
+<section class="scene formats" id="formats" data-scene="formats">
+<div class="pin">
+<div class="fm-in">
+<header class="fm-head">
+<span class="kicker">Formats</span>
+<h2 class="h2">Tout ce dont tu as besoin pour réviser</h2>
+<p class="lead">Chaque format est conçu pour une méthode de révision différente.</p>
+</header>
+<div class="fm-grid">
+<article class="fm">
+<div class="fm-vis" aria-hidden="true"><div class="mv-doc"><b>📚 LA PHOTOSYNTHÈSE</b><span>🎯 L'essentiel</span><i></i><i style="width:74%"></i><span>⚡ À retenir</span><i style="width:86%"></i><span>❓ Questions probables</span><i style="width:62%"></i></div></div>
+<div class="fm-txt"><h3><span>📄</span>Fiche de révision</h3><p>Structure complète avec points clés, définitions et questions d'examen probables.</p></div>
+</article>
+<article class="fm">
+<div class="fm-vis" aria-hidden="true"><div class="mv-quiz"><p>Où se déroule la photosynthèse&nbsp;?</p><i>A) Mitochondries</i><i class="ok">B) Chloroplastes<b>✓</b></i><i>C) Noyau</i></div></div>
+<div class="fm-txt"><h3><span>✅</span>Quiz QCM</h3><p>6 ou 10 questions à choix multiples avec corrections détaillées pour tester tes connaissances.</p></div>
+</article>
+<article class="fm">
+<div class="fm-vis" aria-hidden="true"><div class="mv-flash"><div class="mv-fc"><div class="mv-f">Que produit la phase claire&nbsp;?</div><div class="mv-f mv-b">ATP, NADPH et O₂</div></div></div></div>
+<div class="fm-txt"><h3><span>🃏</span>Flashcards</h3><p>10 ou 20 cartes recto verso avec astuces mnémotechniques pour mieux mémoriser.</p></div>
+</article>
+<article class="fm">
+<div class="fm-vis" aria-hidden="true"><svg class="mv-map" viewBox="0 0 220 120"><g fill="none" stroke-width="2" stroke-linecap="round"><path pathLength="1" d="M88 60 C 70 60, 74 26, 52 26" stroke="#74b9ff"/><path pathLength="1" d="M132 60 C 150 60, 146 26, 168 26" stroke="#a29bfe"/><path pathLength="1" d="M88 60 C 70 60, 74 94, 52 94" stroke="#fdcb6e"/><path pathLength="1" d="M132 60 C 150 60, 146 94, 168 94" stroke="#fd79a8"/></g><rect class="c" x="84" y="47" width="52" height="26" rx="13"/><rect class="n" x="8" y="15" width="46" height="22" rx="8"/><rect class="n" x="166" y="15" width="46" height="22" rx="8"/><rect class="n" x="8" y="83" width="46" height="22" rx="8"/><rect class="n" x="166" y="83" width="46" height="22" rx="8"/></svg></div>
+<div class="fm-txt"><h3><span>🧠</span>Mind Map</h3><p>Carte mentale pour visualiser les connexions entre les concepts du cours.</p></div>
+</article>
+<article class="fm">
+<div class="fm-vis" aria-hidden="true"><div class="mv-q"><div><em class="b1">Basique</em><i></i></div><div><em class="b2">Intermédiaire</em><i style="width:58%"></i></div><div><em class="b3">Avancé</em><i style="width:70%"></i></div></div></div>
+<div class="fm-txt"><h3><span>💬</span>Questions ouvertes</h3><p>6 ou 10 questions de niveaux variés pour préparer les oraux et dissertations.</p></div>
+</article>
+<article class="fm">
+<div class="fm-vis" aria-hidden="true"><div class="mv-chrono"><div class="mv-line"><i></i></div><span><b></b>Lumière</span><span><b></b>Eau</span><span><b></b>ATP</span><span><b></b>Glucose</span></div></div>
+<div class="fm-txt"><h3><span>📅</span>Chronologie</h3><p>Plan structuré pour les cours d'histoire, de droit ou tout sujet séquentiel.</p></div>
+</article>
+<article class="fm">
+<div class="fm-vis" aria-hidden="true"><div class="mv-exam"><b>📝 Sujet type bac</b><span class="mv-pts">Total : 20 points</span><p>Exercice 1 <em>8 pts</em></p><i></i><p>Exercice 2 <em>12 pts</em></p><i style="width:70%"></i><span class="mv-cor">✅ Corrigé détaillé</span></div></div>
+<div class="fm-txt"><h3><span>📝</span>Sujet d'examen<em class="pro">Pro</em></h3><p>Un sujet original noté sur 20, dans le style de ton examen, avec son corrigé détaillé.</p></div>
+</article>
+</div>
+</div>
+</div>
+</section>
+
+<!-- ═══════════ Niveau scolaire ═══════════ -->
+<section class="scene niveau" data-scene="niveau">
+<div class="pin">
+<div class="split split-rev">
+<div class="split-text">
+<span class="kicker">Adapté à ton niveau</span>
+<h2 class="h2">Une fiche à ton niveau.</h2>
+<p class="lead">Tu indiques ton niveau une fois. FicheAI adapte ensuite le vocabulaire, la difficulté et les exemples de chaque fiche.</p>
+</div>
+<div class="split-vis">
+<div class="lv">
+<div class="seg" role="group" aria-label="Niveau scolaire">
+<button type="button" class="on" aria-pressed="true">Collège</button><button type="button" aria-pressed="false">Lycée</button><button type="button" aria-pressed="false">Prépa</button><button type="button" aria-pressed="false">Supérieur</button>
+<span class="seg-pill" aria-hidden="true"></span>
+</div>
+<div class="lv-card">
+<div class="lv-h">🎯 La photosynthèse en 30 secondes</div>
+<div class="lv-body" aria-live="polite">
+<div class="lv-t on"><p>▸ Les plantes fabriquent leur propre nourriture grâce à la lumière du soleil.</p><p>▸ Elles puisent l'eau du sol par leurs racines et prennent le dioxyde de carbone de l'air.</p><p>▸ Elles rejettent du dioxygène, le gaz que nous respirons.</p></div>
+<div class="lv-t"><p>▸ La photosynthèse convertit l'énergie lumineuse en énergie chimique.</p><p>▸ <strong>Bilan :</strong> 6CO₂ + 6H₂O → C₆H₁₂O₆ + 6O₂, dans les chloroplastes.</p><p>▸ Deux phases : la phase claire, puis le cycle de Calvin.</p></div>
+<div class="lv-t"><p>▸ Phase photochimique : photosystèmes II et I, chaîne de transfert d'électrons des thylakoïdes.</p><p>▸ L'ATP synthase utilise le gradient de protons pour produire l'ATP.</p><p>▸ Dans le stroma, la RuBisCO fixe le CO₂ sur le RuBP : c'est le cycle de Calvin.</p></div>
+<div class="lv-t"><p>▸ L'activité oxygénase de la RuBisCO entraîne la photorespiration, qui réduit le rendement.</p><p>▸ Les plantes en C4 et CAM concentrent le CO₂ autour de la RuBisCO pour la limiter.</p><p>▸ L'intensité photosynthétique dépend de la lumière, du CO₂ et de la température.</p></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- ═══════════ Chat IA ═══════════ -->
+<section class="scene chat" data-scene="chat">
+<div class="pin">
+<div class="split">
+<div class="split-text">
+<span class="kicker">Chat IA</span>
+<h2 class="h2">Une question sur ton cours&nbsp;? Pose-la.</h2>
+<p class="lead">Le Chat IA s'appuie sur ton cours pour t'expliquer une notion autrement, la résumer ou te faire réciter.</p>
+<span class="tag">Inclus dans toutes les formules</span>
+</div>
+<div class="split-vis">
+<div class="chatbox">
+<div class="cb-head"><span class="cb-dot" aria-hidden="true"></span><b>Chat IA</b><em>Cours chargé : la photosynthèse</em></div>
+<div class="cb-msgs">
+<div class="m m-user"><div class="m-b">Je ne comprends pas le cycle de Calvin. Tu peux me l'expliquer simplement&nbsp;?</div></div>
+<div class="m m-ai m-typing" aria-hidden="true"><span class="m-av"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></span><div class="m-b"><i></i><i></i><i></i></div></div>
+<div class="m m-ai m-answer"><span class="m-av" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></span><div class="m-b">Bien sûr. Dans ton cours, le <strong>cycle de Calvin</strong> est la deuxième phase de la photosynthèse. Il se déroule dans le <strong>stroma</strong> du chloroplaste et utilise l'<strong>ATP</strong> et le <strong>NADPH</strong> produits par la phase claire pour fixer le <strong>CO₂</strong> et fabriquer du <strong>glucose</strong>. Pour retenir : la phase claire recharge les batteries, le cycle de Calvin s'en sert pour construire.</div></div>
+<div class="cb-sugs" aria-hidden="true"><span>💡 Points clés</span><span>🎯 Questions d'exam</span><span>🃏 Flashcards</span></div>
+</div>
+<div class="cb-input" aria-hidden="true"><div class="cb-field"><span class="cb-ph">Pose ta question sur le cours…</span><span class="cb-typed"></span><span class="cb-caret"></span></div><div class="cb-send"><svg viewBox="0 0 24 24"><path d="M5 12h13M13 6l6 6-6 6"/></svg></div></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- ═══════════ Mode Révision ═══════════ -->
+<section class="scene revision" data-scene="revision">
+<div class="pin">
+<div class="split">
+<div class="split-text">
+<span class="kicker">Mode Révision</span>
+<h2 class="h2">Chaque carte revient au bon moment.</h2>
+<p class="lead">Après chaque flashcard, tu dis si tu t'en souvenais. FicheAI calcule quand te la reposer, juste avant que tu l'oublies.</p>
+<span class="tag">Pro et Ultimate</span>
+</div>
+<div class="split-vis">
+<div class="rv" aria-hidden="true">
+<div class="rv-goal"><div class="rv-top"><b>🎯 Objectif du jour</b><span class="rv-n">19 / 20 cartes</span></div><div class="rv-bar"><i></i></div><div class="rv-msg"><span class="rv-m1">Encore 1 carte pour atteindre ton objectif.</span><span class="rv-m2">Objectif atteint, bravo ! Tout ce que tu révises en plus consolide encore ta mémoire.</span></div></div>
+<div class="rv-deck">
+<div class="rv-card rv-c3"></div>
+<div class="rv-card rv-c2"><div class="rv-face"><small>Question</small><p>Où se trouve la chlorophylle&nbsp;?</p></div></div>
+<div class="rv-card rv-c1"><div class="rv-flip"><div class="rv-face"><small>Question</small><p>Que produit la phase claire&nbsp;?</p></div><div class="rv-face rv-back"><small>Réponse</small><p>De l'ATP, du NADPH et du dioxygène (O₂).</p></div></div></div>
+</div>
+<div class="rv-actions">
+<div class="rv-reveal">Voir la réponse</div>
+<div class="rv-rate"><p>As-tu réussi à répondre&nbsp;?</p><div class="rv-btns"><span class="r1">😵 Oubli<small>à refaire</small></span><span class="r2">😓 Difficile<small>dans 2j</small></span><span class="r3">🙂 Bien<small>dans 4j</small></span><span class="r4">😄 Facile<small>dans 1sem</small></span></div></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- ═══════════ Sujets d'examen ═══════════ -->
+<section class="flow-sec examen" data-scene="examen">
+<div class="split">
+<div class="split-text">
+<span class="kicker">Sujets d'examen</span>
+<h2 class="h2">Un sujet d'examen sur ton cours, avec son corrigé.</h2>
+<p class="lead">Un sujet original dans le style du brevet, du bac, d'un devoir de prépa ou d'un partiel, selon ton niveau. Noté sur 20, avec un corrigé détaillé.</p>
+<span class="tag">Pro et Ultimate</span>
+</div>
+<div class="split-vis">
+<div class="ex" aria-hidden="true">
+<div class="sheet sheet-cor">
+<b class="sh-h">✅ Corrigé détaillé</b>
+<p class="sh-ex">Exercice 1</p>
+<p class="cl">a) Sous lumière verte : la chlorophylle l'absorbe peu, elle est surtout réfléchie.</p>
+<p class="cl">b) Le dégagement de dioxygène diminue, signe que la photosynthèse ralentit.</p>
+<p class="sh-ex">Exercice 2</p>
+<p class="cl">a) Le carbone du CO₂ est fixé dans le stroma, au cours du cycle de Calvin.</p>
+<i></i><i style="width:76%"></i>
+</div>
+<div class="sheet sheet-sub">
+<div class="sh-top"><b>📝 Sujet type bac : SVT</b><span>Durée conseillée : 2 h</span><span>Total : 20 points</span></div>
+<p class="sh-ex">Exercice 1 (8 points) : une culture sous lumière colorée</p>
+<p>Des plantes sont cultivées sous une lumière rouge, verte ou bleue.</p>
+<p>a) Sous quelle lumière la photosynthèse est-elle la plus faible&nbsp;? Justifie.</p>
+<p>b) Prévois l'évolution du dégagement de dioxygène.</p>
+<p class="sh-ex">Exercice 2 (12 points) : le trajet du carbone</p>
+<i></i><i style="width:84%"></i><i style="width:66%"></i>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- ═══════════ Import PDF ═══════════ -->
+<section class="flow-sec pdf" data-scene="pdf">
+<div class="split split-rev">
+<div class="split-text">
+<span class="kicker">Import PDF</span>
+<h2 class="h2">Même un PDF de 250 pages.</h2>
+<p class="lead">Importe ton cours en PDF : jusqu'à 15 pages en Starter, 100 en Pro et 250 en Ultimate. En Pro et Ultimate, l'IA lit aussi les schémas et les images.</p>
+<p class="note">Pour un long cours, le nombre de crédits s'affiche toujours avant de générer.</p>
+</div>
+<div class="split-vis">
+<div class="pdfv" aria-hidden="true">
+<div class="pg"></div><div class="pg"></div><div class="pg"></div><div class="pg"></div>
+<div class="pg pg-front">
+<div class="pg-top"><span>photosynthese.pdf</span><span>page 37</span></div>
+<b class="pg-t">Figure 3 : le chloroplaste</b>
+<svg class="schema" viewBox="0 0 300 170">
+<ellipse cx="150" cy="85" rx="138" ry="72" class="s-out"/>
+<ellipse cx="150" cy="85" rx="126" ry="61" class="s-in"/>
+<g class="s-gr"><rect x="70" y="58" width="34" height="9" rx="4"/><rect x="70" y="69" width="34" height="9" rx="4"/><rect x="70" y="80" width="34" height="9" rx="4"/><rect x="70" y="91" width="34" height="9" rx="4"/><rect x="134" y="44" width="34" height="9" rx="4"/><rect x="134" y="55" width="34" height="9" rx="4"/><rect x="134" y="66" width="34" height="9" rx="4"/><rect x="190" y="76" width="34" height="9" rx="4"/><rect x="190" y="87" width="34" height="9" rx="4"/><rect x="190" y="98" width="34" height="9" rx="4"/><rect x="190" y="109" width="34" height="9" rx="4"/></g>
+<path class="s-lam" d="M104 78 C 118 70, 122 62, 134 60 M168 68 C 178 76, 182 84, 190 90"/>
+</svg>
+<span class="lbl l1">Thylakoïdes</span><span class="lbl l2">Stroma</span><span class="lbl l3">Membrane</span>
+<div class="beam"></div>
+</div>
+<div class="pdf-chip"><b>✓</b>Schéma lu par l'IA</div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- ═══════════ Et aussi ═══════════ -->
+<section class="flow-sec bento-sec" data-scene="bento">
+<header class="sec-head">
+<span class="kicker">Et aussi</span>
+<h2 class="h2">Tout ce qui rend la révision plus simple.</h2>
+</header>
+<div class="bento">
+<article class="tile t-lang">
+<div class="tv" aria-hidden="true"><div class="lg"><span class="on">🇫🇷 La photosynthèse</span><span>🇬🇧 Photosynthesis</span><span>🇪🇸 La fotosíntesis</span><span>🇩🇪 Die Photosynthese</span></div></div>
+<h3>Quatre langues</h3><p>Génère tes fiches en français, anglais, espagnol ou allemand.</p>
+</article>
+<article class="tile t-pdf">
+<div class="tv" aria-hidden="true"><div class="ep"><div class="ep-doc"><b></b><i></i><i></i><i style="width:60%"></i></div><div class="ep-file"><span>PDF</span></div><em class="ep-name">photosynthese.pdf</em></div></div>
+<h3>Export PDF<em class="pro">Pro</em></h3><p>Télécharge tes fiches en PDF, prêtes à imprimer.</p>
+</article>
+<article class="tile t-lib">
+<div class="tv" aria-hidden="true"><div class="lb"><div class="lb-f"><span class="on">Tout</span><span>📄 Fiches</span><span>✅ Quiz</span><span>🃏 Flashcards</span></div><div class="lb-r"><span>📄</span>La photosynthèse<em>Fiche</em></div><div class="lb-r"><span>✅</span>La cellule<em>Quiz</em></div><div class="lb-r"><span>🃏</span>Les enzymes<em>Flashcards</em></div></div></div>
+<h3>Ta bibliothèque</h3><p>Toutes tes fiches enregistrées, avec un filtre par format.</p>
+</article>
+<article class="tile t-focus">
+<div class="tv" aria-hidden="true"><div class="fc"><div class="fc-ui"><i></i><i></i><i></i></div><div class="fc-doc"><b>📚 LA PHOTOSYNTHÈSE</b><i></i><i style="width:82%"></i><i style="width:90%"></i><i style="width:64%"></i></div></div></div>
+<h3>Mode concentration</h3><p>Une fiche seule, en plein écran, sans rien autour.</p>
+</article>
+<article class="tile t-theme">
+<div class="tv" aria-hidden="true"><div class="th"><div class="th-doc"><b>📚 La photosynthèse</b><p>Les plantes fabriquent leur matière organique grâce à la lumière.</p></div><div class="th-sw"><span class="th-k"></span></div></div></div>
+<h3>Clair ou sombre</h3><p>Thème clair ou sombre, texte plus grand et police plus lisible, dans tes paramètres.</p>
+</article>
+<article class="tile t-2fa">
+<div class="tv" aria-hidden="true"><div class="tf"><div class="tf-lock"><svg viewBox="0 0 24 24"><path class="tf-sh" d="M8 11V8a4 4 0 0 1 8 0v3"/><rect x="5" y="11" width="14" height="10" rx="3"/></svg></div><div class="tf-boxes"><span>4</span><span>8</span><span>1</span><span>5</span><span>9</span><span>2</span></div><em class="tf-ok">✓ Code vérifié</em></div></div>
+<h3>Compte protégé</h3><p>Active la double authentification : un code à 6 chiffres en plus de ton mot de passe.</p>
+</article>
+</div>
+</section>
+
+<!-- ═══════════ Engagements ═══════════ -->
+<section class="flow-sec engage" data-scene="engage">
+<header class="sec-head">
+<span class="kicker">Nos engagements</span>
+<h2 class="h2">Ce que tu peux attendre de FicheAI</h2>
+</header>
+<div class="eng">
+<article class="eg">
+<svg class="eg-ic" viewBox="0 0 48 48" aria-hidden="true"><path pathLength="1" d="M15 22v-6a9 9 0 0 1 18 0v6"/><rect pathLength="1" x="10" y="22" width="28" height="20" rx="6"/><path pathLength="1" d="M24 30v5"/></svg>
+<h3>Tes données</h3>
+<p>Ton cours est envoyé à l'IA uniquement pour générer ta fiche. FicheAI ne le conserve pas, et tu peux supprimer ton compte et tes fiches à tout moment.</p>
+<a href="confidentialite.html">Politique de confidentialité</a>
+</article>
+<article class="eg">
+<svg class="eg-ic" viewBox="0 0 48 48" aria-hidden="true"><rect pathLength="1" x="6" y="12" width="36" height="25" rx="5"/><path pathLength="1" d="M6 20h36"/><path pathLength="1" d="M13 30h8"/></svg>
+<h3>Paiement sécurisé</h3>
+<p>Les paiements sont gérés par Stripe, la plateforme utilisée par des millions d'entreprises. FicheAI ne voit et ne stocke jamais ton numéro de carte bancaire.</p>
+<span class="eg-meta">Géré par Stripe</span>
+</article>
+<article class="eg">
+<svg class="eg-ic" viewBox="0 0 48 48" aria-hidden="true"><circle pathLength="1" cx="24" cy="24" r="17"/><path pathLength="1" d="M16.5 24.5l5 5 10-10.5"/></svg>
+<h3>Sans piège</h3>
+<p>Tu peux résilier à tout moment depuis tes paramètres et tu gardes ton accès jusqu'à la fin de la période déjà payée. Aucun engagement caché.</p>
+<a href="cgu.html">Voir les conditions</a>
+</article>
+</div>
+</section>
+
+<!-- ═══════════ Tarifs ═══════════ -->
+<section class="flow-sec pricing" id="tarifs" data-scene="pricing">
+<header class="sec-head">
+<span class="kicker">Tarifs</span>
+<h2 class="h2">Simple et transparent</h2>
+<p class="lead">Commence gratuitement. Upgrade quand tu en as besoin.</p>
+</header>
+<div class="billing">
+<div class="bill-toggle"><button type="button" id="pro-btn-monthly" onclick="setProBilling('monthly')">Mensuel</button><button type="button" id="pro-btn-yearly" onclick="setProBilling('yearly')">Annuel <span id="pro-save-badge"></span></button><span class="bill-pill" aria-hidden="true"></span></div>
+<div class="bill-note">Le paiement annuel concerne la formule Pro</div>
+</div>
+<div class="price-grid">
+<div class="pc-wrap">
+<div class="plan-card plan-starter">
+<div class="plan-name">Starter</div>
+<div class="plan-tag">Pour découvrir FicheAI</div>
+<div class="price"><span class="amount">0</span><span class="cur">€</span><span class="per">pour toujours</span></div>
+<div class="price-sub">Aucune carte bancaire</div>
+<div class="price-note"></div>
+<ul class="feat">
+<li><b>10 crédits</b> par mois, qualité Rapide</li>
+<li><b>2 fiches Approfondi</b> offertes</li>
+<li>Fiches, quiz, flashcards, mind maps, questions, chronologies</li>
+<li>Import PDF jusqu'à 15 pages</li>
+<li>Bibliothèque de fiches</li>
+<li>Chat IA avec ton cours</li>
+<li>Fiches en FR, EN, ES ou DE</li>
+<li>Téléchargement .txt</li>
+<li class="no">Sujets d'examen</li>
+<li class="no">Mode révision des flashcards</li>
+<li class="no">Export PDF</li>
+</ul>
+<a href="/signup.html" class="plan-btn plan-btn-ghost">Commencer gratuitement</a>
+</div>
+</div>
+<div class="pc-wrap">
+<div class="plan-card plan-pro">
+<div class="plan-name">Pro</div>
+<div class="plan-tag">Pour réviser sérieusement</div>
+<div class="price"><span class="amount" id="pro-price-num">7,99</span><span class="cur">€</span><span class="per">par mois</span></div>
+<div class="price-sub" id="pro-price-per">Sans engagement</div>
+<div class="price-note" id="pro-price-note"></div>
+<ul class="feat">
+<li class="all">Tout le Starter, et :</li>
+<li><b>110 crédits</b> par mois, soit 55 fiches Approfondi</li>
+<li>Qualité <b>Approfondi</b> à chaque génération : plus de détails et d'explications</li>
+<li>Sujets d'examen type brevet, bac ou partiels</li>
+<li>Mode révision des flashcards</li>
+<li>Import PDF jusqu'à 100 pages, schémas et images lus par l'IA</li>
+<li>Export PDF et schémas dans tes fiches</li>
+</ul>
+<button type="button" id="pro-cta" class="plan-btn plan-btn-main" onclick="handlePlanClick('pro',window.proBilling||'monthly')">Essayer 7 jours gratuits</button>
+</div>
+</div>
+<div class="pc-wrap">
+<div class="plan-card plan-ultimate">
+<div class="plan-badge">👑 Meilleur rapport qualité-prix</div>
+<div class="plan-name">Ultimate</div>
+<div class="plan-tag">Pour tout réviser, sans compter</div>
+<div class="price"><span class="amount">14,99</span><span class="cur">€</span><span class="per">par mois</span></div>
+<div class="price-sub">Sans engagement</div>
+<div class="price-note gold">0,06 € le crédit : 17 % moins cher qu'en Pro</div>
+<ul class="feat">
+<li class="all">Tout le Pro, et :</li>
+<li><b>250 crédits</b> par mois, soit 125 fiches Approfondi, 2,3 fois plus qu'en Pro</li>
+<li>Historique complet de tes conversations (5 dernières en Pro)</li>
+<li>Import PDF jusqu'à <b>250 pages</b></li>
+<li>8 pages de schémas et d'images lues par l'IA (4 en Pro)</li>
+<li>Jusqu'à 60 crédits par jour (30 en Pro)</li>
+<li>Accès en avant-première aux nouveautés</li>
+</ul>
+<button type="button" id="ultimate-cta" class="plan-btn plan-btn-gold" onclick="handlePlanClick('ultimate','monthly')">Passer à Ultimate</button>
+</div>
+</div>
+</div>
+<p class="legal">Prix TTC en euros · TVA non applicable, article 293 B du CGI · Abonnements sans engagement pour les formules mensuelles, résiliables en quelques clics · Voir les <a href="/cgu.html#cgv">conditions générales de vente</a></p>
+</section>
+
+<!-- ═══════════ FAQ ═══════════ -->
+<section class="flow-sec faq" id="faq" data-scene="faq">
+<header class="sec-head">
+<span class="kicker">FAQ</span>
+<h2 class="h2">Questions fréquentes</h2>
+</header>
+<div class="faq-list">
+<div class="faq-item">
+<button type="button" class="faq-q" aria-expanded="false" onclick="toggleFaq(this)">Est-ce que FicheAI fonctionne pour toutes les matières&nbsp;?<span class="faq-x" aria-hidden="true"></span></button>
+<div class="faq-a"><div><p>Oui ! FicheAI fonctionne pour toutes les matières : maths, physique, SVT, histoire, philosophie, droit, médecine, langues... L'IA s'adapte au contenu de ton cours.</p></div></div>
+</div>
+<div class="faq-item">
+<button type="button" class="faq-q" aria-expanded="false" onclick="toggleFaq(this)">Comment importer mon cours&nbsp;?<span class="faq-x" aria-hidden="true"></span></button>
+<div class="faq-a"><div><p>Tu peux coller du texte directement ou importer un fichier PDF (jusqu'à 15 pages en Starter, 100 en Pro, 250 en Ultimate) ou un fichier TXT. Pour les cours longs en mode Approfondi, une fiche coûte 1 crédit de plus par tranche de 30 pages au-delà des 30 premières, et le coût exact s'affiche toujours avant de générer.</p></div></div>
+</div>
+<div class="faq-item">
+<button type="button" class="faq-q" aria-expanded="false" onclick="toggleFaq(this)">Puis-je annuler mon abonnement à tout moment&nbsp;?<span class="faq-x" aria-hidden="true"></span></button>
+<div class="faq-a"><div><p>Oui. Tu peux demander l'arrêt de ton abonnement dès le paiement effectué, depuis tes paramètres. Il s'arrête à la fin de la période déjà payée (mois ou année) : tu gardes ton accès complet jusque-là, sans rien à faire le dernier jour. Aucun engagement.</p></div></div>
+</div>
+<div class="faq-item">
+<button type="button" class="faq-q" aria-expanded="false" onclick="toggleFaq(this)">Mes cours sont-ils confidentiels&nbsp;?<span class="faq-x" aria-hidden="true"></span></button>
+<div class="faq-a"><div><p>Ton cours est envoyé à l'IA (Claude, d'Anthropic) uniquement pour générer ta fiche. FicheAI ne conserve pas le texte de ton cours : seules les fiches que tu génères sont enregistrées dans ta bibliothèque, ainsi que tes conversations avec le Chat IA (abonnés Pro et Ultimate), et tu peux tout supprimer à tout moment. D'après les conditions de l'API d'Anthropic, ces données ne servent pas à entraîner ses modèles par défaut. Détails dans la politique de confidentialité.</p></div></div>
+</div>
+<div class="faq-item">
+<button type="button" class="faq-q" aria-expanded="false" onclick="toggleFaq(this)">Faut-il une carte bancaire pour essayer&nbsp;?<span class="faq-x" aria-hidden="true"></span></button>
+<div class="faq-a"><div><p>Non. Le plan Starter est gratuit (10 crédits par mois) et ne demande aucune carte bancaire. Le compte sert à enregistrer tes fiches et à suivre ton quota. La carte n'est demandée que pour les plans payants. Le plan Pro inclut 7 jours d'essai gratuit. Le plan Ultimate est facturé dès la souscription, sans période d'essai.</p></div></div>
+</div>
+</div>
+</section>
+
+<!-- ═══════════ Fin ═══════════ -->
+<section class="flow-sec final" data-scene="final">
+<div class="final-in">
+<svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="mkg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a29bfe"/><stop offset="1" stop-color="#fd79a8"/></linearGradient></defs><path class="mk mk1" d="M12 2L2 7l10 5 10-5-10-5z"/><path class="mk mk2" d="M2 12l10 5 10-5"/><path class="mk mk3" d="M2 17l10 5 10-5"/></svg>
+<h2 class="h2 final-t">Prêt à réviser plus intelligemment&nbsp;?</h2>
+<p class="lead">Commence gratuitement. Aucune carte bancaire requise.</p>
+<div class="hero-btns">
+<a href="/signup.html" class="btn-main">Commencer gratuitement</a>
+<a href="/app.html" class="btn-link">Voir le générateur<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5"/></svg></a>
+</div>
+</div>
+</section>
+
+</main>
+
+<footer>
+<div class="footer-inner">
+<div class="footer-brand">
+<div class="footer-brand-logo">FicheAI</div>
+<p>L'intelligence artificielle au service de ta réussite. Transforme tes cours en outils de révision en quelques clics.</p>
+</div>
+<div class="footer-col">
+<h4>Produit</h4>
+<a href="/app.html">Générateur</a>
+<a href="/dashboard.html">Bibliothèque</a>
+<a href="#tarifs">Tarifs</a>
+</div>
+<div class="footer-col">
+<h4>Compte</h4>
+<a href="/signup.html">S'inscrire</a>
+<a href="/login.html">Se connecter</a>
+<a href="/settings.html">Paramètres</a>
+</div>
+<div class="footer-col">
+<h4>Aide</h4>
+<a href="#faq">FAQ</a>
+<a href="/contact.html">Contact</a>
+</div>
+<div class="footer-col">
+<h4>Légal</h4>
+<a href="/cgu.html">CGU et CGV</a>
+<a href="/confidentialite.html">Confidentialité</a>
+<a href="/mentions-legales.html">Mentions légales</a>
+<a href="/renoncer.html">Renoncer au contrat ici</a>
+<a href="/resilier.html">Résilier votre contrat</a>
+<a href="/confidentialite.html#audience">Mesure d'audience</a>
+</div>
+</div>
+<div class="footer-bottom">
+<span>© 2026 FicheAI · Fait pour les étudiants 🎓</span>
+<span>Données sécurisées · Propulsé par l'IA</span>
+</div>
+</footer>
+
+<script src="/accueil.js"></script>
+<script src="/va.js" defer></script>
+<script src="/maintenance.js" defer></script>
 </body>
 </html>
