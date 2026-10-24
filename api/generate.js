@@ -11,7 +11,7 @@ const MODE_COST = { rapide: 1, approfondi: 2 };
 // Cours longs (Pro et Ultimate) : au-delà de 30 pages (~60 000 caractères), +1 crédit par tranche de 30 pages
 // en mode Approfondi. Le calcul se fait ici, sur le texte réellement reçu : le navigateur affiche le même calcul.
 const CHARS_PER_TRANCHE = 60000;
-const CHAR_LIMIT = { starter: 30000, pro: 300000, ultimate: 500000 };
+const CHAR_LIMIT = { starter: 30000, pro: 200000, ultimate: 500000 };
 function longCourseExtra(len, mode) {
   if (mode !== 'approfondi') return 0;
   return Math.ceil(Math.max(0, len - CHARS_PER_TRANCHE) / CHARS_PER_TRANCHE);
