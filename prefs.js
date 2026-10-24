@@ -27,7 +27,8 @@
     alerte_credits_n: 2,      // alerte quand il reste ce nombre de crédits (Starter, 10 crédits par mois) ; 0 = jamais
     confirmation_cout: 10,    // confirmation avant une génération de ce nombre de crédits ou plus ; 0 = jamais
     animations: 'normales',   // normales | reduites
-    pdf: 'auto'               // export PDF : auto (comme le thème) | clair | sombre
+    pdf: 'auto',              // export PDF : auto (comme le thème) | clair | sombre
+    visite: 0                 // dernière version de la visite guidée vue sur ce compte (0 = jamais)
   };
   var VALID = {
     theme: ['sombre', 'clair', 'auto'],
@@ -48,7 +49,8 @@
     alerte_credits_n: [0, 1, 2, 3],
     confirmation_cout: [0, 3, 5, 10],
     animations: ['normales', 'reduites'],
-    pdf: ['auto', 'clair', 'sombre']
+    pdf: ['auto', 'clair', 'sombre'],
+    visite: (function () { var a = []; for (var i = 0; i <= 99; i++) a.push(i); return a; })()
   };
 
   var cache = {};

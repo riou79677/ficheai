@@ -222,6 +222,10 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
           <div id="msg-pseudo" class="msg"></div>
         </div>
         <div class="settings-card">
+          <h3>Visite guidée</h3><p>Revois la présentation des fonctions de FicheAI, directement dans le générateur.</p>
+          <button class="btn btn-secondary" type="button" onclick="rejouerVisite()">▶ Revoir la visite guidée</button>
+        </div>
+        <div class="settings-card">
           <h3>Changer mon email</h3><p>Un email de confirmation sera envoyé à ta nouvelle adresse.</p>
           <div class="form-row">
             <div class="form-group"><label>Nouvel email</label><input type="email" id="new-email" placeholder="nouveau@email.com"></div>
@@ -741,11 +745,17 @@ function saveConsignes() {
   savePrefs({ consignes: c.value });
 }
 
+// ── Visite guidée ──
+async function rejouerVisite() {
+  if (window.FichePrefs) { try { await FichePrefs.set({ visite: 0 }); } catch (e) {} }
+  window.location.href = '/app.html#visite';
+}
+
 // ── Réinitialisation des réglages ──
 async function resetPrefs() {
   if (!window.FichePrefs) return;
   var d = {};
-  for (var k in FichePrefs.defaults) d[k] = FichePrefs.defaults[k];
+  for (var k in FichePrefs.defaults) { if (k !== 'visite') d[k] = FichePrefs.defaults[k]; } // la visite guidée déjà vue n'est pas rejouée par une réinitialisation
   FichePrefs.device.setAutoLogout(30);
   await savePrefs(d);
   fillPrefs();

@@ -9,46 +9,59 @@
 <script src="/prefs.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#09090f;--bg2:#0f0f1a;--bg3:#13131f;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);--purple:#7c6dfa;--purple2:#a78bfa;--pink:#f472b6;--text:#f1f0ff;--text2:#a0a0c0;--text3:#82829f;--font-h:'Syne',sans-serif;--font-b:'DM Sans',sans-serif}
+:root{--bg:#07070f;--bg2:#0e0e1c;--bg3:#13132a;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);--purple:#6c5ce7;--purple2:#a29bfe;--pink:#fd79a8;--cyan:#00cec9;--text:#f0efff;--text2:#a0a0c0;--text3:#82829f;--font-h:'Syne',sans-serif;--font-b:'DM Sans',sans-serif;--ease:cubic-bezier(.32,.72,0,1)}
 html{-webkit-text-size-adjust:100%}
-body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh;overflow-wrap:break-word;
-background-image:radial-gradient(ellipse 70% 45% at 50% -10%,rgba(124,109,250,0.18),transparent 70%)}
-.wrap{max-width:620px;margin:0 auto;padding:2.2rem 1.1rem 3rem}
-.logo{display:flex;align-items:center;justify-content:center;gap:10px;font-family:var(--font-h);font-size:1.3rem;font-weight:800;text-decoration:none;margin-bottom:2rem;
-background:linear-gradient(135deg,var(--purple2),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.logo-icon{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--purple),var(--pink));display:flex;align-items:center;justify-content:center;box-shadow:0 2px 16px rgba(108,92,231,0.35)}
+body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh;min-height:100svh;overflow-wrap:break-word;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.glow{position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 60% 42% at 50% -8%,rgba(108,92,231,.34),transparent 70%),radial-gradient(ellipse 50% 40% at 90% 100%,rgba(253,121,168,.12),transparent 70%)}
+.wrap{position:relative;z-index:1;max-width:640px;margin:0 auto;padding:1.8rem 1.1rem 3rem}
+.logo{display:flex;align-items:center;justify-content:center;gap:10px;font-family:var(--font-h);font-size:1.3rem;font-weight:800;text-decoration:none;margin-bottom:1.6rem;background:linear-gradient(135deg,var(--purple2),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.logo-icon{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--purple),var(--pink));display:flex;align-items:center;justify-content:center;box-shadow:0 2px 16px rgba(108,92,231,.4)}
 .logo-icon svg{width:17px;height:17px}
-.steps{display:flex;justify-content:center;gap:6px;margin-bottom:1.2rem}
-.steps span{width:28px;height:4px;border-radius:4px;background:var(--border2)}
-.steps span.on{background:linear-gradient(90deg,var(--purple),var(--pink))}
-h1{font-family:var(--font-h);font-size:clamp(1.45rem,5vw,1.9rem);font-weight:800;text-align:center;margin-bottom:0.5rem}
-.sub{color:var(--text2);text-align:center;font-size:0.95rem;line-height:1.6;margin-bottom:2rem}
-.card{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:1.4rem;margin-bottom:1.2rem}
-.card h2{font-family:var(--font-h);font-size:1.05rem;margin-bottom:0.25rem;display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap}
-.req{font-family:var(--font-b);font-size:0.68rem;font-weight:700;color:var(--pink);background:rgba(244,114,182,0.12);padding:0.15rem 0.6rem;border-radius:100px}
-.opt{font-family:var(--font-b);font-size:0.68rem;font-weight:700;color:var(--text2);background:rgba(255,255,255,0.06);padding:0.15rem 0.6rem;border-radius:100px}
-.card p.hint{color:var(--text2);font-size:0.85rem;line-height:1.55;margin-bottom:1rem}
-.levels{display:grid;grid-template-columns:1fr 1fr;gap:0.7rem}
-.lvl{background:var(--bg3);border:1.5px solid var(--border2);border-radius:14px;padding:0.95rem 0.8rem;text-align:left;cursor:pointer;color:var(--text);font-family:var(--font-b);transition:border-color .15s,transform .15s,background .15s}
-.lvl:hover{transform:translateY(-1px);border-color:rgba(167,139,250,0.5)}
-.lvl .e{font-size:1.4rem;display:block;margin-bottom:0.35rem}
-.lvl b{display:block;font-size:0.95rem;margin-bottom:0.15rem}
-.lvl small{color:var(--text2);font-size:0.78rem;line-height:1.4}
-.lvl.sel{border-color:var(--purple2);background:linear-gradient(135deg,rgba(124,109,250,0.18),rgba(244,114,182,0.08))}
-.chips{display:flex;flex-wrap:wrap;gap:0.5rem}
-.chip{background:var(--bg3);border:1.5px solid var(--border2);border-radius:100px;padding:0.5rem 0.95rem;font-size:0.86rem;color:var(--text);cursor:pointer;font-family:var(--font-b);transition:border-color .15s,background .15s}
-.chip:hover{border-color:rgba(167,139,250,0.5)}
-.chip.sel{border-color:var(--purple2);background:rgba(124,109,250,0.2)}
-.btn{width:100%;border:none;border-radius:100px;padding:1rem;font-size:1rem;font-weight:700;font-family:var(--font-b);color:#fff;cursor:pointer;
-background:linear-gradient(135deg,var(--purple),var(--pink));box-shadow:0 6px 26px rgba(124,109,250,0.35);transition:opacity .2s,transform .15s}
-.btn:hover:not(:disabled){transform:translateY(-1px)}
-.btn:disabled{opacity:0.4;cursor:not-allowed;box-shadow:none}
-.err{display:none;background:rgba(240,149,149,0.1);border:1px solid rgba(240,149,149,0.35);color:#f09595;border-radius:12px;padding:0.8rem 1rem;font-size:0.87rem;margin-bottom:1rem}
-.note{color:var(--text3);font-size:0.78rem;text-align:center;margin-top:0.9rem;line-height:1.5}
+.steps{display:flex;justify-content:center;gap:6px;margin-bottom:1.6rem}
+.steps span{position:relative;width:44px;height:4px;border-radius:4px;background:var(--border2);overflow:hidden}
+.steps span::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,var(--purple),var(--pink));transform:scaleX(0);transform-origin:0 50%;transition:transform .6s var(--ease)}
+.steps span.on::after{transform:scaleX(1)}
+.screen{display:none}
+.screen.on{display:block;animation:enter .55s var(--ease) both}
+@keyframes enter{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+h1{font-family:var(--font-h);font-size:clamp(1.55rem,5.4vw,2.2rem);font-weight:800;letter-spacing:-.035em;line-height:1.1;text-align:center;margin-bottom:.7rem;text-wrap:balance}
+.sub{color:var(--text2);text-align:center;font-size:1rem;line-height:1.6;margin:0 auto 1.8rem;max-width:44ch;text-wrap:pretty}
+.levels{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:1.4rem}
+.lvl{position:relative;background:var(--bg2);border:1.5px solid var(--border2);border-radius:18px;padding:1.1rem 1rem;text-align:left;cursor:pointer;color:var(--text);font-family:var(--font-b);transition:border-color .2s,transform .35s var(--ease),background .2s,box-shadow .3s}
+.lvl:hover{transform:translateY(-3px);border-color:rgba(162,155,254,.55)}
+.lvl:focus-visible,.chip:focus-visible,.btn:focus-visible,.link:focus-visible{outline:2px solid var(--purple2);outline-offset:3px}
+.lvl .e{display:block;font-size:1.6rem;margin-bottom:.5rem}
+.lvl b{display:block;font-family:var(--font-h);font-size:1rem;letter-spacing:-.01em;margin-bottom:.2rem}
+.lvl small{color:var(--text2);font-size:.8rem;line-height:1.45;display:block}
+.lvl .ck{position:absolute;top:.8rem;right:.8rem;width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--pink));display:grid;place-items:center;transform:scale(0);transition:transform .4s var(--ease)}
+.lvl .ck svg{width:12px;height:12px}
+.lvl.sel{border-color:var(--purple2);background:linear-gradient(135deg,rgba(108,92,231,.2),rgba(253,121,168,.08));box-shadow:0 14px 40px -18px rgba(108,92,231,.7)}
+.lvl.sel .ck{transform:scale(1)}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:1.4rem;margin-bottom:1.3rem}
+.chips{display:flex;flex-wrap:wrap;gap:.55rem;justify-content:center}
+.chip{background:var(--bg3);border:1.5px solid var(--border2);border-radius:100px;padding:.6rem 1.05rem;font-size:.9rem;color:var(--text);cursor:pointer;font-family:var(--font-b);transition:border-color .2s,background .2s,transform .3s var(--ease)}
+.chip:hover{border-color:rgba(162,155,254,.55);transform:translateY(-2px)}
+.chip.sel{border-color:var(--purple2);background:rgba(108,92,231,.25)}
+.btn{display:block;width:100%;text-align:center;text-decoration:none;border:none;border-radius:100px;padding:1rem;font-size:1rem;font-weight:700;font-family:var(--font-b);color:#fff;cursor:pointer;background:linear-gradient(135deg,var(--purple),var(--pink));box-shadow:0 8px 30px rgba(108,92,231,.4);transition:opacity .2s,transform .3s var(--ease)}
+.btn:hover:not(:disabled){transform:translateY(-2px)}
+.btn:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}
+.link{display:block;width:100%;text-align:center;background:none;border:0;color:var(--text2);font-family:var(--font-b);font-size:.9rem;font-weight:600;padding:.9rem;cursor:pointer;text-decoration:none}
+.link:hover{color:var(--purple2)}
+.err{display:none;background:rgba(240,149,149,.1);border:1px solid rgba(240,149,149,.35);color:#f09595;border-radius:12px;padding:.8rem 1rem;font-size:.87rem;margin-bottom:1rem}
+.note{color:var(--text3);font-size:.78rem;text-align:center;margin-top:.8rem;line-height:1.5}
+.ready{list-style:none;display:grid;gap:.9rem;margin-bottom:1.1rem}
+.ready li{display:flex;gap:.9rem;align-items:center;font-size:.98rem;line-height:1.4;opacity:0;animation:enter .6s var(--ease) both}
+.ready li:nth-child(2){animation-delay:.12s}.ready li:nth-child(3){animation-delay:.24s}
+.ready li span{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-family:var(--font-h);font-weight:800;font-size:.95rem;background:linear-gradient(135deg,var(--purple),var(--pink));box-shadow:0 6px 18px -6px rgba(108,92,231,.8)}
+.credits{font-size:.86rem;color:var(--text2);line-height:1.55;padding-top:1rem;border-top:1px solid var(--border)}
+.back{display:inline-block;background:none;border:0;color:var(--text3);font-family:var(--font-b);font-size:.86rem;cursor:pointer;margin-bottom:1rem;padding:.2rem 0}
+.back:hover{color:var(--purple2)}
+html[data-anim="reduites"] *,html[data-anim="reduites"] *::after{animation:none!important;transition:none!important}
+@media(prefers-reduced-motion:reduce){*,*::after{animation:none!important;transition:none!important}}
 @media(max-width:380px){.levels{grid-template-columns:1fr}.card{padding:1.1rem}}
 </style>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<meta name="theme-color" content="#09090f">
+<meta name="theme-color" content="#07070f">
 <meta name="robots" content="noindex, nofollow">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -63,27 +76,29 @@ background:linear-gradient(135deg,var(--purple),var(--pink));box-shadow:0 6px 26
 <script src="/animations.js"></script>
 </head>
 <body>
-<div class="wrap">
+<div class="glow" aria-hidden="true"></div>
+<main class="wrap">
   <a class="logo" href="/home.html"><span class="logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></span>FicheAI</a>
-  <div class="steps"><span class="on"></span><span class="on"></span><span class="on"></span></div>
-  <h1>Dernière étape avant de commencer</h1>
-  <p class="sub">FicheAI adapte le vocabulaire, la difficulté et les exemples de tes fiches à ton niveau.</p>
+  <div class="steps" aria-hidden="true"><span class="on"></span><span></span><span></span></div>
 
-  <div class="card">
-    <h2>Quel est ton niveau ? <span class="req">Obligatoire</span></h2>
-    <p class="hint">Tu pourras le modifier à tout moment dans tes paramètres.</p>
-    <div class="levels" id="levels">
-      <button type="button" class="lvl" data-v="college"><span class="e">📘</span><b>Collège</b><small>De la 6e à la 3e, brevet</small></button>
-      <button type="button" class="lvl" data-v="lycee"><span class="e">📗</span><b>Lycée</b><small>Seconde, Première, Terminale, bac</small></button>
-      <button type="button" class="lvl" data-v="prepa"><span class="e">📕</span><b>Prépa</b><small>CPGE, concours</small></button>
-      <button type="button" class="lvl" data-v="superieur"><span class="e">📙</span><b>Études sup</b><small>Université, BTS, BUT, école</small></button>
+  <section class="screen on" id="s1" aria-labelledby="t1">
+    <h1 id="t1">Bienvenue sur FicheAI</h1>
+    <p class="sub">FicheAI adapte le vocabulaire, la difficulté et les exemples de tes fiches à ton niveau. Quel est le tien ?</p>
+    <div class="levels" id="levels" role="radiogroup" aria-label="Ton niveau scolaire">
+      <button type="button" class="lvl" role="radio" aria-checked="false" data-v="college"><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></span><span class="e">📘</span><b>Collège</b><small>De la 6e à la 3e, brevet</small></button>
+      <button type="button" class="lvl" role="radio" aria-checked="false" data-v="lycee"><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></span><span class="e">📗</span><b>Lycée</b><small>Seconde, Première, Terminale, bac</small></button>
+      <button type="button" class="lvl" role="radio" aria-checked="false" data-v="prepa"><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></span><span class="e">📕</span><b>Prépa</b><small>CPGE, concours</small></button>
+      <button type="button" class="lvl" role="radio" aria-checked="false" data-v="superieur"><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></span><span class="e">📙</span><b>Études sup</b><small>Université, BTS, BUT, école</small></button>
     </div>
-  </div>
+    <button class="btn" id="n1" type="button" disabled>Choisis ton niveau pour continuer</button>
+    <p class="note">Tu pourras le modifier à tout moment dans tes paramètres.</p>
+  </section>
 
-  <div class="card">
-    <h2>Comment as-tu connu FicheAI ? <span class="opt">Facultatif</span></h2>
-    <p class="hint">Ça m'aide à savoir où parler de FicheAI.</p>
-    <div class="chips" id="chips">
+  <section class="screen" id="s2" aria-labelledby="t2">
+    <button class="back" id="b2" type="button">← Retour</button>
+    <h1 id="t2">Comment as-tu connu FicheAI&nbsp;?</h1>
+    <p class="sub">Facultatif. Ça m'aide à savoir où parler de FicheAI.</p>
+    <div class="card"><div class="chips" id="chips">
       <button type="button" class="chip" data-v="discord">💬 Discord</button>
       <button type="button" class="chip" data-v="tiktok">🎵 TikTok</button>
       <button type="button" class="chip" data-v="instagram">📸 Instagram</button>
@@ -92,13 +107,28 @@ background:linear-gradient(135deg,var(--purple),var(--pink));box-shadow:0 6px 26
       <button type="button" class="chip" data-v="prof">🎓 Un prof</button>
       <button type="button" class="chip" data-v="recherche">🔎 Recherche Google</button>
       <button type="button" class="chip" data-v="autre">✨ Autre</button>
-    </div>
-  </div>
+    </div></div>
+    <div class="err" id="err" role="alert"></div>
+    <button class="btn" id="go" type="button">Terminer</button>
+    <button class="link" id="skip" type="button">Passer cette question</button>
+    <p class="note">Ces informations servent uniquement à personnaliser FicheAI. Elles ne sont jamais partagées.</p>
+  </section>
 
-  <div class="err" id="err"></div>
-  <button class="btn" id="go" disabled>Choisis ton niveau pour continuer</button>
-  <p class="note">Ces informations servent uniquement à personnaliser FicheAI. Elles ne sont jamais partagées.</p>
-</div>
+  <section class="screen" id="s3" aria-labelledby="t3">
+    <h1 id="t3">C'est prêt, on commence&nbsp;?</h1>
+    <p class="sub">Ta première fiche prend moins d'une minute.</p>
+    <div class="card">
+      <ol class="ready">
+        <li><span>1</span>Colle ton cours ou importe un PDF</li>
+        <li><span>2</span>Choisis tes formats : fiche, quiz, flashcards…</li>
+        <li><span>3</span>Clique sur Générer avec l'IA</li>
+      </ol>
+      <p class="credits" id="credits-line" style="display:none"></p>
+    </div>
+    <a class="btn" id="go-app" href="/app.html">Générer ma première fiche</a>
+    <a class="link" id="go-home" href="/home.html">Voir mon espace</a>
+  </section>
+</main>
 
 <script src="/auth.js"></script>
 <script>
@@ -106,38 +136,55 @@ var SB='https://qyjqtjrqnlbgtxvnjvnk.supabase.co',KEY='sb_publishable_opljKH5NsZ
 var u=null;try{u=JSON.parse(localStorage.getItem('ficheai_user'));}catch(e){}
 if(!u||!u.email){window.location.replace('/login.html');}
 var level=null,source=null,busy=false;
-var btn=document.getElementById('go'),err=document.getElementById('err');
+var btn=document.getElementById('n1'),err=document.getElementById('err'),go=document.getElementById('go'),skip=document.getElementById('skip');
+var bars=document.querySelectorAll('.steps span');
+function show(n){
+  document.querySelectorAll('.screen').forEach(function(s,i){s.classList.toggle('on',i===n-1);});
+  bars.forEach(function(b,i){b.classList.toggle('on',i<n);});
+  window.scrollTo(0,0);
+  var h=document.querySelector('.screen.on h1');if(h){h.setAttribute('tabindex','-1');try{h.focus({preventScroll:true});}catch(e){}}
+}
+// Après la configuration : retour à la page d'origine si elle est connue, sinon directement au générateur
 function nextUrl(){
   var n=new URLSearchParams(location.search).get('next')||'';
-  return (/^\/[a-zA-Z0-9_\-]+\.html(#[a-z]*)?$/.test(n))?n:'/home.html';
+  return (/^\/[a-zA-Z0-9_\-]+\.html(#[a-z]*)?$/.test(n)&&n!=='/home.html')?n:'/app.html';
 }
+document.getElementById('go-app').href=nextUrl();
+if(nextUrl()!=='/app.html')document.getElementById('go-app').textContent='Continuer';
+if(u&&(u.plan||'starter')==='starter'){var cl=document.getElementById('credits-line');cl.textContent='Ton plan Starter inclut 10 crédits gratuits chaque mois, sans carte bancaire.';cl.style.display='block';}
 document.querySelectorAll('.lvl').forEach(function(b){b.addEventListener('click',function(){
-  document.querySelectorAll('.lvl').forEach(function(x){x.classList.remove('sel');});
-  b.classList.add('sel');level=b.dataset.v;btn.disabled=false;btn.textContent='C\'est parti →';
+  document.querySelectorAll('.lvl').forEach(function(x){x.classList.remove('sel');x.setAttribute('aria-checked','false');});
+  b.classList.add('sel');b.setAttribute('aria-checked','true');level=b.dataset.v;btn.disabled=false;btn.textContent='Continuer';
 });});
+btn.addEventListener('click',function(){if(level)show(2);});
+document.getElementById('b2').addEventListener('click',function(){show(1);});
 document.querySelectorAll('.chip').forEach(function(b){b.addEventListener('click',function(){
   var was=b.classList.contains('sel');
   document.querySelectorAll('.chip').forEach(function(x){x.classList.remove('sel');});
   if(!was){b.classList.add('sel');source=b.dataset.v;}else{source=null;}
 });});
-btn.addEventListener('click',async function(){
+async function finish(withSource){
   if(!level||busy)return;
-  busy=true;btn.disabled=true;btn.textContent='Enregistrement…';err.style.display='none';
+  busy=true;go.disabled=true;skip.disabled=true;go.textContent='Enregistrement…';err.style.display='none';
+  var src=withSource?source:null;
   try{
     var t=await window.ficheaiToken();
     if(!t){window.location.replace('/login.html');return;}
     var h={'Content-Type':'application/json',apikey:KEY,Authorization:'Bearer '+t};
     var r1=await fetch(SB+'/rest/v1/rpc/set_niveau_scolaire',{method:'POST',headers:h,body:JSON.stringify({p_email:u.email,p_niveau:level})});
     if(!r1.ok)throw new Error('niveau');
-    var r2=await fetch(SB+'/rest/v1/user_onboarding',{method:'POST',headers:Object.assign({Prefer:'return=minimal'},h),body:JSON.stringify({source:source})});
+    var r2=await fetch(SB+'/rest/v1/user_onboarding',{method:'POST',headers:Object.assign({Prefer:'return=minimal'},h),body:JSON.stringify({source:src})});
     if(!r2.ok&&r2.status!==409)throw new Error('onboarding');
     try{var cur=JSON.parse(localStorage.getItem('ficheai_user'))||{};cur.niveau_scolaire=level;cur.onboarded=true;localStorage.setItem('ficheai_user',JSON.stringify(cur));}catch(e){}
-    window.location.replace(nextUrl());
+    show(3);
   }catch(e){
     err.textContent='⚠️ Impossible d\'enregistrer pour le moment. Vérifie ta connexion et réessaie.';
-    err.style.display='block';busy=false;btn.disabled=false;btn.textContent='C\'est parti →';
+    err.style.display='block';
   }
-});
+  busy=false;go.disabled=false;skip.disabled=false;go.textContent='Terminer';
+}
+go.addEventListener('click',function(){finish(true);});
+skip.addEventListener('click',function(){finish(false);});
 </script>
 <script src="/maintenance.js" defer></script>
 </body>
