@@ -1,5 +1,6 @@
 import { rateLimit, clientIp } from './_ratelimit.js';
 import { banMessage } from './_ban.js';
+import { mfaMissing, MFA_REQUIRED } from './_mfa.js';
 const SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
 
 // Deux modes de génération (23/10/2026), payés en crédits. Tarifs en $ par million de tokens (entrée / sortie) :
@@ -82,6 +83,7 @@ export default async function handler(req, res) {
     const authData = await authRes.json();
     email = authData.email;
     if (!email) return res.status(401).json({ error: 'Session invalide.' });
+    if (mfaMissing(token, authData)) return res.status(401).json(MFA_REQUIRED);
   } catch(e) {
     return res.status(503).json({ error: 'Service momentanément indisponible' });
   }

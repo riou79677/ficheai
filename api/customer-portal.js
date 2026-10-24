@@ -1,3 +1,4 @@
+import { mfaMissing, MFA_REQUIRED } from './_mfa.js';
 const SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
 
 export default async function handler(req, res) {
@@ -26,6 +27,7 @@ export default async function handler(req, res) {
     const authData = await authRes.json();
     email = authData.email;
     if (!email) return res.status(401).json({ error: 'Session invalide.' });
+    if (mfaMissing(token, authData)) return res.status(401).json(MFA_REQUIRED);
   } catch(e) {
     return res.status(503).json({ error: 'Service momentanément indisponible' });
   }

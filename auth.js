@@ -39,6 +39,58 @@
     }
     return await pending;
   };
+  // Double authentification : si le compte a activé la 2FA mais que cette session n'a pas encore
+  // été validée par le code (par exemple sur un autre appareil), on renvoie vers la saisie du code.
+  function goMfa() {
+    if (location.pathname === '/login.html') return;
+    location.replace('/login.html?mfa=1&next=' + encodeURIComponent(location.pathname + location.search + location.hash));
+  }
+  window.ficheaiGoMfa = goMfa;
+  // Promesse résolue à true quand la session est utilisable (pas de 2FA, ou 2FA déjà validée).
+  var mfaReady = (function () {
+    var pages = ['/home.html', '/app.html', '/dashboard.html', '/revision.html', '/settings.html', '/onboarding.html'];
+    if (pages.indexOf(location.pathname) === -1) return Promise.resolve(true);
+    var u = readUser();
+    if (!u || !u.access_token) return Promise.resolve(true);
+    var aal = '';
+    try { aal = JSON.parse(atob(u.access_token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))).aal || ''; } catch (e) {}
+    if (aal === 'aal2') return Promise.resolve(true);
+    // Vérification au plus toutes les 10 minutes pour un compte sans 2FA.
+    try {
+      var c = JSON.parse(sessionStorage.getItem('ficheai_mfa_check') || 'null');
+      if (c && c.email === u.email && Date.now() - c.at < 10 * 60 * 1000) return Promise.resolve(true);
+    } catch (e) {}
+    return window.ficheaiToken().then(function (t) {
+      if (!t) return null;
+      return fetch(SUPABASE_URL + '/auth/v1/user', { headers: { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + t } })
+        .then(function (r) { return r.ok ? r.json() : null; });
+    }).then(function (user) {
+      if (!user) return true;
+      var f = (user.factors || []).some(function (x) { return x && x.status === 'verified'; });
+      if (f) { goMfa(); return false; }
+      try { sessionStorage.setItem('ficheai_mfa_check', JSON.stringify({ email: u.email, at: Date.now() })); } catch (e) {}
+      return true;
+    }).catch(function () { return true; });
+  })();
+  // Filet de sécurité : si le serveur répond « mfa_required », on demande le code.
+  (function () {
+    if (!window.fetch || window.__ficheaiFetchWrapped) return;
+    window.__ficheaiFetchWrapped = true;
+    var orig = window.fetch;
+    window.fetch = function () {
+      return orig.apply(this, arguments).then(function (r) {
+        if (r && (r.status === 401 || r.status === 403)) {
+          try {
+            r.clone().json().then(function (d) {
+              if (d && (d.reason === 'mfa_required' || d.message === 'mfa_required')) goMfa();
+            }).catch(function () {});
+          } catch (e) {}
+        }
+        return r;
+      });
+    };
+  })();
+
   // Configuration du compte : à la première visite d'une page de l'espace connecté,
   // on envoie l'utilisateur sur /onboarding.html tant qu'il n'a pas choisi son niveau.
   (function () {
@@ -46,7 +98,7 @@
     if (pages.indexOf(location.pathname) === -1) return;
     var u = readUser();
     if (!u || !u.email || u.onboarded) return;
-    window.ficheaiToken().then(function (t) {
+    mfaReady.then(function (ok) { return ok ? window.ficheaiToken() : null; }).then(function (t) {
       if (!t) return;
       return fetch(SUPABASE_URL + '/rest/v1/user_onboarding?select=user_id', {
         headers: { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + t }

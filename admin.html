@@ -115,6 +115,11 @@ tr.clickable-row:hover{background:rgba(108,92,231,0.08)}
 <input type="email" id="admin-email" placeholder="Ton email FicheAI" autocomplete="username">
 <input type="password" id="admin-password" placeholder="Ton mot de passe FicheAI" autocomplete="current-password">
 <button onclick="unlock()">Se connecter</button>
+<div id="admin-mfa" style="display:none;margin-top:0.8rem">
+<p style="margin-bottom:0.6rem">🔐 Entre le code à 6 chiffres de ton application d'authentification.</p>
+<input type="text" id="admin-mfa-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" style="text-align:center;letter-spacing:0.4em;font-size:1.2rem;font-weight:700">
+<button onclick="unlockMfa()">Valider le code</button>
+</div>
 <div class="err" id="lock-err"></div>
 </div>
 </div>
@@ -180,6 +185,17 @@ tr.clickable-row:hover{background:rgba(108,92,231,0.08)}
 <button class="btn-sm" style="margin-top:0.6rem;padding:0.55rem 1.1rem" onclick="sendUserMessage()">Envoyer le message</button>
 <div class="msg" id="um-msg"></div>
 <table style="margin-top:1rem"><thead><tr><th>Date</th><th>Élève</th><th>Message</th><th>Lu</th></tr></thead><tbody id="um-table"></tbody></table>
+</div>
+
+<div class="section">
+<h2>🔐 Double authentification d'un élève</h2>
+<p class="mini-note">Si un élève a perdu son téléphone, tu peux désactiver sa double authentification. Fais-le uniquement après avoir vérifié que c'est bien lui (par exemple en lui écrivant à l'adresse email de son compte).</p>
+<input type="email" id="mfa-email" list="um-emails" placeholder="Email du compte" style="width:100%;max-width:360px;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;color:var(--text);padding:0.6rem 0.8rem;font-family:inherit">
+<div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.6rem">
+<button class="btn-sm" style="padding:0.55rem 1.1rem" onclick="checkMfa()">Voir l'état</button>
+<button class="btn-sm" style="padding:0.55rem 1.1rem;background:rgba(244,114,182,0.12);border-color:rgba(244,114,182,0.35);color:#f472b6" onclick="resetMfa()">Désactiver sa 2FA</button>
+</div>
+<div class="msg" id="mfa-admin-msg"></div>
 </div>
 
 <div class="section">
@@ -299,6 +315,7 @@ tr.clickable-row:hover{background:rgba(108,92,231,0.08)}
   </div>
 </div>
 
+<script src="/mfa.js"></script>
 <script>
 var SECRET=null;
 var ADMIN_API='/api/admin';
@@ -336,9 +353,39 @@ async function unlock(){
     var authRes=await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},body:JSON.stringify({email,password})});
     var authData=await authRes.json();
     if(!authRes.ok||!authData.access_token){errBox.textContent='Email ou mot de passe incorrect.';errBox.style.display='block';if(btn){btn.textContent='Se connecter';btn.disabled=false;}return;}
+    var mfaUser=await FicheMFA.getUser(authData.access_token);
+    var factor=FicheMFA.verifiedFactor(mfaUser||authData.user);
+    if(factor){
+      adminPending={email:email,token:authData.access_token,factor:factor};
+      document.getElementById('admin-mfa').style.display='block';
+      if(btn){btn.style.display='none';}
+      setTimeout(function(){document.getElementById('admin-mfa-code').focus();},50);
+      return;
+    }
+    await finishUnlock(email,authData.access_token);
+  }catch(e){errBox.textContent='Erreur de connexion. Réessaie.';errBox.style.display='block';if(btn){btn.textContent='Se connecter';btn.disabled=false;}}
+}
+
+// Double authentification du compte admin
+var adminPending=null;
+async function unlockMfa(){
+  var errBox=document.getElementById('lock-err');
+  errBox.style.display='none';
+  if(!adminPending)return;
+  try{
+    var s=await FicheMFA.verify(adminPending.token,adminPending.factor.id,document.getElementById('admin-mfa-code').value);
+    await finishUnlock(adminPending.email,s.access_token);
+  }catch(e){errBox.textContent=e.message||'Code incorrect.';errBox.style.display='block';document.getElementById('admin-mfa-code').value='';}
+}
+
+async function finishUnlock(email,accessToken){
+  var errBox=document.getElementById('lock-err');
+  var btn=document.querySelector('#lock-screen button');
+  try{
+    var authData={access_token:accessToken};
     var devRes=await fetch(SUPABASE_URL+'/rest/v1/rpc/get_is_dev',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+authData.access_token},body:JSON.stringify({p_email:email})});
     var isDev=await devRes.json();
-    if(!isDev){errBox.textContent='Ce compte n\'a pas accès au panneau admin.';errBox.style.display='block';if(btn){btn.textContent='Se connecter';btn.disabled=false;}return;}
+    if(isDev!==true){errBox.textContent='Ce compte n\'a pas accès au panneau admin.';errBox.style.display='block';if(btn){btn.textContent='Se connecter';btn.disabled=false;}return;}
     SECRET=authData.access_token;
     sessionStorage.setItem(SESSION_KEY,SECRET);
     showDashboard();
@@ -371,6 +418,26 @@ async function sendUserMessage(){
     showMsg('um-msg','✅ Message enregistré : il s\'affichera à sa prochaine visite.','ok');loadUserMessages();
   }catch(e){if(e.message!=='WRONG_SECRET')showMsg('um-msg','⚠️ '+e.message,'error');}
 }
+// ── Double authentification d'un élève ──
+async function checkMfa(){
+  var email=document.getElementById('mfa-email').value.trim();
+  if(!email){showMsg('mfa-admin-msg','⚠️ Indique l\'email du compte.','error');return;}
+  try{
+    var d=await callAdmin('get_mfa_status',{email:email});
+    if(d&&d.error)throw new Error(d.error);
+    showMsg('mfa-admin-msg',d.enabled?'🔐 Double authentification activée depuis le '+new Date(d.since).toLocaleDateString('fr-FR')+'.':'🔓 Pas de double authentification sur ce compte.','ok');
+  }catch(e){if(e.message!=='WRONG_SECRET')showMsg('mfa-admin-msg','⚠️ '+e.message,'error');}
+}
+async function resetMfa(){
+  var email=document.getElementById('mfa-email').value.trim();
+  if(!email){showMsg('mfa-admin-msg','⚠️ Indique l\'email du compte.','error');return;}
+  if(!confirm('Désactiver la double authentification de '+email+' ? Fais-le seulement si tu as vérifié que c\'est bien l\'élève qui le demande.'))return;
+  try{
+    var d=await callAdmin('reset_mfa',{email:email});
+    if(d&&d.error)throw new Error(d.error);
+    showMsg('mfa-admin-msg',d.had2fa?'✅ Double authentification désactivée. L\'élève peut se reconnecter avec son seul mot de passe, puis la réactiver dans ses Paramètres.':'ℹ️ Ce compte n\'avait pas de double authentification active.','ok');
+  }catch(e){if(e.message!=='WRONG_SECRET')showMsg('mfa-admin-msg','⚠️ '+e.message,'error');}
+}
 function refreshDashboard(){Promise.all([loadStats(),loadFiches(),loadUsage(),loadLegal()]).catch(function(){});}
 
 // ── Rétractations, résiliations et messages de contact ──
@@ -401,6 +468,7 @@ async function setLegalStatus(id,status){
 }
 
 document.getElementById('admin-password').addEventListener('keydown',function(e){if(e.key==='Enter')unlock();});
+document.getElementById('admin-mfa-code').addEventListener('keydown',function(e){if(e.key==='Enter')unlockMfa();});
 document.getElementById('admin-email').addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('admin-password').focus();});
 
 async function callAdmin(action,payload){
@@ -410,6 +478,8 @@ async function callAdmin(action,payload){
     sessionStorage.removeItem(SESSION_KEY);SECRET=null;
     document.getElementById('lock-screen').style.display='flex';
     document.getElementById('dashboard').style.display='none';
+    adminPending=null;document.getElementById('admin-mfa').style.display='none';
+    var lb=document.querySelector('#lock-screen button');if(lb){lb.style.display='';lb.disabled=false;lb.textContent='Se connecter';}
     document.getElementById('lock-err').textContent='Session expirée, reconnecte-toi.';
     document.getElementById('lock-err').style.display='block';
     throw new Error('WRONG_SECRET');

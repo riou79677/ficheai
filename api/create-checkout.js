@@ -1,3 +1,4 @@
+import { mfaMissing, MFA_REQUIRED } from './_mfa.js';
 // Création des paiements Stripe : abonnements (Pro, Ultimate) et recharges de crédits.
 // Toute commande passe par le récapitulatif du site (checkout.js) : le client y voit le prix, la durée et les
 // conditions, accepte les CGV et demande l'exécution immédiate. Ces consentements sont exigés ici et conservés
@@ -64,7 +65,8 @@ export default async function handler(req, res) {
         const ANON = process.env.SUPABASE_ANON_KEY || 'sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ';
         const a = await fetch(SUPA + '/auth/v1/user', { headers: { apikey: ANON, Authorization: 'Bearer ' + tok } });
         if (a.ok) {
-          const em = (await a.json()).email;
+          const ad = await a.json();
+          const em = mfaMissing(tok, ad) ? null : ad.email;
           if (em) {
             const u = await fetch(SUPA + '/rest/v1/users?email=eq.' + encodeURIComponent(em) + '&select=plan,has_used_trial', { headers: { apikey: SK, Authorization: 'Bearer ' + SK } });
             const arr = await u.json();
@@ -126,8 +128,10 @@ export default async function handler(req, res) {
   try {
     const a = await fetch(SUPABASE_URL + '/auth/v1/user', { headers: { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + token } });
     if (!a.ok) return res.status(401).json({ error: 'Session expirée, reconnecte-toi.' });
-    email = (await a.json()).email;
+    const authData = await a.json();
+    email = authData.email;
     if (!email) return res.status(401).json({ error: 'Session invalide.' });
+    if (mfaMissing(token, authData)) return res.status(401).json(MFA_REQUIRED);
   } catch (e) { return res.status(503).json({ error: 'Service momentanément indisponible' }); }
 
   let dbUser = null;

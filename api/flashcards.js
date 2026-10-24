@@ -1,4 +1,5 @@
 import { banMessage } from './_ban.js';
+import { mfaMissing, MFA_REQUIRED } from './_mfa.js';
 const SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
 
 // La création des cartes appelle l'IA : 10 s (valeur par défaut de Vercel) ne suffisent pas toujours.
@@ -180,6 +181,7 @@ export default async function handler(req, res) {
     const authData = await authRes.json();
     verifiedEmail = authData.email;
     if (!verifiedEmail) return res.status(401).json({ error: 'Session invalide.' });
+    if (mfaMissing(token, authData)) return res.status(401).json(MFA_REQUIRED);
   } catch(e) {
     return res.status(503).json({ error: 'Service momentanément indisponible' });
   }

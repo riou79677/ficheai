@@ -745,7 +745,7 @@ if(savedUser&&savedUser.email){
   if(savedUser.limit!==undefined){tokensLimit=savedUser.limit;}
   document.getElementById('tok-nav').textContent=tokensLeft;
   if(savedUser.plan)document.getElementById('plan-name').textContent=savedUser.plan.charAt(0).toUpperCase()+savedUser.plan.slice(1);
-  fetch(SUPABASE_URL+'/rest/v1/rpc/get_is_dev',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({p_email:savedUser.email})}).then(function(r){return r.json();}).then(function(isDev){if(isDev){window.isDevUser=true;document.getElementById('dev-toggle').style.display='block';}}).catch(function(){});
+  ficheaiToken().then(function(t){return fetch(SUPABASE_URL+'/rest/v1/rpc/get_is_dev',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+(t||SUPABASE_KEY),'Content-Type':'application/json'},body:JSON.stringify({p_email:savedUser.email})});}).then(function(r){return r.json();}).then(function(isDev){if(isDev===true){window.isDevUser=true;document.getElementById('dev-toggle').style.display='block';}}).catch(function(){});
   document.getElementById('stats-card').style.display='block';
   document.getElementById('stat-gen').textContent=tokensLeft;
   loadFichesCount();

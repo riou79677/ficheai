@@ -1,3 +1,4 @@
+import { mfaMissing, MFA_REQUIRED } from './_mfa.js';
 // Historique du Chat IA : liste, lecture, enregistrement, renommage, suppression.
 // L'email vient toujours du jeton de connexion. Le texte des cours n'est jamais enregistré, seulement les messages du chat.
 const SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
@@ -18,8 +19,10 @@ export default async function handler(req, res) {
   try {
     const a = await fetch(SUPABASE_URL + '/auth/v1/user', { headers: { apikey: ANON, Authorization: 'Bearer ' + token } });
     if (!a.ok) return res.status(401).json({ error: 'Session invalide, reconnecte-toi.' });
-    email = (await a.json()).email;
+    const authData = await a.json();
+    email = authData.email;
     if (!email) return res.status(401).json({ error: 'Session invalide.' });
+    if (mfaMissing(token, authData)) return res.status(401).json(MFA_REQUIRED);
   } catch (e) { return res.status(503).json({ error: 'Service momentanément indisponible' }); }
 
   let plan = 'starter';

@@ -1,4 +1,5 @@
 import { rateLimit, clientIp } from './_ratelimit.js';
+import { mfaMissing, MFA_REQUIRED } from './_mfa.js';
 const SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
 
 // Déclarations en ligne :
@@ -99,7 +100,7 @@ export default async function handler(req, res) {
       const a = await fetch(SUPABASE_URL + '/auth/v1/user', { headers: { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + token } });
       if (a.ok) {
         const u = await a.json();
-        user_verified = !!(u && u.email && u.email.toLowerCase() === account_email);
+        user_verified = !!(u && u.email && u.email.toLowerCase() === account_email) && !mfaMissing(token, u);
       }
     } catch (e) { /* vérification facultative */ }
   }

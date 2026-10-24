@@ -1,3 +1,4 @@
+import { mfaMissing, MFA_REQUIRED } from './_mfa.js';
 // API réservée à l'administrateur du site. Toute action nécessite un token Supabase valide
 // appartenant à un compte ayant is_dev = true en base (vérifié à chaque appel).
 export default async function handler(req, res) {
@@ -36,6 +37,7 @@ export default async function handler(req, res) {
     const userData = await userR.json();
     callerEmail = userData.email;
     if (!callerEmail) return res.status(403).json({ error: 'Session invalide.' });
+    if (mfaMissing(secret, userData)) return res.status(403).json(MFA_REQUIRED);
   } catch (e) {
     return res.status(403).json({ error: 'Impossible de vérifier la session.' });
   }
@@ -206,7 +208,31 @@ export default async function handler(req, res) {
       return res.status(200).json({ messages: Array.isArray(rows) ? rows : [] });
     }
 
-    // ── Supprimer définitivement un compte ──
+    // ── Double authentification d'un élève : état et désactivation (téléphone perdu) ──
+    // À n'utiliser qu'après avoir vérifié l'identité de l'élève par un autre moyen.
+    if (action === 'get_mfa_status' || action === 'reset_mfa') {
+      const { email } = payload || {};
+      if (!email) return res.status(400).json({ error: 'Email manquant' });
+      const ur = await fetch(SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(String(email).trim().toLowerCase()) + '&select=id,email', { headers: sb });
+      const found = await ur.json();
+      if (!Array.isArray(found) || !found[0]) return res.status(404).json({ error: 'Aucun compte FicheAI avec cet email' });
+      const uid = found[0].id;
+      const au = await fetch(SUPABASE_URL + '/auth/v1/admin/users/' + uid, { headers: sb });
+      if (!au.ok) return res.status(502).json({ error: 'Lecture du compte impossible' });
+      const authUser = await au.json();
+      const factors = (Array.isArray(authUser.factors) ? authUser.factors : []).filter(f => f && f.factor_type === 'totp');
+      const verified = factors.filter(f => f.status === 'verified');
+      if (action === 'get_mfa_status') {
+        return res.status(200).json({ email: found[0].email, enabled: verified.length > 0, since: verified[0] ? verified[0].created_at : null });
+      }
+      let removed = 0;
+      for (const f of factors) {
+        const d = await fetch(SUPABASE_URL + '/auth/v1/admin/users/' + uid + '/factors/' + f.id, { method: 'DELETE', headers: sb });
+        if (d.ok) removed++;
+      }
+      return res.status(200).json({ success: removed === factors.length, removed, had2fa: verified.length > 0 });
+    }
+
     if (action === 'delete_account') {
       const { email } = payload || {};
       if (!email) return res.status(400).json({ error: 'Email manquant' });
