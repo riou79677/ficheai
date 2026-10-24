@@ -39,6 +39,20 @@
     }
     return await pending;
   };
+  // Déconnexion : la session est aussi fermée côté serveur. Sans ça, chaque reconnexion
+  // ajoutait une nouvelle ligne dans « Appareils connectés » alors que l'ancienne restait ouverte.
+  window.ficheaiLogout = function (redirect) {
+    var u = readUser();
+    var done = function () {
+      try { localStorage.removeItem('ficheai_user'); sessionStorage.removeItem('ficheai_mfa_check'); } catch (e) {}
+      location.href = redirect || '/';
+    };
+    if (!u || !u.access_token) { done(); return; }
+    var t = setTimeout(done, 2500); // on ne bloque jamais l'élève si le réseau ne répond pas
+    fetch(SUPABASE_URL + '/auth/v1/logout?scope=local', { method: 'POST', headers: { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + u.access_token }, keepalive: true })
+      .catch(function () {}).then(function () { clearTimeout(t); done(); });
+  };
+
   // Double authentification : si le compte a activé la 2FA mais que cette session n'a pas encore
   // été validée par le code (par exemple sur un autre appareil), on renvoie vers la saisie du code.
   function goMfa() {
@@ -107,8 +121,7 @@
       var m = minutes();
       if (!m || !readUser()) return;
       timer = setTimeout(function () {
-        try { localStorage.removeItem('ficheai_user'); } catch (e) {}
-        location.href = '/login.html';
+        window.ficheaiLogout('/login.html');
       }, m * 60 * 1000);
     }
     ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(function (ev) {

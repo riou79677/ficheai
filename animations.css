@@ -1,0 +1,85 @@
+/* Animations de FicheAI, inspirées des interfaces Apple : courbes douces, légers effets de ressort,
+   apparitions progressives. Désactivées automatiquement si l'élève a choisi « Réduire les animations »
+   ou si son appareil demande moins de mouvements. */
+
+:root {
+  --fa-ease: cubic-bezier(0.32, 0.72, 0, 1);      /* glissé doux, comme l'ouverture d'une app */
+  --fa-spring: cubic-bezier(0.34, 1.36, 0.64, 1); /* petit rebond */
+}
+
+/* ── Transition entre les pages (navigateurs récents : Chrome, Edge, Safari 18+) ── */
+@view-transition { navigation: auto; }
+::view-transition-old(root) { animation: faVtOut 0.24s var(--fa-ease) both; }
+::view-transition-new(root) { animation: faVtIn 0.42s var(--fa-ease) both; }
+@keyframes faVtOut { to { opacity: 0; transform: scale(0.985); } }
+@keyframes faVtIn { from { opacity: 0; transform: scale(1.012); } }
+
+@keyframes faRise { from { opacity: 0; transform: translateY(14px) scale(0.985); } to { opacity: 1; transform: none; } }
+@keyframes faFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes faPop { from { opacity: 0; transform: translateY(10px) scale(0.92); } to { opacity: 1; transform: none; } }
+@keyframes faPopOut { to { opacity: 0; transform: translateY(6px) scale(0.95); } }
+@keyframes faFadeOut { to { opacity: 0; } }
+@keyframes faDrop { from { opacity: 0; transform: translateY(-6px) scale(0.96); } to { opacity: 1; transform: none; } }
+@keyframes faSwap { from { opacity: 0; transform: translateX(18px) scale(0.98); } to { opacity: 1; transform: none; } }
+@keyframes faZoom { from { opacity: 0; transform: scale(0.965); } to { opacity: 1; transform: none; } }
+
+/* ── Arrivée sur une page : le contenu monte doucement ── */
+.fa-on main, .fa-on .app-layout, .fa-on .wrap, .fa-on .auth-container { animation: faRise 0.55s var(--fa-ease) both; }
+
+/* ── Cartes qui apparaissent les unes après les autres ── */
+.fa-on .fiche-card, .fa-on .deck, .fa-on .stat-box, .fa-on .stat-card, .fa-on a.card,
+.fa-on .settings-section.active .settings-card, .fa-on .fmt, .fa-on .rc-section, .fa-on .lvl, .fa-on .goal {
+  animation: faRise 0.5s var(--fa-ease) both;
+}
+.fa-on :is(.fiche-card, .deck, .stat-box, .stat-card, a.card, .settings-card, .fmt, .rc-section, .lvl):nth-child(2) { animation-delay: 0.04s; }
+.fa-on :is(.fiche-card, .deck, .stat-box, .stat-card, a.card, .settings-card, .fmt, .rc-section, .lvl):nth-child(3) { animation-delay: 0.08s; }
+.fa-on :is(.fiche-card, .deck, .stat-box, .stat-card, a.card, .settings-card, .fmt, .rc-section, .lvl):nth-child(4) { animation-delay: 0.12s; }
+.fa-on :is(.fiche-card, .deck, .stat-box, .stat-card, a.card, .settings-card, .fmt, .rc-section, .lvl):nth-child(5) { animation-delay: 0.16s; }
+.fa-on :is(.fiche-card, .deck, .stat-box, .stat-card, a.card, .settings-card, .fmt, .rc-section, .lvl):nth-child(6) { animation-delay: 0.2s; }
+.fa-on :is(.fiche-card, .deck, .stat-box, .stat-card, a.card, .settings-card, .fmt, .rc-section, .lvl):nth-child(7) { animation-delay: 0.24s; }
+.fa-on :is(.fiche-card, .deck, .stat-box, .stat-card, a.card, .settings-card, .fmt, .rc-section, .lvl):nth-child(n+8) { animation-delay: 0.28s; }
+
+/* Changement de rubrique dans les Paramètres */
+.fa-on .settings-section.active { animation: faFade 0.3s var(--fa-ease) both; }
+
+/* Résultat de génération, réponses dévoilées, messages du chat */
+.fa-on .result-card[style*="block"] { animation: faRise 0.55s var(--fa-ease) both; }
+.fa-on .rc-answer[open] > :not(summary) { animation: faRise 0.35s var(--fa-ease) both; }
+.fa-on .chat-messages > *, .fa-on #chat-messages > * { animation: faRise 0.38s var(--fa-ease) both; }
+.fa-on #answer-block[style*="block"] { animation: faRise 0.4s var(--fa-ease) both; }
+.fa-on #review .card.fa-swap { animation: faSwap 0.42s var(--fa-ease) both; }
+
+/* Menus déroulants */
+.fa-on .user-menu[style*="block"] { animation: faDrop 0.26s var(--fa-ease) both; transform-origin: top right; }
+
+/* ── Fenêtres : fond qui s'assombrit, fenêtre qui « pop » avec un léger rebond ── */
+.fa-on .modal-bg.open, .fa-on .confirm-overlay.open, .fa-on .cost-confirm-bg, .fa-backdrop { animation: faFade 0.25s var(--fa-ease) both; }
+.fa-on .modal-bg.open .modal-fiche, .fa-on .confirm-overlay.open .confirm-box, .fa-on .cost-confirm, .fa-pop {
+  animation: faPop 0.42s var(--fa-spring) both;
+}
+.fa-backdrop.fa-closing { animation: faFadeOut 0.22s var(--fa-ease) both !important; pointer-events: none; }
+.fa-backdrop.fa-closing > * { animation: faPopOut 0.22s var(--fa-ease) both !important; }
+.fa-on .fl-overlay { animation: faZoom 0.4s var(--fa-ease) both; }
+.fa-on .fl-overlay.fa-closing { animation: faFadeOut 0.22s var(--fa-ease) both !important; }
+
+/* ── Boutons : léger enfoncement au toucher, comme sur iPhone ── */
+.fa-on :is(button, .btn, .btn-primary, .btn-main, .btn-submit, .fiche-btn, .filter-btn, .fmt, .qual-btn, .deck-btn, .theme-opt, .rc-tab, .mode-btn, .sidebar-item, .import-btn-item) {
+  transition: transform 0.25s var(--fa-spring), background-color 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.25s, opacity 0.2s;
+}
+.fa-on :is(button, .btn, .btn-primary, .btn-main, .btn-submit, .fiche-btn, .filter-btn, .fmt, .qual-btn, .deck-btn, .theme-opt, .rc-tab, .mode-btn, .sidebar-item, .import-btn-item):active:not(:disabled) {
+  transform: scale(0.965);
+}
+.fa-on :is(.fiche-card, .deck, a.card) { transition: transform 0.35s var(--fa-ease), box-shadow 0.35s var(--fa-ease), border-color 0.25s; }
+@media (hover: hover) {
+  .fa-on :is(.fiche-card, .deck, a.card):hover { transform: translateY(-3px); }
+}
+.fa-on .toggle-slider, .fa-on .toggle-slider:before { transition: transform 0.32s var(--fa-spring), background-color 0.25s; }
+
+/* ── Moins de mouvements demandé ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+}
+html[data-anim="reduites"]::view-transition-group(*),
+html[data-anim="reduites"]::view-transition-old(*),
+html[data-anim="reduites"]::view-transition-new(*) { animation: none !important; }

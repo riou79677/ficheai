@@ -277,6 +277,8 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
 <link rel="stylesheet" href="/ecrans.css">
 <link rel="stylesheet" href="/reglages.css">
 <link rel="stylesheet" href="/theme-clair.css">
+<link rel="stylesheet" href="/animations.css">
+<script src="/animations.js"></script>
 </head>
 <body>
 
@@ -661,7 +663,7 @@ function closeOnboarding(){
 }
 
 function toggleMenu(){var m=document.getElementById('user-menu');m.style.display=m.style.display==='block'?'none':'block';}
-function deconnexion(){localStorage.removeItem('ficheai_user');window.location.href='/';}
+function deconnexion(){window.ficheaiLogout('/');}
 
 document.addEventListener('click',function(e){
   var menu=document.getElementById('user-menu'),display=document.getElementById('user-display');

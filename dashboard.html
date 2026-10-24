@@ -98,6 +98,8 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
 <link rel="stylesheet" href="/ecrans.css">
 <link rel="stylesheet" href="/reglages.css">
 <link rel="stylesheet" href="/theme-clair.css">
+<link rel="stylesheet" href="/animations.css">
+<script src="/animations.js"></script>
 </head>
 <body>
 <nav>
@@ -154,7 +156,7 @@ var SUPABASE_KEY='sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ';
 var currentUser=null,allFiches=[],currentFilter='all',modalContent='',modalTitle='';
 document.addEventListener('click',function(e){var menu=document.getElementById('user-menu'),badge=document.getElementById('user-badge');if(menu&&badge&&!badge.contains(e.target)&&!menu.contains(e.target))menu.style.display='none';});
 function toggleUserMenu(){var m=document.getElementById('user-menu');m.style.display=m.style.display==='block'?'none':'block';}
-function deconnexion(){localStorage.removeItem('ficheai_user');window.location.href='/';}
+function deconnexion(){window.ficheaiLogout('/');}
 var savedUser=null;
 try{savedUser=JSON.parse(localStorage.getItem('ficheai_user'));}catch(e){}
 if(!savedUser||!savedUser.email){
