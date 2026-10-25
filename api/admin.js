@@ -296,11 +296,11 @@ export default async function handler(req, res) {
         const u = byUser[x.user_email] || (byUser[x.user_email] = { email: x.user_email, generations: 0, rapide: 0, approfondi: 0, chats: 0, revision: 0, credits: 0, errors: 0, cost_usd: 0, input_tokens: 0, output_tokens: 0 });
         // Les lignes « erreur:… » et « info:… » sont des événements (échecs, replis), pas des appels facturés.
         if (/^(erreur|info):/.test(String(x.kind))) { u.errors++; return; }
-        // Crédits estimés à partir du journal : Rapide (Haiku) 1, Approfondi (Sonnet) 2, chat 1, paquet de révision 1.
+        // Crédits estimés à partir du journal : Rapide (Haiku) 1, Approfondi (Sonnet) 3, chat 1, paquet de révision 1.
         const k = String(x.kind);
         if (k.startsWith('chat')) { u.chats++; u.credits += 1; }
         else if (k.startsWith('flashcards')) { u.revision++; u.credits += 1; }
-        else { u.generations++; if (String(x.model).includes('haiku')) { u.rapide++; u.credits += 1; } else { u.approfondi++; u.credits += 2; } }
+        else { u.generations++; if (String(x.model).includes('haiku')) { u.rapide++; u.credits += 1; } else { u.approfondi++; u.credits += 3; } }
         u.cost_usd += Number(x.cost_usd) || 0; u.input_tokens += x.input_tokens || 0; u.output_tokens += x.output_tokens || 0;
       });
       const users = Object.values(byUser).sort((a, b) => b.cost_usd - a.cost_usd);

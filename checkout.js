@@ -6,11 +6,11 @@
 (function () {
   var OFFERS = {
     pro_monthly: { kind: 'sub', plan: 'pro', title: '⚡ FicheAI Pro, formule mensuelle', price: '7,99 €', per: 'mois', trial: 7,
-      what: '110 crédits par mois (55 fiches en qualité Approfondi, ou 110 en Rapide ; 1 crédit par message de Chat IA), Mode Révision, import de PDF jusqu\'à 100 pages, sujets d\'examen et export PDF.' },
+      what: '110 crédits par mois (36 fiches en qualité Approfondi, ou 110 en Rapide ; 1 crédit par message de Chat IA), Mode Révision, import de PDF jusqu\'à 100 pages, sujets d\'examen et export PDF.' },
     pro_yearly: { kind: 'sub', plan: 'pro', title: '⚡ FicheAI Pro, formule annuelle', price: '79,90 €', per: 'an',
-      what: '110 crédits par mois pendant un an (55 fiches en qualité Approfondi, ou 110 en Rapide ; 1 crédit par message de Chat IA), Mode Révision, import de PDF jusqu\'à 100 pages, sujets d\'examen et export PDF.' },
+      what: '110 crédits par mois pendant un an (36 fiches en qualité Approfondi, ou 110 en Rapide ; 1 crédit par message de Chat IA), Mode Révision, import de PDF jusqu\'à 100 pages, sujets d\'examen et export PDF.' },
     ultimate_monthly: { kind: 'sub', plan: 'ultimate', title: '👑 FicheAI Ultimate, formule mensuelle', price: '14,99 €', per: 'mois',
-      what: '250 crédits par mois (125 fiches en qualité Approfondi, ou 250 en Rapide ; 1 crédit par message de Chat IA), Mode Révision, import de PDF jusqu\'à 250 pages, lecture des schémas, sujets d\'examen et export PDF.' },
+      what: '250 crédits par mois (83 fiches en qualité Approfondi, ou 250 en Rapide ; 1 crédit par message de Chat IA), Mode Révision, import de PDF jusqu\'à 250 pages, lecture des schémas, sujets d\'examen et export PDF.' },
     recharge_50: { kind: 'pack', title: '🔋 Recharge de 100 crédits', price: '6,99 €', credits: 100 },
     recharge_150: { kind: 'pack', title: '🔋 Recharge de 300 crédits', price: '19,99 €', credits: 300 },
     recharge_400: { kind: 'pack', title: '🔋 Recharge de 800 crédits', price: '49,99 €', credits: 800 }

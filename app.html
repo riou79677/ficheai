@@ -360,7 +360,7 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
         <button class="mode-btn" id="mode-chat-btn" onclick="switchMode('chat')">💬 Chat IA</button>
       </div>
       <div class="sidebar-label"><span class="step-num">1</span> Format de sortie</div>
-      <div class="fmt-hint">Tu peux en choisir plusieurs (4 maximum). Chaque format coûte 1 crédit en Rapide, 2 en Approfondi.</div>
+      <div class="fmt-hint">Tu peux en choisir plusieurs (4 maximum). Chaque format coûte 1 crédit en Rapide, 3 en Approfondi.</div>
       <div class="format-list" id="format-list">
         <div class="fmt active" data-fmt="fiche" data-icon="📄" data-name="Fiche de révision" onclick="selectFormat(this)"><span class="fmt-icon">📄</span><div class="fmt-info"><span class="fmt-name">Fiche de révision</span><span class="fmt-desc">Structurée & complète</span></div></div>
         <div class="fmt" data-fmt="quiz" data-icon="✅" data-name="Quiz QCM" onclick="selectFormat(this)"><span class="fmt-icon">✅</span><div class="fmt-info"><span class="fmt-name">Quiz QCM</span><span class="fmt-desc">6 questions & corrections</span></div></div>
@@ -437,7 +437,7 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
         <div class="qual-label">Qualité de génération</div>
         <div class="qual-seg">
           <button type="button" class="qual-btn" id="qual-rapide" onclick="setGenMode('rapide')"><b>⚡ Rapide</b><span>L'essentiel du cours · 1 crédit</span></button>
-          <button type="button" class="qual-btn" id="qual-approfondi" onclick="setGenMode('approfondi')"><b>🎓 Approfondi</b><span id="qual-approfondi-sub">Plus de détails et d'explications · 2 crédits</span></button>
+          <button type="button" class="qual-btn" id="qual-approfondi" onclick="setGenMode('approfondi')"><b>🎓 Approfondi</b><span id="qual-approfondi-sub">Plus de détails et d'explications · 3 crédits</span></button>
         </div>
       </div>
       <div id="multi-note" class="multi-note" style="display:none"></div>
@@ -614,7 +614,7 @@ var PDF_NOTE='ℹ️ Seul le texte est lu : les schémas, images et formules ne 
 var pdfImages=[],pdfImagesKey='';
 function pdfImagesFor(txt){if(!pdfImages.length||!pdfImagesKey)return [];return String(txt||'').replace(/\s+/g,'').slice(0,120)===pdfImagesKey?pdfImages:[];}
 function formatMeta(f){var el=document.querySelector('.fmt[data-fmt="'+f+'"]');return el?{name:el.dataset.name,icon:el.dataset.icon}:{name:f,icon:'📄'};}
-// ── Qualité : Rapide (1 crédit) ou Approfondi (2 crédits) ──
+// ── Qualité : Rapide (1 crédit) ou Approfondi (3 crédits) ──
 // Comptes gratuits : Rapide, sauf leurs fiches Approfondi offertes. Comptes payants : Approfondi par défaut (choix mémorisé).
 var genMode=null;
 function offertsLeft(){return savedUser&&savedUser.offerts!==undefined?savedUser.offerts:0;}
@@ -644,7 +644,7 @@ function renderGenMode(){
     var o=offertsLeft();
     sub.textContent=o>0?(o+' fiche'+(o>1?'s':'')+' offerte'+(o>1?'s':'')+' · 0 crédit'):'🔒 Disponible avec Pro';
     a.classList.toggle('locked',o<=0);
-  } else {sub.textContent='Plus de détails et d\'explications · 2 crédits';a.classList.remove('locked');}
+  } else {sub.textContent='Plus de détails et d\'explications · 3 crédits';a.classList.remove('locked');}
   updateGenCostNote();
 }
 // Cours longs : +1 crédit par tranche de 30 pages (~60 000 caractères) au-delà des 30 premières, en Approfondi (même calcul que le serveur).
@@ -656,7 +656,7 @@ function longExtra(){
 function genCost(n){
   if(genMode==='approfondi'){
     if(getPlan()==='starter'){var o=offertsLeft();return Math.max(0,n-o);} // au-delà des offertes : Rapide, 1 crédit
-    return (2+longExtra())*n;
+    return (3+longExtra())*n;
   }
   return n;
 }
@@ -1045,7 +1045,7 @@ function showLimitModal(message,kind){
   var title,intro,opts;
   if(plan==='starter'){
     title=kind==='approfondi'?'Passe à la qualité Approfondi':'Tu as utilisé tes crédits gratuits 🎉';
-    intro=(kind==='approfondi'&&message?message+' ':'')+'Pro : 110 crédits par mois (55 fiches Approfondi), Mode Révision, export PDF et sujets d’examen. Ultimate : 250 crédits par mois.'+(kind==='approfondi'?'':' Tes crédits gratuits reviennent à 10 le mois prochain.');
+    intro=(kind==='approfondi'&&message?message+' ':'')+'Pro : 110 crédits par mois (36 fiches Approfondi), Mode Révision, export PDF et sujets d’examen. Ultimate : 250 crédits par mois.'+(kind==='approfondi'?'':' Tes crédits gratuits reviennent à 10 le mois prochain.');
     opts=limitOption(PRO_M,'⚡ Pro','7,99€/mois',true)+limitOption(ULT_M,'👑 Ultimate','Voir l’offre',false);
   } else {
     title='Plus de crédits pour ce mois-ci';
