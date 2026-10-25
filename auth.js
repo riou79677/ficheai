@@ -118,7 +118,7 @@
     }
     async function check() {
       var u = readUser();
-      if (!u || !u.access_token || busy || Date.now() - last < 5000) return;
+      if (!u || !u.access_token || busy || Date.now() - last < 3000) return;
       busy = true; last = Date.now();
       try {
         var r = await fetch(SUPABASE_URL + '/auth/v1/user', { headers: { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + u.access_token } });
@@ -141,7 +141,7 @@
         }
       } catch (e) { /* réseau coupé : on ne déconnecte pas */ } finally { busy = false; }
     }
-    setInterval(function () { if (!document.hidden) check(); }, 30000);
+    setInterval(function () { if (!document.hidden) check(); }, 6000);
     document.addEventListener('visibilitychange', function () { if (!document.hidden) check(); });
     window.addEventListener('focus', check);
     setTimeout(check, 3000);
