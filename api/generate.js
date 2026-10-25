@@ -308,6 +308,8 @@ Format OBLIGATOIRE :
 └── 🔴 BRANCHE 4 : [Thème majeur]
     └── → [Sous-concept]
 
+Chaque sous-concept tient en une courte phrase (12 mots maximum) pour rester lisible dans un schéma. Garde exactement ce format, y compris les lignes « BRANCHE n : ».
+
 IMPORTANT : chaque branche doit avoir au moins 2 sous-concepts développés (jamais une branche vide ou avec un seul mot). Vise 4 branches complètes au minimum, toutes remplies.`,
 
     questions: `Tu es un professeur bienveillant. Génère 6 QUESTIONS OUVERTES de révision.

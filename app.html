@@ -18,7 +18,7 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 ::-webkit-scrollbar{width:5px}
 ::-webkit-scrollbar-thumb{background:linear-gradient(var(--purple),var(--pink));border-radius:100px}
 body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse at 15% 20%,rgba(108,92,231,0.07) 0%,transparent 55%),radial-gradient(ellipse at 85% 80%,rgba(253,121,168,0.04) 0%,transparent 55%)}
-nav{position:sticky;top:0;z-index:100;background:rgba(7,7,15,0.85);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 2rem}
+nav{position:sticky;top:0;z-index:100;background:rgba(7,7,15,0.97);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 2rem}
 .logo{font-family:var(--font-h);font-size:1.3rem;font-weight:800;display:flex;align-items:center;gap:10px;text-decoration:none;background:linear-gradient(135deg,var(--purple2),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .logo-icon{width:32px;height:32px;border-radius:9px;flex-shrink:0;background:linear-gradient(135deg,var(--purple),var(--pink));display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(108,92,231,0.3);transition:transform 0.2s}
 .logo:hover .logo-icon{transform:rotate(-8deg) scale(1.1)}
@@ -235,7 +235,7 @@ textarea::placeholder{color:var(--text3)}
 .msg-bubble{max-width:82%;display:flex;flex-direction:column;gap:5px}
 .msg.user .msg-bubble{align-items:flex-end}
 .msg-content{border-radius:16px;padding:0.9rem 1.1rem;font-size:0.86rem;line-height:1.8;word-break:break-word}
-.msg.ai .msg-content{background:linear-gradient(135deg,rgba(17,17,32,0.9),rgba(13,13,26,0.9));border:1px solid var(--border2);color:var(--text2);border-radius:4px 16px 16px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.15)}
+.msg.ai .msg-content{background:linear-gradient(135deg,#111120,#0d0d1a);isolation:isolate;border:1px solid var(--border2);color:var(--text2);border-radius:4px 16px 16px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.15)}
 .msg.user .msg-content{background:linear-gradient(135deg,rgba(108,92,231,0.3),rgba(253,121,168,0.2));border:1px solid rgba(108,92,231,0.35);color:var(--text);border-radius:16px 4px 16px 16px;box-shadow:0 2px 12px rgba(108,92,231,0.15)}
 .msg-content strong{color:var(--purple2);font-weight:700}
 .msg-actions-row{display:flex;gap:5px}
@@ -1296,6 +1296,11 @@ function renderQA(text,fmt){
   return html;
 }
 function renderResult(text,fmt){
+  if(fmt==='examen'&&window.FicheNotes){return renderResultAsCards(text)+FicheNotes.render(text);}
+  if(fmt==='mindmap'&&window.FicheMindMap){
+    var mm=FicheMindMap.render(text);
+    if(mm)return mm+'<details class="mm-txt"><summary>Voir la version texte</summary>'+renderResultAsCards(text)+'</details>';
+  }
   if((fmt==='quiz'||fmt==='flash'||fmt==='questions')&&(!window.FichePrefs||FichePrefs.get('correction')==='cachee')){
     var h=renderQA(text,fmt);if(h)return h;
   }
@@ -1473,11 +1478,11 @@ function formatChatText(text){
     if(/^[━─=]{3,}$/.test(line.trim())){flushPara();closeList();html+='<hr style="border:none;border-top:1px solid rgba(255,255,255,0.1);margin:0.6rem 0">';return;}
     var h=line.match(/^#{1,4}\s+(.*)$/);
     if(h){flushPara();closeList();html+='<div style="font-family:var(--font-h);font-weight:700;color:var(--text);margin:0.5rem 0 0.4rem">'+inline(h[1])+'</div>';return;}
-    var ul=line.match(/^\s*[-*•▸]\s+(.*)$/),ol=line.match(/^\s*\d+[.)]\s+(.*)$/);
+    var ul=line.match(/^\s*[-*•▸]\s+(.*)$/),ol=line.match(/^\s*(\d+)[.)]\s+(.*)$/);
     if(ul||ol){
       var tag=ul?'ul':'ol';flushPara();
-      if(list!==tag){closeList();html+='<'+tag+' style="margin:0 0 0.7rem;padding-left:1.3rem">';list=tag;}
-      html+='<li style="margin-bottom:0.25rem">'+inline((ul||ol)[1])+'</li>';return;
+      if(list!==tag){closeList();html+='<'+tag+(ol?' start="'+ol[1]+'"':'')+' style="margin:0 0 0.7rem;padding-left:1.6rem">';list=tag;}
+      html+='<li style="margin-bottom:0.25rem">'+inline(ul?ul[1]:ol[2])+'</li>';return;
     }
     closeList();para.push(line);
   });
@@ -1635,13 +1640,13 @@ async function sendChatMessage(isFullscreen){
       // Affichage progressif de la réponse, mot par mot.
       var box=document.getElementById(isFullscreen?'chat-fullscreen-messages':'chat-messages');
       var reader=response.body.getReader(),decoder=new TextDecoder(),acc='',bubble=null,pending=false;
-      var paint=function(){pending=false;if(bubble){bubble.innerHTML=formatChatText(acc);box.scrollTop=box.scrollHeight;}};
+      var lastPaint=0;var paint=function(){pending=false;lastPaint=Date.now();if(bubble){bubble.innerHTML=formatChatText(acc);box.scrollTop=box.scrollHeight;}};
       while(true){
         var chunk=await reader.read();
         if(chunk.done)break;
         acc+=decoder.decode(chunk.value,{stream:true});
         if(!bubble){removeTyping();addMessage('ai','',isFullscreen);bubble=box.lastElementChild.querySelector('.msg-content');}
-        if(!pending){pending=true;requestAnimationFrame(paint);}
+        if(!pending){pending=true;setTimeout(function(){requestAnimationFrame(paint);},Math.max(0,90-(Date.now()-lastPaint)));}
       }
       acc+=decoder.decode();
       removeTyping();
@@ -1741,6 +1746,8 @@ window.addEventListener('load',function(){if(location.hash==='#chat'&&typeof ope
 <script src="/maintenance.js" defer></script>
 <script src="/messages.js" defer></script>
 <script src="/lecture.js"></script>
+<script src="/mindmap.js"></script>
+<script src="/notes-examen.js"></script>
 <script>
 // Réglages choisis dans les Paramètres : format, langue, rappel des réglages actifs
 (function(){
