@@ -647,9 +647,9 @@ function renderGenMode(){
   } else {sub.textContent='Plus de détails et d\'explications · 3 crédits';a.classList.remove('locked');}
   updateGenCostNote();
 }
-// Cours longs : +1 crédit par tranche de 30 pages (~60 000 caractères) au-delà des 30 premières, en Approfondi (même calcul que le serveur).
+// Cours longs : +1 crédit par tranche de 30 pages (~60 000 caractères) au-delà des 30 premières, en Rapide comme en Approfondi (même calcul que le serveur).
 function longExtra(){
-  if(genMode!=='approfondi'||getPlan()==='starter')return 0;
+  if(getPlan()==='starter')return 0;
   var el=document.getElementById('course-input');var len=Math.min(el?el.value.length:0,getCharLimit());
   return Math.ceil(Math.max(0,len-60000)/60000);
 }
@@ -658,7 +658,7 @@ function genCost(n){
     if(getPlan()==='starter'){var o=offertsLeft();return Math.max(0,n-o);} // au-delà des offertes : Rapide, 1 crédit
     return (3+longExtra())*n;
   }
-  return n;
+  return (1+longExtra())*n;
 }
 function updateGenCostNote(){
   var el=document.getElementById('multi-note');if(!el)return;var n=selectedFormats.length;

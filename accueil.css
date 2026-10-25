@@ -539,7 +539,6 @@ html:not(.js) .bill-toggle button.on{background:var(--violet)}
 .plan-starter{background:var(--encre);border:1px solid var(--trait)}
 .plan-pro{background:linear-gradient(180deg,rgba(108,92,231,.12),var(--encre) 55%);border:1px solid rgba(108,92,231,.45)}
 .plan-ultimate{background:linear-gradient(180deg,rgba(253,203,110,.14),var(--encre) 55%);border:1.5px solid rgba(253,203,110,.6);box-shadow:0 0 0 1px rgba(253,203,110,.08),0 26px 70px -24px rgba(253,203,110,.28)}
-@media(min-width:900px){.plan-ultimate{margin-top:-10px;margin-bottom:10px}}
 .plan-badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#e17055,var(--or));color:#1a1200;font-size:.74rem;font-weight:800;padding:.3rem 1.1rem;border-radius:100px;white-space:nowrap}
 .plan-name{font-family:var(--fh);font-weight:800;font-size:1.2rem;letter-spacing:-.025em}
 .plan-pro .plan-name{color:var(--lavande)}

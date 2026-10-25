@@ -9,12 +9,12 @@ const SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
 //   Approfondi = Sonnet 5.5 → 3 crédits (par défaut sur Pro et Ultimate ; 2 fiches offertes une fois aux comptes gratuits)
 const MODE_MODEL = { rapide: 'claude-haiku-5-5', approfondi: 'claude-sonnet-5-5' };
 const MODE_COST = { rapide: 1, approfondi: 3 };
-// Cours longs (Pro et Ultimate) : au-delà de 30 pages (~60 000 caractères), +1 crédit par tranche de 30 pages
-// en mode Approfondi. Le calcul se fait ici, sur le texte réellement reçu : le navigateur affiche le même calcul.
+// Cours longs (Pro et Ultimate) : au-delà de 30 pages (~60 000 caractères), +1 crédit par tranche de 30 pages,
+// en Rapide comme en Approfondi (en Rapide, couvre la reprise par Sonnet si Haiku échoue sur un long cours).
+// Le calcul se fait ici, sur le texte réellement reçu : le navigateur affiche le même calcul.
 const CHARS_PER_TRANCHE = 60000;
 const CHAR_LIMIT = { starter: 30000, pro: 200000, ultimate: 500000 };
 function longCourseExtra(len, mode) {
-  if (mode !== 'approfondi') return 0;
   return Math.ceil(Math.max(0, len - CHARS_PER_TRANCHE) / CHARS_PER_TRANCHE);
 }
 const FALLBACK_MODEL = 'claude-sonnet-5-5'; // utilisé si un modèle venait à être refusé par l'API
