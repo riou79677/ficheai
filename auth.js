@@ -105,6 +105,48 @@
     };
   })();
 
+  // Session révoquée ailleurs (« Déconnecter tous les appareils », ou un seul appareil) : le jeton
+  // enregistré sur cet appareil reste lisible jusqu'à 1 h, donc on interroge le serveur régulièrement
+  // et on déconnecte dès que la session n'existe plus.
+  (function () {
+    var pages = ['/home.html', '/app.html', '/dashboard.html', '/revision.html', '/settings.html'];
+    if (pages.indexOf(location.pathname) === -1) return;
+    var busy = false, last = 0;
+    function dead() {
+      try { localStorage.removeItem('ficheai_user'); sessionStorage.removeItem('ficheai_mfa_check'); } catch (e) {}
+      location.replace('/login.html?revoked=1');
+    }
+    async function check() {
+      var u = readUser();
+      if (!u || !u.access_token || busy || Date.now() - last < 5000) return;
+      busy = true; last = Date.now();
+      try {
+        var r = await fetch(SUPABASE_URL + '/auth/v1/user', { headers: { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + u.access_token } });
+        if (r.status === 401 || r.status === 403) {
+          // Jeton refusé : soit il a expiré (le refresh_token le renouvelle), soit la session est révoquée.
+          var cur = readUser();
+          if (!cur || cur.access_token !== u.access_token) return;   // un autre onglet vient de le renouveler
+          if (!cur.refresh_token) { dead(); return; }
+          var rr = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=refresh_token', { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: SUPABASE_KEY }, body: JSON.stringify({ refresh_token: cur.refresh_token }) });
+          var again = readUser();
+          if (!again || again.refresh_token !== cur.refresh_token) return; // renouvelé entre-temps par un autre onglet
+          if (rr.ok) {
+            var d = await rr.json();
+            if (d && d.access_token) {
+              again.access_token = d.access_token; again.refresh_token = d.refresh_token || again.refresh_token;
+              again.expires_at = d.expires_at || (Math.floor(Date.now() / 1000) + (d.expires_in || 3600));
+              localStorage.setItem('ficheai_user', JSON.stringify(again));
+            }
+          } else if (rr.status === 400 || rr.status === 401 || rr.status === 403) dead();
+        }
+      } catch (e) { /* réseau coupé : on ne déconnecte pas */ } finally { busy = false; }
+    }
+    setInterval(function () { if (!document.hidden) check(); }, 30000);
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) check(); });
+    window.addEventListener('focus', check);
+    setTimeout(check, 3000);
+  })();
+
   // Déconnexion automatique après une période d'inactivité (réglable dans Paramètres → Sécurité,
   // propre à chaque appareil : 30 min par défaut, 2 h, 8 h ou jamais).
   (function () {
