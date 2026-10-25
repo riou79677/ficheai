@@ -137,6 +137,7 @@ nav{position:sticky;top:0;z-index:100;background:rgba(7,7,15,0.85);backdrop-filt
 .tv-sheet i{display:block;height:4px;border-radius:2px;background:#cfcbe6;margin-top:7px}
 .tv-sheet.s1{left:36px;top:8px;transform:rotate(-6deg)}.tv-sheet.s2{left:118px;top:14px;transform:rotate(5deg);background:#eafaf4;animation:onbIn .6s .25s cubic-bezier(.32,.72,0,1) both}
 .tv-sheet.s2 b{color:#0b8f7b}
+.tv-2fa{text-align:center}.tv-2fa .sh{font-size:2rem;display:block;margin-bottom:8px}.tv-2fa .cd{display:flex;gap:6px;justify-content:center}.tv-2fa .cd span{width:30px;height:40px;border-radius:9px;display:grid;place-items:center;font-weight:800;font-size:1.05rem;background:rgba(108,92,231,.22);border:1px solid rgba(162,155,254,.4);color:#e4e1ff;animation:onbIn .5s cubic-bezier(.32,.72,0,1) both}.tv-2fa .cd span:nth-child(2){animation-delay:.06s}.tv-2fa .cd span:nth-child(3){animation-delay:.12s}.tv-2fa .cd span:nth-child(4){animation-delay:.18s}.tv-2fa .cd span:nth-child(5){animation-delay:.24s}.tv-2fa .cd span:nth-child(6){animation-delay:.3s}.tv-2fa small{display:block;margin-top:8px;font-size:.7rem;color:var(--text3)}
 .tv-set{display:flex;gap:14px;align-items:center}
 .tv-sw{width:96px;height:78px;border-radius:14px;border:1px solid var(--border2);display:grid;place-items:end center;padding-bottom:8px;font-size:.68rem;font-weight:700}
 .tv-sw.d{background:linear-gradient(135deg,#09090f,#1a1a2e);color:#cfcaff}.tv-sw.l{background:linear-gradient(135deg,#f7f5ff,#ece8ff);color:#3a3553}
@@ -685,7 +686,7 @@ function showToast(msg){
 // Nouveau compte : présentation complète, une seule fois. Compte existant : seulement les nouveautés ajoutées depuis sa dernière visite.
 // Pour annoncer de nouvelles fonctions plus tard : ajouter une étape avec since = (nouvelle version), puis augmenter TOUR_VERSION.
 // La dernière version vue est enregistrée sur le compte (réglage « visite »), donc elle suit l'élève sur tous ses appareils.
-var TOUR_VERSION=2;
+var TOUR_VERSION=3;
 var TOUR_STEPS=[
   {id:'cours',since:1,welcome:true,title:'Colle ou importe ton cours',
    text:function(p){return 'Colle ton texte dans la zone du milieu, ou importe un PDF ('+(p==='ultimate'?250:p==='pro'?100:15)+' pages maximum avec ton plan).';}},
@@ -699,8 +700,10 @@ var TOUR_STEPS=[
    text:function(){return 'Le Mode Révision te représente chaque flashcard juste avant que tu l’oublies. Note ta réponse (Oubli, Difficile, Bien, Facile) et atteins ton objectif du jour.';}},
   {id:'examen',since:2,welcome:false,paid:true,title:'Sujets d’examen avec corrigé',
    text:function(){return 'Choisis le format « Sujet d’examen » : un sujet original dans le style du brevet, du bac, d’un DS ou d’un partiel, noté sur 20, avec son corrigé détaillé.';}},
+  {id:'securite',since:3,welcome:true,title:'Protège ton compte en 2 étapes',
+   text:function(){return 'Active la double authentification dans Paramètres, puis Sécurité : en plus de ton mot de passe, un code à 6 chiffres généré par ton téléphone est demandé à la connexion. Un mot de passe volé ne suffit plus pour entrer dans ton compte. Ça prend 2 minutes.';}},
   {id:'reglages',since:2,welcome:true,title:'FicheAI à ta façon',
-   text:function(p){return 'Dans les paramètres : ton niveau scolaire, le thème clair ou sombre, la taille du texte, les alertes de crédits'+(p==='starter'?'':', ton objectif du jour')+' et la double authentification.';}}
+   text:function(p){return 'Dans les paramètres : ton niveau scolaire, le thème clair ou sombre, la taille du texte, les alertes de crédits'+(p==='starter'?'':' et ton objectif du jour')+'.';}}
 ];
 var TOUR_VISUALS={
   cours:'<div class="tv"><div class="tv-paper"><b></b><i></i><i></i><i></i><i></i></div><span class="tv-file">📄 cours.pdf</span><span class="tv-up">⬆</span></div>',
@@ -709,6 +712,7 @@ var TOUR_VISUALS={
   chat:'<div class="tv-chat"><span class="q">Je ne comprends pas le cycle de Calvin</span><span class="a">Bien sûr. Dans ton cours, c’est la phase qui fabrique le glucose…</span></div>',
   revision:'<div class="tv-flash"><div class="c">Où se trouve la chlorophylle ?</div><div class="r"><span>Oubli</span><span>Difficile</span><span>Bien</span><span>Facile</span></div></div>',
   examen:'<div class="tv"><div class="tv-sheet s1"><b>Sujet type bac</b><i></i><i></i><i></i><i></i></div><div class="tv-sheet s2"><b>Corrigé</b><i></i><i></i><i></i><i></i></div></div>',
+  securite:'<div class="tv-2fa"><span class="sh">🛡️</span><div class="cd"><span>4</span><span>8</span><span>2</span><span>9</span><span>1</span><span>7</span></div><small>Code à 6 chiffres</small></div>',
   reglages:'<div class="tv-set"><div class="tv-sw d">Sombre</div><div class="tv-sw l">Clair</div><span class="tv-lock">🔒</span></div>'
 };
 var onbSteps=[],onbStep=0,onbOpen=false,onbWelcome=true,onbReturn=null;
