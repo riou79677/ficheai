@@ -72,7 +72,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Corps invalide' });
   }
 
-  // Price IDs Stripe. « credits » = crédits par mois (Rapide 1, Approfondi 2, chat 1) ; les autres limites ne servent plus.
+  // Price IDs Stripe. « credits » = crédits par mois (Rapide 1, Approfondi 3, chat 1) ; les autres limites ne servent plus.
   const PLANS = {
     'price_1TXfc5JBbEVt3aRD8UpsC4Ym': { plan: 'pro',      credits: 110, genLimit: 50,  chatLimit: 20,  fcLimit: 100 },  // Pro mensuel
     'price_1TXfefJBbEVt3aRDhNEcUNQl': { plan: 'pro',      credits: 110, genLimit: 50,  chatLimit: 20,  fcLimit: 100 },  // Pro annuel
