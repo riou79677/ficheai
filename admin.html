@@ -296,6 +296,39 @@ tr.clickable-row:hover .u-go{color:var(--purple2)}
   </div>
 </div>
 
+<div class="modal-overlay" id="plan-modal-overlay">
+  <div class="modal-box" style="max-width:400px">
+    <h2>✏️ Changer le forfait</h2>
+    <p style="font-size:0.83rem;color:var(--text2);margin-bottom:0.3rem">Utilisateur : <strong id="plan-modal-email" style="color:var(--purple2)"></strong></p>
+    <p style="font-size:0.83rem;color:var(--text2);margin-bottom:1rem">Plan actuel : <strong id="plan-modal-current"></strong></p>
+    <p style="font-size:0.8rem;color:var(--text3);margin-bottom:0.3rem">Nouveau forfait :</p>
+    <div class="plan-selector">
+      <button class="plan-btn" id="plan-btn-starter" onclick="selectPlan('starter')">🆓 Starter</button>
+      <button class="plan-btn" id="plan-btn-pro" onclick="selectPlan('pro')">⚡ Pro</button>
+      <button class="plan-btn" id="plan-btn-ultimate" onclick="selectPlan('ultimate')">👑 Ultimate</button>
+    </div>
+    <div id="plan-duration-zone" style="display:none;margin:0.6rem 0">
+      <p style="font-size:0.8rem;color:var(--text3);margin-bottom:0.3rem">Durée de l'accès :</p>
+      <select id="plan-duration" style="width:100%;background:var(--bg3);border:1.5px solid var(--border2);border-radius:10px;padding:0.6rem 0.8rem;color:var(--text);font-family:inherit">
+        <option value="">Sans limite (jusqu'à changement manuel)</option>
+        <option value="7">7 jours puis retour automatique en Starter</option>
+        <option value="14">14 jours puis retour automatique en Starter</option>
+        <option value="30">30 jours puis retour automatique en Starter</option>
+      </select>
+    </div>
+    <p class="mini-note" id="plan-limits-note"></p>
+    <div id="plan-confirm-zone" style="display:none;margin-top:1rem">
+      <p style="font-size:0.78rem;color:var(--text3);margin-bottom:0.4rem">Code de confirmation : <strong id="plan-code-display" style="color:var(--purple2);letter-spacing:0.15em;font-size:1rem"></strong></p>
+      <input type="text" id="plan-code-input" placeholder="Entre le code ci-dessus" maxlength="6" style="width:100%;background:var(--bg3);border:1.5px solid var(--border2);border-radius:10px;padding:0.65rem 1rem;font-size:0.9rem;color:var(--text);font-family:inherit;outline:none;text-align:center;letter-spacing:0.15em">
+      <div id="plan-code-err" style="color:var(--red);font-size:0.78rem;margin-top:0.4rem;display:none"></div>
+      <button class="plan-confirm-btn" id="plan-confirm-btn" onclick="confirmPlanChange()">Confirmer le changement</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:1rem">
+      <button onclick="closePlanModal()" style="flex:1;background:transparent;border:1px solid var(--border2);border-radius:10px;padding:0.65rem;color:var(--text2);cursor:pointer;font-family:inherit">Annuler</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="gift-modal-overlay">
   <div class="modal-box" style="max-width:400px">
     <h2>🎁 Offrir des crédits</h2>
