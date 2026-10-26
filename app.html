@@ -1372,8 +1372,10 @@ document.getElementById('gen-btn').addEventListener('click',async function(){
     var f=formats[k],meta=formatMeta(f);
     btn.textContent=formats.length>1?('Génération '+(k+1)+'/'+formats.length+'…'):'Génération en cours…';
     try{
-      var response=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+((await ficheaiToken())||'')},body:JSON.stringify({course:input,format:f,nb_formats:formats.length,mode:genMode,language:langSel,instructions:instructions,longueur:longueur,nombre:nombres[f]||null,diagrams:!!(document.getElementById('diagrams-input')&&document.getElementById('diagrams-input').checked),images:pdfImagesFor(input)})});
-      var data=await readResponseSafely(response,'génération');
+      // Filet de sécurité : si la connexion se perd, le chargement s'arrête au bout de 5 min 20 au lieu de tourner sans fin.
+      var genAbort=new AbortController(),genTimer=setTimeout(function(){genAbort.abort();},320000);
+      var response=await fetch('/api/generate',{signal:genAbort.signal,method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+((await ficheaiToken())||'')},body:JSON.stringify({course:input,format:f,nb_formats:formats.length,mode:genMode,language:langSel,instructions:instructions,longueur:longueur,nombre:nombres[f]||null,diagrams:!!(document.getElementById('diagrams-input')&&document.getElementById('diagrams-input').checked),images:pdfImagesFor(input)})});
+      var data=await readResponseSafely(response,'génération');clearTimeout(genTimer);
       if(data.error){
         if(response.status===403&&(data.reason==='limit_reached'||data.reason==='daily_limit_reached'||/limite|crédits/i.test(data.error||''))&&generatedResults.length===0){
           spinner.style.display='none';resultCard.style.display='none';showLimitModal(data.error);btn.disabled=false;btn.innerHTML=GEN_BTN_HTML;return;
@@ -1396,7 +1398,7 @@ document.getElementById('gen-btn').addEventListener('click',async function(){
       renderHistory();
       if(generatedResults.length===1){spinner.style.display='none';content.style.display='block';setActiveResultTab(0);}
       else{renderResultTabs();}
-    }catch(e){failedFormats.push(meta.name+' : '+e.message);}
+    }catch(e){try{clearTimeout(genTimer);}catch(_){} failedFormats.push(meta.name+' : '+(e&&e.name==='AbortError'?'la génération a pris trop de temps ou la connexion a été coupée. Réessaie, ou découpe ton cours en parties plus courtes.':e.message));}
   }
   if(failedFormats.length){partialError=failedFormats.join(' · ');}
   if(generatedResults.length===0){
