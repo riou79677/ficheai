@@ -226,7 +226,7 @@ async function finishLogin(email,data){
       var offre=pending.plan==='pro'?(pending.billing==='yearly'?'pro_yearly':'pro_monthly'):'ultimate_monthly';
       setTimeout(function(){window.location.href='/settings.html?offre='+offre;},600);
     } else {
-    setTimeout(function(){window.location.href='/home.html';},800);
+    var nx=new URLSearchParams(location.search).get('next')||'';if(!/^\/[a-zA-Z0-9_\-]+\.html(\?[a-zA-Z0-9_=&%.\-]*)?(#[a-zA-Z0-9_\-]*)?$/.test(nx))nx='/home.html';setTimeout(function(){window.location.href=nx;},800);
     }
 }
 

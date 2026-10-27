@@ -85,7 +85,7 @@ h1{font-family:var(--font-h);font-size:clamp(1.5rem,4vw,2.1rem);font-weight:800;
 <script>
 var SB='https://qyjqtjrqnlbgtxvnjvnk.supabase.co',KEY='sb_publishable_opljKH5NsZwkuLpYQAyh4A_9FwNc4yJ';
 var u=null;try{u=JSON.parse(localStorage.getItem('ficheai_user'));}catch(e){}
-if(!u||!u.email){window.location.replace('/login.html');}
+if(!u||!u.email){window.location.replace('/login.html?next=/home.html');}
 function esc(t){return String(t==null?'':t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
 document.getElementById('logout').addEventListener('click',function(e){e.preventDefault();window.ficheaiLogout('/');});
 (async function(){

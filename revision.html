@@ -214,7 +214,7 @@ function cleanTitle(t){
 async function loadDashboard(){
   var box = document.getElementById('dash-content');
   if(!EMAIL){
-    box.innerHTML = '<div class="empty">Tu dois être connecté pour réviser.<br><br><a class="btn" href="login.html">Se connecter</a></div>';
+    box.innerHTML = '<div class="empty">Tu dois être connecté pour réviser.<br><br><a class="btn" href="/login.html?next=/revision.html">Se connecter</a></div>';
     return;
   }
   box.innerHTML = '<div class="spinner"></div>';

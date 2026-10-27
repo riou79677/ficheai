@@ -161,7 +161,7 @@ function deconnexion(){window.ficheaiLogout('/');}
 var savedUser=null;
 try{savedUser=JSON.parse(localStorage.getItem('ficheai_user'));}catch(e){}
 if(!savedUser||!savedUser.email){
-document.getElementById('main-content').innerHTML='<div class="not-logged"><h2>🔐 Connecte-toi pour accéder à ta bibliothèque</h2><p>Tes fiches sont sauvegardées et accessibles depuis n\'importe quel appareil.</p><a href="/login.html" class="btn-primary">Se connecter</a></div>';
+document.getElementById('main-content').innerHTML='<div class="not-logged"><h2>🔐 Connecte-toi pour accéder à ta bibliothèque</h2><p>Tes fiches sont sauvegardées et accessibles depuis n\'importe quel appareil.</p><a href="/login.html?next=/dashboard.html" class="btn-primary">Se connecter</a></div>';
 }else{
 currentUser=savedUser;
 document.getElementById('user-badge').style.display='inline-block';
