@@ -1,24 +1,27 @@
 import { rateLimit, clientIp } from './_ratelimit.js';
 import { banMessage } from './_ban.js';
 import { mfaMissing, MFA_REQUIRED } from './_mfa.js';
-import { reserveGenerationEur, releaseReserve, BUDGET_MESSAGE } from './_budget.js';
+import { releaseReserve, BUDGET_MESSAGE, EUR_PER_CREDIT, OFFERT_RESERVE_EUR } from './_budget.js';
 const SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
 
-// Deux modes de génération (23/10/2026), payés en crédits. Tarifs en $ par million de tokens (entrée / sortie) :
+// Deux modes de génération, payés en crédits. Tarifs en $ par million de tokens (entrée / sortie) :
 // Haiku 5.5 = 0,10 / 0,50 · Sonnet 5.5 = 2 / 10.
 //   Rapide     = Haiku 5.5  → 1 crédit
-//   Approfondi = Sonnet 5.5 → 3 crédits (par défaut sur Pro et Ultimate ; 2 fiches offertes une fois aux comptes gratuits)
+//   Approfondi = Sonnet 5.5 → 3 crédits, 4 pour les formats longs (fiche détaillée, quiz de 10, 20 cartes, 10 questions, sujet d'examen)
+// Garantie de marge (28/10/2026) : chaque crédit coûte au maximum 0,039 € d'IA. Pour ça :
+//  - longueur de réponse plafonnée (7 000 tokens, 9 500 pour les formats longs, +400 par tranche de cours long) ;
+//  - cours longs : +1 crédit par tranche de 20 pages (~40 000 caractères) au-delà des 20 premières, dans les deux modes ;
+//  - pages en image (Approfondi) : +1 crédit par groupe de 4 pages ;
+//  - plus de second essai automatique facturé à FicheAI : en cas d'échec, les crédits sont rendus et l'élève relance.
+// Le calcul se fait ici, sur le texte réellement reçu : le navigateur affiche le même calcul (app.html, genCost).
 const MODE_MODEL = { rapide: 'claude-haiku-5-5', approfondi: 'claude-sonnet-5-5' };
-const MODE_COST = { rapide: 1, approfondi: 3 };
-// Cours longs (Pro et Ultimate) : au-delà de 30 pages (~60 000 caractères), +1 crédit par tranche de 30 pages,
-// en Rapide comme en Approfondi (en Rapide, couvre la reprise par Sonnet si Haiku échoue sur un long cours).
-// Le calcul se fait ici, sur le texte réellement reçu : le navigateur affiche le même calcul.
-const CHARS_PER_TRANCHE = 60000;
+const CHARS_PER_TRANCHE = 40000;
 const CHAR_LIMIT = { starter: 30000, pro: 200000, ultimate: 500000 };
-function longCourseExtra(len, mode) {
+const IMG_CAP_BY_PLAN = { pro: 4, ultimate: 8 };
+const OUT_CAP = { normal: 7000, long: 9500, perTranche: 400 };
+function longCourseExtra(len) {
   return Math.ceil(Math.max(0, len - CHARS_PER_TRANCHE) / CHARS_PER_TRANCHE);
 }
-const FALLBACK_MODEL = 'claude-sonnet-5-5'; // utilisé si un modèle venait à être refusé par l'API
 const PRICES = { 'claude-haiku-5-5': [0.10, 0.50], 'claude-sonnet-5-5': [2, 10] }; // $ par million de tokens (entrée, sortie)
 
 // Vercel coupe les fonctions à 10 s par défaut. Une génération sur un cours long dépasse ce délai,
@@ -160,23 +163,22 @@ export default async function handler(req, res) {
   const RUN_MODEL = MODE_MODEL[mode];
   const charLimit = CHAR_LIMIT[user.plan] || CHAR_LIMIT.starter;
   const usedLen = Math.min(String(course).length, charLimit);
-  const extra = offert ? 0 : longCourseExtra(usedLen, mode);
-  const cost = offert ? 0 : MODE_COST[mode] + extra;
+  // Format long (réponse plus longue) : fiche détaillée, 10 questions de quiz, 20 cartes, 10 questions ouvertes, sujet d'examen.
+  const COUNT_OPTS = { quiz: [6, 10], flash: [10, 20], questions: [6, 10] };
+  const optsF = COUNT_OPTS[format];
+  const nItems = optsF ? (optsF.includes(Number(nombre)) ? Number(nombre) : optsF[0]) : null;
+  const isLong = format === 'examen' || (format === 'fiche' && longueur === 'detaillee') || (!!optsF && nItems === optsF[1]);
+  const longExtra = longCourseExtra(usedLen);
+  const imageCount = Array.isArray(reqImages) ? Math.min(reqImages.length, IMG_CAP_BY_PLAN[user.plan] || 0) : 0;
+  const imgExtra = mode === 'approfondi' ? Math.ceil(imageCount / 4) : 0;
+  const extra = offert ? 0 : longExtra;
+  const cost = offert ? 0 : (mode === 'approfondi' ? (isLong ? 4 : 3) : 1) + extra + imgExtra;
+  // Longueur maximale de la réponse : c'est elle qui borne le coût (la sortie coûte 5 fois plus cher que l'entrée).
+  const outCap = (isLong ? OUT_CAP.long : OUT_CAP.normal) + OUT_CAP.perTranche * longExtra;
   let debit = null; // ce qui a été réellement débité, pour un remboursement exact en cas d'échec
 
-  // ── Budget en euros : on réserve le coût MAXIMAL que cette génération peut entraîner (appels de secours compris).
-  // Le coût réel est imputé ensuite automatiquement ; la réservation est libérée à la fin de la requête.
-  const imgCap = { pro: 4, ultimate: 8 }[user.plan] || 0;
-  const imageCount = Array.isArray(reqImages) ? Math.min(reqImages.length, imgCap) : 0;
-  const outFactor = format === 'flash' ? 1.8 : format === 'quiz' ? 1.6 : format === 'questions' ? 1.5 : 1.25;
-  const outTokensMax = Math.min(12000, Math.round((MAX_TOKENS[format] || 3000) * outFactor * 1.25 + 900)) + 600;
-  let reservedEur = reserveGenerationEur({
-    mode,
-    inChars: usedLen + 9000 + 720, // cours + consignes du format et du système + consignes libres
-    outTokens: outTokensMax,
-    imageCount,
-    cached: (parseInt(nb_formats, 10) || 1) > 1
-  });
+  // Budget en euros : chaque crédit débité couvre au plus 0,039 € de coût réel (filet de sécurité, libéré en fin de requête).
+  let reservedEur = offert ? OFFERT_RESERVE_EUR : Math.round(cost * EUR_PER_CREDIT * 10000) / 10000;
   try {
     const quotaRes = await fetch(
       SUPABASE_URL + '/rest/v1/rpc/consume_credits',
@@ -476,13 +478,16 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
     : '';
 
   try {
-    const baseTokens = Math.min(12000, Math.round(((MAX_TOKENS[format] || 3000) * lengthFactor + (wantDiagrams ? 900 : 0)) * (String(course).length > 12000 ? 1.25 : 1)));
+    // Longueur de réponse plafonnée (outCap) : garantit qu'un crédit ne coûte jamais plus de 0,039 € d'IA.
+    const baseTokens = Math.min(outCap, Math.round(((MAX_TOKENS[format] || 3000) * lengthFactor + (wantDiagrams ? 900 : 0)) * (String(course).length > 12000 ? 1.25 : 1)));
     // Le cours vient en premier, la consigne du format après : quand l'élève génère plusieurs formats d'un même
     // cours à la suite, ce début identique est mis en cache (cache de prompt, 5 min) et relu à 10 % du prix.
     // Un seul format : pas de cache (l'écriture en cache coûte 25 % de plus sans être jamais relue).
     const useCache = (parseInt(nb_formats, 10) || 1) > 1;
     const courseBlock = '---COURS---\n' + String(course).substring(0, charLimit) + '\n---FIN COURS---';
-    const taskBody = promptText + instructionsBlock + diagramBlock;
+    // L'IA est prévenue de la longueur maximale, pour condenser au lieu d'être coupée en plein milieu.
+    const lengthGuard = '\n\nLONGUEUR MAXIMALE : ta réponse complète (schémas compris) doit tenir en environ ' + (Math.round(outCap * 0.5 / 100) * 100) + ' mots au plus. Si le cours est très long, condense chaque partie plutôt que d\'en omettre une, et termine toujours toutes les sections.';
+    const taskBody = promptText + instructionsBlock + diagramBlock + lengthGuard;
     const finalLine = '\n\nGénère maintenant le contenu demandé.';
 
     // Schémas et images du PDF (plans Pro et Ultimate) : les pages concernées arrivent en images JPEG/PNG,
@@ -532,13 +537,11 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
         return response.json();
       };
       let d = await send();
-      // Modèle refusé (introuvable ou indisponible) : on bascule une fois sur le modèle de secours.
-      if (d.error && payload.model !== FALLBACK_MODEL && (d.error.type === 'not_found_error' || /model/i.test(String(d.error.message || '')))) {
-        console.error('Modèle refusé, bascule sur ' + FALLBACK_MODEL + ' :', payload.model, d.error.message);
+      // Modèle refusé (introuvable ou indisponible) : plus de bascule vers Sonnet en mode Rapide (elle coûtait 15 fois le prix
+      // d'un crédit). L'erreur est journalisée, les crédits sont rendus et l'élève peut relancer.
+      if (d.error && (d.error.type === 'not_found_error' || /model/i.test(String(d.error.message || '')))) {
+        console.error('Modèle refusé :', payload.model, d.error.message);
         logApiUsage(SERVICE_KEY, email, 'info:modele-refuse:' + payload.model + ':' + String(d.error.message || '').slice(0, 80), payload.model, 0, 0);
-        payload.model = FALLBACK_MODEL;
-        applyThinking();
-        d = await send();
       }
       while (d.error && payload.thinking && /thinking|budget/i.test(String(d.error.message || '')) && optIdx() < THINKING_OPTIONS.length - 1) {
         console.error('Réglage de réflexion refusé :', JSON.stringify(payload.thinking), d.error.message);
@@ -557,14 +560,13 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
       .map((b) => b.text)
       .join('');
 
-    // Première tentative ; si l'IA ne renvoie aucun texte (budget de sortie épuisé par la réflexion, par exemple),
-    // un second essai est lancé automatiquement avec un budget doublé, sans rien coûter de plus à l'utilisateur.
+    // Un seul essai facturé : si l'IA ne renvoie aucun texte, les crédits sont rendus et l'élève relance (voir plus bas).
     const t0 = Date.now();
     let imagesUsed = images.length;
     let imagesDropped = false;
     let data;
     try {
-      data = await callModel(baseTokens + (images.length ? 600 : 0), true);
+      data = await callModel(Math.min(outCap, baseTokens + (images.length ? 600 : 0)), true);
     } catch (e) {
       if (!images.length) throw e;
       // Si l'IA refuse les images (taille, format...), la génération continue avec le texte seul.
@@ -575,18 +577,12 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
       data = await callModel(baseTokens, false);
     }
     let text = extractText(data);
-    if (!text.trim() && Date.now() - t0 < 22000) { // le second essai n'a lieu que s'il reste assez de temps avant la limite de 60 s
-      console.error('Réponse IA sans texte (essai 1). stop_reason =', data.stop_reason, '| types de blocs =', (data.content || []).map((b) => b && b.type));
-      logApiUsage(SERVICE_KEY, email, 'info:generation:' + format + ':vide-essai-1:' + (data.stop_reason || '?'), RUN_MODEL, 0, 0);
-      data = await callModel(Math.min(Math.round(baseTokens * 1.75), 9000), imagesUsed > 0);
-      text = extractText(data);
-    }
 
     // ── Contrôle qualité du mode Rapide (Haiku 5.5) ──
     // Les consignes sont identiques pour tous les forfaits. Si la réponse de Haiku est incomplète (coupée, sections
-    // obligatoires absentes, nettement trop courte pour la taille du cours), elle est refaite avec Sonnet 5.5 :
-    // l'élève reçoit toujours une fiche complète, et ce cas reste rare (environ 6 centimes quand il arrive).
-    if (text.trim() && data._model !== FALLBACK_MODEL && Date.now() - t0 < 25000) {
+    // obligatoires absentes, nettement trop courte pour la taille du cours), Haiku la refait une seconde fois.
+    // (Avant le 28/10/2026, la reprise se faisait avec Sonnet : elle pouvait coûter 15 fois le prix du crédit débité.)
+    if (text.trim() && mode === 'rapide' && Date.now() - t0 < 25000) {
       const count = (re) => (text.match(re) || []).length;
       const courseLen = String(course).length;
       const checks = {
@@ -602,10 +598,10 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
       if (!ok) {
         logApiUsage(SERVICE_KEY, email, 'info:qualite-haiku-insuffisante:' + format + ':' + (data.stop_reason || '?'), data._model, 0, 0);
         try {
-          const d2 = await callModel(baseTokens, false, FALLBACK_MODEL);
+          const d2 = await callModel(baseTokens, imagesUsed > 0);
           const t2 = extractText(d2);
-          if (t2.trim()) { data = d2; text = t2; }
-        } catch (e) { console.error('Reprise Sonnet échouée, réponse Haiku conservée :', e.message); }
+          if (t2.trim() && (d2.stop_reason !== 'max_tokens' || data.stop_reason === 'max_tokens')) { data = d2; text = t2; }
+        } catch (e) { console.error('Second essai Haiku échoué, première réponse conservée :', e.message); }
       }
     }
 
@@ -614,7 +610,7 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
     // Les modèles récents peuvent renvoyer plusieurs blocs (réflexion + texte) : on assemble tous les blocs de texte
     // au lieu de lire seulement le premier (c'était la cause de l'erreur « reading 'split' »).
     if (!text.trim()) {
-      console.error('Réponse IA sans texte (essai 2). stop_reason =', data.stop_reason, '| types de blocs =', (data.content || []).map((b) => b && b.type));
+      console.error('Réponse IA sans texte. stop_reason =', data.stop_reason, '| types de blocs =', (data.content || []).map((b) => b && b.type));
       await logApiUsage(SERVICE_KEY, email, 'erreur:generation:' + format + ':vide:' + (data.stop_reason || '?'), RUN_MODEL, 0, 0);
       await refundGeneration();
       return res.status(502).json({ error: "L'IA n'a pas renvoyé de texte cette fois, ta génération t'a été rendue. Réessaie dans un instant." });

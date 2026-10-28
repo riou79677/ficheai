@@ -1,7 +1,7 @@
 import { rateLimit, clientIp } from './_ratelimit.js';
 import { banMessage } from './_ban.js';
 import { mfaMissing, MFA_REQUIRED } from './_mfa.js';
-import { reserveSingleCallEur, releaseReserve, BUDGET_MESSAGE } from './_budget.js';
+import { releaseReserve, BUDGET_MESSAGE, EUR_PER_CREDIT } from './_budget.js';
 const SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
 
 // Modèle IA utilisé selon le plan. Tarifs en $ par million de tokens (entrée / sortie) :
@@ -52,7 +52,7 @@ export default async function handler(req, res) {
 
   // Historique nettoyé avant tout appel à l'IA : rôles autorisés, texte seul, longueurs plafonnées.
   // Sans ce plafond, un script pouvait envoyer une conversation géante facturée à chaque message.
-  const MAX_MSG_CHARS = 16000, MAX_TOTAL_CHARS = 30000; // ~7 500 tokens d'historique : un message reste sous 1 crédit de coût
+  const MAX_MSG_CHARS = 15000, MAX_TOTAL_CHARS = 15000; // historique plafonné : un message coûte au plus 0,039 € (1 crédit)
   const cleanMessages = messages.slice(-12).map((m) => {
     if (!m || (m.role !== 'user' && m.role !== 'assistant')) return null;
     let c = m.content;
@@ -141,8 +141,8 @@ export default async function handler(req, res) {
   if (maintBlock && user.is_dev !== true) return res.status(503).json({ error: maintBlock, reason: 'maintenance' });
 
   let debit = null;
-  // Budget en euros : on réserve le coût maximal de ce message (consignes + extrait du cours + historique + réponse de 2 500 tokens).
-  let reservedEur = reserveSingleCallEur(modelFor(user.plan), 6500 + Math.min(String(courseContent || '').length, 8000) + totalChars, 2500);
+  // Budget en euros : 1 crédit couvre au plus 0,039 € (consignes + extrait du cours + historique plafonné + réponse de 1 900 tokens).
+  let reservedEur = EUR_PER_CREDIT;
   try {
     const quotaRes = await fetch(
       SUPABASE_URL + '/rest/v1/rpc/consume_credits',
@@ -240,7 +240,7 @@ Style de réponse :
     const chatPayload = {
       model: modelFor(user.plan),
       stream: true,
-      max_tokens: 2500, // réponse longue possible ; plafond tenu sous le coût d'1 crédit
+      max_tokens: 1900, // ~1 200 mots : réponse longue possible, coût tenu sous 0,039 € (1 crédit)
       system: systemPrompt,
       messages: cleanMessages
     };

@@ -673,28 +673,43 @@ function renderGenMode(){
     var o=offertsLeft();
     sub.textContent=o>0?(o+' fiche'+(o>1?'s':'')+' offerte'+(o>1?'s':'')+' · 0 crédit'):'🔒 Disponible avec Pro';
     a.classList.toggle('locked',o<=0);
-  } else {sub.textContent='Plus de détails et d\'explications · 3 crédits';a.classList.remove('locked');}
+  } else {sub.textContent='Plus de détails et d\'explications · 3 crédits (4 pour les formats longs)';a.classList.remove('locked');}
   updateGenCostNote();
 }
-// Cours longs : +1 crédit par tranche de 30 pages (~60 000 caractères) au-delà des 30 premières, en Rapide comme en Approfondi (même calcul que le serveur).
+// Coût en crédits : même calcul que le serveur (api/generate.js), qui garantit qu'un crédit coûte au plus 0,039 € d'IA.
+// Cours longs : +1 crédit par tranche de 20 pages (~40 000 caractères) au-delà des 20 premières, en Rapide comme en Approfondi.
 function longExtra(){
   if(getPlan()==='starter')return 0;
-  var el=document.getElementById('course-input');var len=Math.min(el?el.value.length:0,getCharLimit());
-  return Math.ceil(Math.max(0,len-60000)/60000);
+  var el=document.getElementById('course-input');var len=Math.min(el?el.value.trim().length:0,getCharLimit());
+  return Math.ceil(Math.max(0,len-40000)/40000);
 }
+// Formats longs en Approfondi (4 crédits au lieu de 3) : fiche détaillée, quiz de 10, 20 cartes, 10 questions, sujet d'examen.
+function isLongFormat(f){
+  if(f==='examen')return true;
+  var P=window.FichePrefs;if(!P)return false;
+  if(f==='fiche')return P.get('longueur')==='detaillee';
+  var opts={quiz:[6,10],flash:[10,20],questions:[6,10]}[f],key={quiz:'nb_quiz',flash:'nb_flash',questions:'nb_questions'}[f];
+  return !!opts&&Number(P.get(key))===opts[1];
+}
+// Pages en image lues par l'IA (Approfondi) : +1 crédit par groupe de 4 pages.
+function imgExtra(){
+  var cap=getPlan()==='ultimate'?8:getPlan()==='pro'?4:0;if(!cap)return 0;
+  var el=document.getElementById('course-input');
+  return Math.ceil(Math.min(pdfImagesFor(el?el.value.trim():'').length,cap)/4);
+}
+function formatCost(f){return genMode==='approfondi'?(isLongFormat(f)?4:3)+longExtra()+imgExtra():1+longExtra();}
 function genCost(n){
-  if(genMode==='approfondi'){
-    if(getPlan()==='starter'){var o=offertsLeft();return Math.max(0,n-o);} // au-delà des offertes : Rapide, 1 crédit
-    return (3+longExtra())*n;
-  }
-  return (1+longExtra())*n;
+  if(genMode==='approfondi'&&getPlan()==='starter'){var o=offertsLeft();return Math.max(0,n-o);} // au-delà des offertes : Rapide, 1 crédit
+  var fs=selectedFormats.slice(0,n),t=0;
+  for(var i=0;i<fs.length;i++)t+=formatCost(fs[i]);
+  return t;
 }
 function updateGenCostNote(){
   var el=document.getElementById('multi-note');if(!el)return;var n=selectedFormats.length;
   if(!genMode)genMode=defaultGenMode();
   var c=genCost(n);
   el.style.display='block';
-  el.textContent=(n>1?'⚡ '+n+' formats · ':'')+(c===0?'Offert : aucun crédit utilisé':'Coût : '+c+' crédit'+(c>1?'s':''))+(longExtra()?' · 📚 cours long : +'+longExtra()+' crédit'+(longExtra()>1?'s':'')+(n>1?' par format':'')+' (+1 par tranche de 30 pages au-delà de 30)':'')+(tokensLeft<100000?' · il te reste '+tokensLeft+' crédit'+(tokensLeft>1?'s':''):'');
+  el.textContent=(n>1?'⚡ '+n+' formats · ':'')+(c===0?'Offert : aucun crédit utilisé':'Coût : '+c+' crédit'+(c>1?'s':''))+(longExtra()?' · 📚 cours long : +'+longExtra()+' crédit'+(longExtra()>1?'s':'')+(n>1?' par format':'')+' (+1 par tranche de 20 pages au-delà de 20)':'')+(genMode==='approfondi'&&imgExtra()?' · 📊 pages en image : +'+imgExtra()+' crédit'+(imgExtra()>1?'s':'')+(n>1?' par format':''):'')+(tokensLeft<100000?' · il te reste '+tokensLeft+' crédit'+(tokensLeft>1?'s':''):'');
 }
 function getCharLimit(){var plan=savedUser?(savedUser.plan||'starter'):'starter';return plan==='ultimate'?500000:plan==='pro'?200000:30000;}
 function updateCharCount(){

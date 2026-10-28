@@ -1,6 +1,6 @@
 import { banMessage } from './_ban.js';
 import { mfaMissing, MFA_REQUIRED } from './_mfa.js';
-import { reserveSingleCallEur, releaseReserve, BUDGET_MESSAGE } from './_budget.js';
+import { releaseReserve, BUDGET_MESSAGE, EUR_PER_CREDIT } from './_budget.js';
 const SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
 
 // La création des cartes appelle l'IA : 10 s (valeur par défaut de Vercel) ne suffisent pas toujours.
@@ -316,8 +316,8 @@ export default async function handler(req, res) {
       // 2) Vérification et décompte du quota (le Mode Révision est réservé aux plans Pro/Ultimate,
       //    et limité même en Ultimate pour éviter un usage abusif coûteux)
       let debit = null; // 1 crédit par paquet de cartes de révision
-      // Budget en euros : on réserve le coût maximal de cet appel (fiche de 6 000 caractères + consignes, réponse de 3 000 tokens).
-      let reservedEur = reserveSingleCallEur(FLASH_MODEL, Math.min(String(fiche.contenu || '').length, 6000) + 1500, 3000);
+      // Budget en euros : 1 crédit couvre au plus 0,039 € (fiche de 6 000 caractères + consignes, réponse de 3 000 tokens : ~0,034 €).
+      let reservedEur = EUR_PER_CREDIT;
       try {
         const quotaRes = await fetch(
           SUPABASE_URL + '/rest/v1/rpc/consume_credits',
