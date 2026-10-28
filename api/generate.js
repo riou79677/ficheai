@@ -1,6 +1,7 @@
 import { rateLimit, clientIp } from './_ratelimit.js';
 import { banMessage } from './_ban.js';
 import { mfaMissing, MFA_REQUIRED } from './_mfa.js';
+import { reserveGenerationEur, releaseReserve, BUDGET_MESSAGE } from './_budget.js';
 const SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
 
 // Deux modes de génération (23/10/2026), payés en crédits. Tarifs en $ par million de tokens (entrée / sortie) :
@@ -162,27 +163,47 @@ export default async function handler(req, res) {
   const extra = offert ? 0 : longCourseExtra(usedLen, mode);
   const cost = offert ? 0 : MODE_COST[mode] + extra;
   let debit = null; // ce qui a été réellement débité, pour un remboursement exact en cas d'échec
+
+  // ── Budget en euros : on réserve le coût MAXIMAL que cette génération peut entraîner (appels de secours compris).
+  // Le coût réel est imputé ensuite automatiquement ; la réservation est libérée à la fin de la requête.
+  const imgCap = { pro: 4, ultimate: 8 }[user.plan] || 0;
+  const imageCount = Array.isArray(reqImages) ? Math.min(reqImages.length, imgCap) : 0;
+  const outFactor = format === 'flash' ? 1.8 : format === 'quiz' ? 1.6 : format === 'questions' ? 1.5 : 1.25;
+  const outTokensMax = Math.min(12000, Math.round((MAX_TOKENS[format] || 3000) * outFactor * 1.25 + 900)) + 600;
+  let reservedEur = reserveGenerationEur({
+    mode,
+    inChars: usedLen + 9000 + 720, // cours + consignes du format et du système + consignes libres
+    outTokens: outTokensMax,
+    imageCount,
+    cached: (parseInt(nb_formats, 10) || 1) > 1
+  });
   try {
     const quotaRes = await fetch(
       SUPABASE_URL + '/rest/v1/rpc/consume_credits',
       { method: 'POST', headers: { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ p_email: email, p_cost: cost, p_kind: 'generation', p_offert: offert }) }
+        body: JSON.stringify({ p_email: email, p_cost: cost, p_kind: 'generation', p_offert: offert, p_reserve_eur: reservedEur }) }
     );
     const quota = await quotaRes.json();
     if (!quota || !quota.allowed) {
+      reservedEur = 0; // rien n'a été réservé
       if (quota && quota.reason === 'daily_limit_reached') {
         return res.status(403).json({ error: 'Tu as atteint la limite de crédits pour aujourd\'hui. Reviens demain, ou passe à un forfait supérieur !', reason: 'daily_limit_reached' });
+      }
+      if (quota && quota.reason === 'budget_atteint') {
+        return res.status(403).json({ error: BUDGET_MESSAGE, reason: 'limit_reached', budget: true });
       }
       return res.status(403).json({ error: 'Tu n\'as plus assez de crédits ce mois-ci (' + cost + ' crédit' + (cost > 1 ? 's' : '') + ' pour cette génération' + (extra ? ', cours long inclus' : '') + ').', reason: 'limit_reached', remaining: quota && quota.remaining });
     }
     debit = quota;
   } catch (e) {
+    reservedEur = 0;
     console.error('Erreur vérification crédits:', e);
     return res.status(503).json({ error: 'Service momentanément indisponible' });
   }
 
   // Si la génération échoue après le débit (IA sans réponse, erreur réseau...), les crédits sont rendus à l'utilisateur.
   const refundGeneration = async () => {
+    await releaseReserve(SERVICE_KEY, email, reservedEur); reservedEur = 0;
     if (!debit) return;
     try {
       await fetch(SUPABASE_URL + '/rest/v1/rpc/refund_credits', {
@@ -598,6 +619,7 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
       await refundGeneration();
       return res.status(502).json({ error: "L'IA n'a pas renvoyé de texte cette fois, ta génération t'a été rendue. Réessaie dans un instant." });
     }
+    await releaseReserve(SERVICE_KEY, email, reservedEur); reservedEur = 0;
     return res.status(200).json({ result: text, imagesUsed, imagesDropped, mode, offert, cost, extra, remaining: debit && debit.remaining, offertsLeft: debit && debit.offerts_left });
 
   } catch (error) {

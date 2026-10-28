@@ -102,17 +102,44 @@ export default async function handler(req, res) {
   // si Stripe renvoie le même événement plusieurs fois (comportement normal et documenté
   // de Stripe), le crédit n'est appliqué qu'une seule fois grâce à l'identifiant unique
   // de l'événement (eventId).
-  async function addGenerationCredits(eventId, eventType, email, amount) {
+  // capEur : plafond de coût IA (en euros) ajouté au solde de recharge, calculé sur ce que le client a réellement payé.
+  async function addGenerationCredits(eventId, eventType, email, amount, capEur) {
     const r = await fetch(SUPABASE_URL + '/rest/v1/rpc/credit_generations_once', {
       method: 'POST',
       headers: { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ p_event_id: eventId, p_event_type: eventType, p_email: email, p_amount: amount })
+      body: JSON.stringify({ p_event_id: eventId, p_event_type: eventType, p_email: email, p_amount: amount, p_cap_eur: capEur || 0 })
     });
     const result = await r.json();
     if (!result || result.success !== true) {
       throw new Error('Échec du crédit de générations : ' + JSON.stringify(result));
     }
     return result;
+  }
+
+  // ── Budget IA : enregistre ce que le client a RÉELLEMENT payé (promotions et réductions comprises) ──
+  // Le plafond de coût IA mensuel est calculé à partir de ce montant (fonction SQL plafond_mensuel_eur) :
+  // marge garantie supérieure à 0,50 € même avec un code promo. Idempotent : une facture n'est comptée qu'une fois.
+  async function recordInvoicePayment(email, subscription) {
+    try {
+      const li = subscription.latest_invoice;
+      const invoiceId = typeof li === 'string' ? li : (li && li.id);
+      if (!invoiceId) return;
+      const r = await fetch('https://api.stripe.com/v1/invoices/' + invoiceId, {
+        headers: { 'Authorization': 'Bearer ' + STRIPE_SECRET_KEY }
+      });
+      const inv = await r.json();
+      if (!inv || inv.object !== 'invoice' || inv.status !== 'paid') return; // facture pas encore payée : l'événement suivant la traitera
+      const interval = subscription.items?.data?.[0]?.price?.recurring?.interval === 'year' ? 'year' : 'month';
+      const rr = await fetch(SUPABASE_URL + '/rest/v1/rpc/enregistrer_paiement', {
+        method: 'POST',
+        headers: { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ p_email: email, p_invoice_id: inv.id, p_amount_cents: inv.amount_paid || 0, p_reason: inv.billing_reason || '', p_interval: interval })
+      });
+      const result = await rr.json();
+      console.log('Paiement enregistré pour le budget IA :', email, JSON.stringify(result));
+    } catch (e) {
+      console.error('Enregistrement du paiement (budget IA) impossible :', e && e.message);
+    }
   }
 
   // Forfait actuellement enregistré pour un utilisateur (null si introuvable).
@@ -251,12 +278,16 @@ export default async function handler(req, res) {
           flashcards_limit: 0,
           flashcards_used: 0,
           quota_period_start: new Date().toISOString(),
-          stripe_customer_id: customerId
+          stripe_customer_id: customerId,
+          paye_periode_cents: null,
+          periode_facturation: null
         };
       }
 
       await updateUserPlan(email, fields);
       console.log('Plan mis à jour:', email, '->', fields.plan);
+      // Abonnement payant actif : on enregistre le montant réellement payé (renouvellements et changements de forfait compris).
+      if (isActive && priceId && PLANS[priceId]) await recordInvoicePayment(email, subscription);
     }
 
     if (event.type === 'checkout.session.completed') {
@@ -273,12 +304,15 @@ export default async function handler(req, res) {
             const priceId = item.price?.id;
             const amount = CREDIT_PACKS[priceId];
             if (amount) {
+              // Plafond de coût IA offert par cette recharge : 73,5 % du montant réellement payé - 0,80 € (même règle que les abonnements).
+              const paidEur = (item.amount_total || 0) / 100;
+              const capEur = Math.max(0, Math.floor((0.735 * paidEur - 0.80) * 100) / 100);
               // event.id est unique par événement Stripe : sert de clé anti-doublon.
               // Si le crédit échoue vraiment (pas juste "déjà traité"), on sort avec une
               // erreur 500 : Stripe considère alors le webhook en échec et réessaiera
               // automatiquement plus tard, au lieu de perdre silencieusement le paiement.
               try {
-                const result = await addGenerationCredits(event.id, event.type, email, amount);
+                const result = await addGenerationCredits(event.id, event.type, email, amount, capEur);
                 if (result.already_processed) {
                   console.log('Événement déjà traité, ignoré :', event.id);
                 } else {
@@ -308,7 +342,9 @@ export default async function handler(req, res) {
           chat_messages_used: 0,
           flashcards_limit: 0,
           flashcards_used: 0,
-          quota_period_start: new Date().toISOString()
+          quota_period_start: new Date().toISOString(),
+          paye_periode_cents: null,
+          periode_facturation: null
         });
         console.log('Abonnement annulé:', email, '-> starter');
       }

@@ -1,5 +1,6 @@
 import { banMessage } from './_ban.js';
 import { mfaMissing, MFA_REQUIRED } from './_mfa.js';
+import { reserveSingleCallEur, releaseReserve, BUDGET_MESSAGE } from './_budget.js';
 const SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
 
 // La création des cartes appelle l'IA : 10 s (valeur par défaut de Vercel) ne suffisent pas toujours.
@@ -315,29 +316,37 @@ export default async function handler(req, res) {
       // 2) Vérification et décompte du quota (le Mode Révision est réservé aux plans Pro/Ultimate,
       //    et limité même en Ultimate pour éviter un usage abusif coûteux)
       let debit = null; // 1 crédit par paquet de cartes de révision
+      // Budget en euros : on réserve le coût maximal de cet appel (fiche de 6 000 caractères + consignes, réponse de 3 000 tokens).
+      let reservedEur = reserveSingleCallEur(FLASH_MODEL, Math.min(String(fiche.contenu || '').length, 6000) + 1500, 3000);
       try {
         const quotaRes = await fetch(
           SUPABASE_URL + '/rest/v1/rpc/consume_credits',
-          { method: 'POST', headers: Object.assign({}, sb, { 'Content-Type': 'application/json' }), body: JSON.stringify({ p_email: email, p_cost: 1, p_kind: 'flashcard', p_offert: false }) }
+          { method: 'POST', headers: Object.assign({}, sb, { 'Content-Type': 'application/json' }), body: JSON.stringify({ p_email: email, p_cost: 1, p_kind: 'flashcard', p_offert: false, p_reserve_eur: reservedEur }) }
         );
         const quota = await quotaRes.json();
         if (!quota || !quota.allowed) {
+          reservedEur = 0; // rien n'a été réservé
           if (quota && quota.reason === 'plan_required') {
             return res.status(403).json({ error: 'Le Mode Révision est disponible à partir du forfait Pro.' });
           }
           if (quota && quota.reason === 'daily_limit_reached') {
             return res.status(403).json({ error: 'Tu as atteint la limite de crédits pour aujourd\'hui. Reviens demain, ou passe à un forfait supérieur !' });
           }
+          if (quota && quota.reason === 'budget_atteint') {
+            return res.status(403).json({ error: BUDGET_MESSAGE, budget: true });
+          }
           return res.status(403).json({ error: 'Tu n\'as plus de crédits ce mois-ci (1 crédit par paquet de cartes).' });
         }
         debit = quota;
       } catch (e) {
+        reservedEur = 0;
         console.error('Erreur vérification crédits flashcards:', e);
         return res.status(503).json({ error: 'Service momentanément indisponible' });
       }
 
       // En cas d'échec après le décompte, on rend la carte de quota à l'utilisateur.
       const refundFlashcard = async () => {
+        await releaseReserve(SERVICE_KEY, email, reservedEur); reservedEur = 0;
         try {
           if (!debit) return;
           await fetch(SUPABASE_URL + '/rest/v1/rpc/refund_credits', {
@@ -424,6 +433,7 @@ export default async function handler(req, res) {
         });
         if (!ins.ok) { console.error('Insert cartes échoué:', ins.status, await ins.text()); throw new Error('Enregistrement échoué'); }
 
+        await releaseReserve(SERVICE_KEY, email, reservedEur); reservedEur = 0;
         return res.status(200).json({ created: rows.length });
       } catch (e) {
         console.error('Erreur génération flashcards:', e);

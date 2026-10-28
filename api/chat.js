@@ -1,6 +1,7 @@
 import { rateLimit, clientIp } from './_ratelimit.js';
 import { banMessage } from './_ban.js';
 import { mfaMissing, MFA_REQUIRED } from './_mfa.js';
+import { reserveSingleCallEur, releaseReserve, BUDGET_MESSAGE } from './_budget.js';
 const SUPABASE_URL = 'https://qyjqtjrqnlbgtxvnjvnk.supabase.co';
 
 // Modèle IA utilisé selon le plan. Tarifs en $ par million de tokens (entrée / sortie) :
@@ -140,21 +141,28 @@ export default async function handler(req, res) {
   if (maintBlock && user.is_dev !== true) return res.status(503).json({ error: maintBlock, reason: 'maintenance' });
 
   let debit = null;
+  // Budget en euros : on réserve le coût maximal de ce message (consignes + extrait du cours + historique + réponse de 2 500 tokens).
+  let reservedEur = reserveSingleCallEur(modelFor(user.plan), 6500 + Math.min(String(courseContent || '').length, 8000) + totalChars, 2500);
   try {
     const quotaRes = await fetch(
       SUPABASE_URL + '/rest/v1/rpc/consume_credits',
       { method: 'POST', headers: { 'apikey': SERVICE_KEY, 'Authorization': 'Bearer ' + SERVICE_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ p_email: email, p_cost: 1, p_kind: 'chat', p_offert: false }) }
+        body: JSON.stringify({ p_email: email, p_cost: 1, p_kind: 'chat', p_offert: false, p_reserve_eur: reservedEur }) }
     );
     const quota = await quotaRes.json();
     if (!quota || !quota.allowed) {
+      reservedEur = 0; // rien n'a été réservé
       if (quota && quota.reason === 'daily_limit_reached') {
         return res.status(403).json({ error: 'Tu as atteint la limite de crédits pour aujourd\'hui. Reviens demain, ou passe à un forfait supérieur !', reason: 'daily_limit_reached' });
+      }
+      if (quota && quota.reason === 'budget_atteint') {
+        return res.status(403).json({ error: BUDGET_MESSAGE, reason: 'limit_reached', budget: true });
       }
       return res.status(403).json({ error: 'Tu n\'as plus de crédits ce mois-ci (1 crédit par message).', reason: 'limit_reached' });
     }
     debit = quota;
   } catch (e) {
+    reservedEur = 0;
     console.error('Erreur vérification crédits chat:', e);
     return res.status(503).json({ error: 'Service momentanément indisponible' });
   }
@@ -162,6 +170,7 @@ export default async function handler(req, res) {
   // Rembourse le crédit du message (une seule fois) si l'IA n'a rien répondu.
   let wroteText = false, refunded = false;
   const refundChat = async () => {
+    await releaseReserve(SERVICE_KEY, email, reservedEur); reservedEur = 0;
     if (refunded || !debit) return;
     refunded = true;
     try {
@@ -299,11 +308,13 @@ Style de réponse :
     await logApiUsage(SERVICE_KEY, email, 'chat', modelFor(user.plan), inTok, outTok);
     // Réponse vide : le crédit est rendu (l'élève voit « Réponse vide, réessaie »).
     if (!wroteText) await refundChat();
+    await releaseReserve(SERVICE_KEY, email, reservedEur); reservedEur = 0;
     return res.end();
 
   } catch (error) {
     console.error('Erreur API chat:', error);
     await logApiUsage(SERVICE_KEY, email, 'erreur:chat:' + String((error && error.message) || error).slice(0, 90), modelFor(user.plan), 0, 0);
+    await releaseReserve(SERVICE_KEY, email, reservedEur); reservedEur = 0;
     if (res.headersSent) {
       // Coupure en cours de réponse : crédit rendu seulement si aucun texte n'a été envoyé.
       if (!wroteText) await refundChat();

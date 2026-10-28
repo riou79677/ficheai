@@ -187,6 +187,7 @@ export default async function handler(req, res) {
         body.generations_used = 0; body.chat_messages_used = 0; body.flashcards_used = 0;
         body.generations_used_today = 0; body.chat_used_today = 0; body.flashcards_used_today = 0;
         body.quota_period_start = new Date().toISOString();
+        body.cout_mois_eur = 0; // nouvelle période : le compteur de coût IA du mois repart à zéro
         // Accès offert pour une durée limitée : repasse automatiquement en Starter à l'échéance (vérifié toutes les 10 min).
         const d = parseInt(days, 10);
         body.plan_expires_at = (plan !== 'starter' && d > 0 && d <= 366) ? new Date(Date.now() + d * 86400000).toISOString() : null;
@@ -208,7 +209,7 @@ export default async function handler(req, res) {
       const { email, amount } = payload || {};
       const n = parseInt(amount, 10);
       if (!email || !(n > 0 && n <= 1000)) return res.status(400).json({ error: 'Email ou nombre de crédits invalide' });
-      const gr = await fetch(SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=bonus_generations,bonus_expires_at', { headers: sb });
+      const gr = await fetch(SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=bonus_generations,bonus_expires_at,cout_bonus_eur', { headers: sb });
       const rows = await gr.json();
       const u = Array.isArray(rows) ? rows[0] : null;
       if (!u) return res.status(404).json({ error: 'Compte introuvable' });
@@ -216,7 +217,8 @@ export default async function handler(req, res) {
       const newBonus = (valid ? u.bonus_generations : 0) + n;
       await fetch(SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email), {
         method: 'PATCH', headers: { ...sb, 'Prefer': 'return=minimal' },
-        body: JSON.stringify({ bonus_generations: newBonus, bonus_expires_at: new Date(Date.now() + 365 * 86400000).toISOString() })
+        // Crédits offerts = perte volontaire : on ajoute aussi 0,04 € de budget IA par crédit offert (sinon ils seraient bloqués par le plafond).
+        body: JSON.stringify({ bonus_generations: newBonus, bonus_expires_at: new Date(Date.now() + 365 * 86400000).toISOString(), cout_bonus_eur: Number(u.cout_bonus_eur || 0) + n * 0.04 })
       });
       return res.status(200).json({ success: true, new_bonus: newBonus });
     }
