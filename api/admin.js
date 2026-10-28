@@ -179,6 +179,17 @@ export default async function handler(req, res) {
       const { email, plan, credits_limit, generations_limit, chat_messages_limit, flashcards_limit, days } = payload || {};
       if (!email) return res.status(400).json({ error: 'Email manquant' });
       const body = {};
+      // L'Ultimate ne s'offre jamais : il n'est accordé qu'à un compte administrateur ou à un abonné qui l'a réellement payé.
+      // Pour un accès offert, utiliser le plan Pro (une semaine, par exemple).
+      if (plan === 'ultimate') {
+        const ur = await fetch(SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email) + '&select=is_dev,paye_periode_cents', { headers: sb });
+        const urows = await ur.json();
+        const tu = Array.isArray(urows) ? urows[0] : null;
+        if (!tu) return res.status(404).json({ error: 'Compte introuvable' });
+        if (tu.is_dev !== true && !(tu.paye_periode_cents > 0)) {
+          return res.status(403).json({ error: "L'Ultimate ne peut pas être offert. Offre le plan Pro à la place (par exemple une semaine)." });
+        }
+      }
       if (plan) {
         body.plan = plan;
         // Changement de plan par l'admin = nouvelle période : compteurs remis à zéro.

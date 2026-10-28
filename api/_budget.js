@@ -56,4 +56,5 @@ export async function releaseReserve(SERVICE_KEY, email, eur) {
 }
 
 // Message affiché à l'élève quand son budget d'usage du mois est atteint.
-export const BUDGET_MESSAGE = "Tu as atteint la limite d'utilisation de l'IA incluse dans ton forfait pour ce mois-ci. Elle se renouvelle automatiquement le mois prochain. Tu peux aussi ajouter une recharge ou passer à un forfait supérieur.";
+// La fenêtre qui s'affiche ensuite propose déjà les recharges et le forfait supérieur : le message reste court.
+export const BUDGET_MESSAGE = "Tu as atteint la limite d'utilisation de l'IA incluse dans ton forfait pour ce mois-ci.";
