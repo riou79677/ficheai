@@ -193,7 +193,7 @@ export default async function handler(req, res) {
 
   const ragInstruction = hasCourse
     ? `Utilise le cours ci-dessus comme source principale : appuie-toi dessus et cite des éléments précis (une définition, un exemple, une formule) quand c'est utile.
-Si la question sort du cours, dis-le en une phrase ("ça n'est pas dans ton cours") puis réponds quand même avec une explication générale fiable, en précisant que c'est un complément. Si tu n'es pas sûr d'un point, dis-le franchement plutôt que d'inventer.`
+Quand le cours est long, tu ne vois que des extraits choisis, séparés par "[…]". Réponds uniquement avec ce que disent ces extraits, dans les mots du cours, sans reformuler de façon à changer le sens. Si les extraits ne contiennent pas la réponse, dis : "Je ne trouve pas ça dans les passages de ton cours que je peux lire" puis propose une explication générale en la présentant clairement comme un complément hors cours. Si tu n'es pas sûr d'un point, dis-le franchement plutôt que d'inventer.`
     : `Aucun cours n'est chargé : réponds quand même normalement à la question comme un bon prof particulier. Tu peux ajouter, quand c'est pertinent, qu'en collant son cours dans la zone prévue et en cliquant sur "Charger le cours", tu pourras répondre à partir de son propre programme.`;
 
   // ── Garde anti-injection de prompt ──

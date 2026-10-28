@@ -603,6 +603,35 @@ var currentFormat='fiche',currentFormatName='Fiche de révision',currentFormatIc
 var tokensLeft=5,tokensLimit=5,lastResult='',sessionHistory=[],currentUserEmail=null,currentUserToken=null,savedUser=null;
 var devPanelOpen=false,currentMode='express';
 var courseContent='',chatHistory=[],chatMsgCount=0;
+/* Sélection des passages du cours les plus utiles pour la question (chat) : le serveur ne reçoit que ~8 000 caractères. */
+var CHAT_STOP=new Set('les des une que qui quoi dans pour par sur avec sans est sont etre ete cette ces son ses leur leurs aux ainsi alors donc mais car comme plus moins tres tout tous toute toutes fait faire peut peuvent entre vers chez lors puis aussi encore cela celui celle ceux elle elles ils nous vous mon ton ma ta mes tes quel quelle quels quelles quand comment pourquoi peux dis explique moi toi pas non oui the and'.split(' '));
+function chatNorm(t){return String(t).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');}
+function chatTokens(t){var out=[],m=chatNorm(t).match(/[a-z0-9]{3,}/g)||[];for(var i=0;i<m.length;i++){var w=m[i];if(CHAT_STOP.has(w))continue;w=w.replace(/(ement|ements|ation|ations|es|s|x)$/,'');if(w.length>=3)out.push(w);}return out;}
+function selectCourseExtracts(course,query){
+  var LIMIT=8000;course=String(course||'');
+  if(course.length<=LIMIT)return course;
+  var parts=course.split(/\n{2,}|\n(?=[A-ZÉÈÀ0-9#•\-])/),chunks=[],cur='';
+  for(var i=0;i<parts.length;i++){
+    var p=parts[i].trim();if(!p)continue;
+    while(p.length>1300){var cut=p.lastIndexOf('. ',1200);if(cut<400)cut=1200;if(cur){chunks.push(cur);cur='';}chunks.push(p.slice(0,cut+1));p=p.slice(cut+1).trim();}
+    if(cur&&(cur.length+p.length>1200)){chunks.push(cur);cur='';}
+    cur+=(cur?'\n':'')+p;
+  }
+  if(cur)chunks.push(cur);
+  if(chunks.length<=6)return course.substring(0,LIMIT);
+  var qs=chatTokens(query);if(!qs.length)return course.substring(0,LIMIT);
+  var toks=chunks.map(chatTokens),N=chunks.length,df={};
+  toks.forEach(function(ts){var seen={};ts.forEach(function(w){if(!seen[w]){seen[w]=1;df[w]=(df[w]||0)+1;}});});
+  var scores=chunks.map(function(c,i){var tf={};toks[i].forEach(function(w){tf[w]=(tf[w]||0)+1;});var sc=0;qs.forEach(function(w){if(tf[w])sc+=Math.log(1+N/df[w])*(1+Math.log(tf[w]));});return sc;});
+  var order=chunks.map(function(_,i){return i;}).sort(function(a,b){return scores[b]-scores[a];});
+  var chosen=[0],size=chunks[0].length;
+  for(var k=0;k<order.length;k++){var idx=order[k];if(scores[idx]<=0)break;if(idx===0)continue;if(size+chunks[idx].length>LIMIT-120)continue;chosen.push(idx);size+=chunks[idx].length+8;if(chosen.length>=7)break;}
+  chosen.sort(function(a,b){return a-b;});
+  var out='',prev=-1;
+  chosen.forEach(function(i){out+=(prev>=0&&i!==prev+1?'\n[…]\n':(out?'\n':''))+chunks[i];prev=i;});
+  return out.substring(0,LIMIT);
+}
+
 var onboardingStep=0;
 var selectedFormats=['fiche'];
 var MAX_FORMATS=4;
@@ -1630,7 +1659,7 @@ async function sendChatMessage(isFullscreen){
   addTyping(isFullscreen);
   document.getElementById(isFullscreen?'chat-fullscreen-send-btn':'chat-send-btn').disabled=true;
   try{
-    var response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+((await ficheaiToken())||'')},body:JSON.stringify({messages:chatHistory.slice(-12),courseContent:courseContent.substring(0,6000),language:document.getElementById('lang-sel').value})});
+    var response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+((await ficheaiToken())||'')},body:JSON.stringify({messages:chatHistory.slice(-12),courseContent:selectCourseExtracts(courseContent,(chatHistory.length>1&&chatHistory[chatHistory.length-2].role==='assistant'&&chatHistory.length>2?chatHistory[chatHistory.length-3].content+' ':'')+text),language:document.getElementById('lang-sel').value})});
     var ct=response.headers.get('content-type')||'';
     if(!response.ok||ct.indexOf('text/plain')===-1){
       var data=await readResponseSafely(response,'chat');
