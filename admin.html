@@ -113,7 +113,9 @@ tr.clickable-row:hover .u-go{color:var(--purple2)}
 .ud-list li{display:flex;gap:.8rem;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.82rem}
 .ud-list li:last-child{border:0}
 .ud-list em{font-style:normal;color:var(--text3);font-size:.75rem;white-space:nowrap}
-.ud-list span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ud-list span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.ud-list .ud-cr{font-weight:700;color:var(--text);min-width:2.2em;text-align:right}
+.ud-list .ud-cr::after{content:' cr.';font-weight:400;color:var(--text3);font-size:.75rem}
 .ud-empty{color:var(--text3);font-size:.82rem}
 .ud-days{display:flex;align-items:flex-end;gap:3px;height:46px;margin-top:.4rem}
 .ud-days i{flex:1;background:var(--purple2);opacity:.75;border-radius:3px 3px 0 0;min-height:2px}
@@ -656,7 +658,7 @@ function credBar(u){
 var activityCache={};
 function fmtD(d){return new Date(d).toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'});}
 function fmtDT(d){return new Date(d).toLocaleString('fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});}
-function creditsLabel(x){var c=x.credits;if(c===null||c===undefined){var k=String(x.kind||'');if(/^(chat|photo|flashcards)/.test(k))c=1;else return '';}return ' · <b>'+c+' crédit'+(c>1?'s':'')+'</b>';}
+function creditsLabel(x){var c=x.credits;if(c===null||c===undefined)c=/^(chat|photo|flashcards)/.test(String(x.kind||''))?1:'?';return String(c);}
 function kindLabel(x){var k=String(x.kind||'');if(/^erreur:/.test(k))return '⚠️ Erreur';if(/^info:/.test(k))return 'ℹ️ Note technique (0 crédit)';if(k.indexOf('photo')===0)return '📷 Photo';if(k.indexOf('chat')===0)return '💬 Chat';if(k.indexOf('flashcards')===0)return '🔁 Révision';return String(x.model||'').indexOf('haiku')>-1?'⚡ Rapide':'🎓 Approfondi';}
 
 function openUserModal(email){
@@ -743,7 +745,7 @@ function paintActivity(email,d){
     '<p class="ud-h">Fiches récentes</p>'+
     (d.fiches&&d.fiches.length?'<ul class="ud-list">'+d.fiches.map(function(f){return '<li><span>'+escH(f.format_icon||'')+' '+escH(f.titre||f.format||'Sans titre')+'</span><em>'+fmtD(f.created_at)+'</em></li>';}).join('')+'</ul>':'<p class="ud-empty">Aucune fiche.</p>')+
     '</div><div><p class="ud-h">Dernières actions IA</p>'+
-    (d.events&&(d.events=d.events.filter(function(x){return !/^info:/.test(String(x.kind));})).length?'<ul class="ud-list">'+d.events.map(function(x){return '<li><span>'+kindLabel(x)+(/^(erreur|info):/.test(String(x.kind))?' · 0 crédit (rendu)':creditsLabel(x)+' · $'+Number(x.cost_usd||0).toFixed(4))+'</span><em>'+fmtDT(x.created_at)+'</em></li>';}).join('')+'</ul>':'<p class="ud-empty">Aucune action IA récente.</p>')+
+    (d.events&&(d.events=d.events.filter(function(x){return !/^info:/.test(String(x.kind));})).length?'<ul class="ud-list">'+d.events.map(function(x){var err=/^(erreur|info):/.test(String(x.kind));return '<li title="Coût IA : '+Number(x.cost_usd||0).toFixed(4)+' $"><span>'+kindLabel(x)+'</span><b class="ud-cr">'+(err?'0':creditsLabel(x))+'</b><em>'+fmtDT(x.created_at)+'</em></li>';}).join('')+'</ul>':'<p class="ud-empty">Aucune action IA récente.</p>')+
     '</div></div>';
   el.innerHTML=h;
 }
