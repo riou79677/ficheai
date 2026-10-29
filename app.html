@@ -364,6 +364,8 @@ body.chat-fs-open{overflow:hidden}
 @media(max-width:600px){.chat-area.chat-fs .msg-avatar{display:none}.chat-area.chat-fs .msg-bubble{max-width:100%}}
 
 .import-hint{font-size:0.74rem;color:var(--text3)}
+.course-tools .file-badge{word-break:normal;overflow-wrap:break-word;flex-basis:100%}
+@media(max-width:600px){.course-tools .import-btn-item{flex:1 1 0;justify-content:center;padding:0.55rem 0.4rem}.course-tools .import-hint{flex-basis:100%}}
 .gen-btn-cost{font-weight:500;opacity:0.85}
 .course-zone.drop-on{border-color:var(--purple);box-shadow:0 0 0 3px rgba(108,92,231,0.18)}
 </style>
@@ -435,11 +437,11 @@ body.chat-fs-open{overflow:hidden}
       </div>
       <textarea id="course-input" placeholder="Colle ici ton cours, ou glisse un fichier (PDF, Word, PowerPoint)."></textarea>
       <div class="course-tools">
-        <input type="file" id="file-input" accept=".pdf,.docx,.pptx,.odt,.odp,.txt,.md" style="display:none">
+        <input type="file" id="file-input" accept=".pdf,.docx,.pptx,.odt,.odp,.txt,.md,image/*" style="display:none">
         <input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none">
         <button type="button" class="import-btn-item" onclick="document.getElementById('file-input').click()"><span class="icon">📎</span> Importer un fichier</button>
-        <span class="import-hint" id="import-hint">PDF, Word, PowerPoint</span>
-        <button type="button" class="import-btn-item" id="camera-btn" style="display:none" onclick="document.getElementById('camera-input').click()"><span class="icon">📷</span> Photo</button>
+        <span class="import-hint" id="import-hint">PDF, Word, PowerPoint, photo</span>
+        <button type="button" class="import-btn-item" id="camera-btn" style="display:none" onclick="document.getElementById('camera-input').click()"><span class="icon">📷</span> Prendre en photo</button>
         <div class="file-badge" id="file-badge"></div>
       </div>
     </div>
@@ -1158,6 +1160,37 @@ function setFileBadge(msg,kind){
   else{badge.style.background='rgba(0,206,201,0.08)';badge.style.borderColor='rgba(0,206,201,0.2)';badge.style.color='#00cec9';}
 }
 
+
+// Photo d'un cours → texte (1 crédit). La photo est réduite à 1 600 px dans le navigateur avant l'envoi.
+async function readCoursePhoto(file){
+  if(!savedUser||!savedUser.email){showSignupPopup();return;}
+  setFileBadge('⏳ Lecture de la photo… (1 crédit)','ok');
+  var b64='';
+  try{
+    var url=URL.createObjectURL(file);
+    var img=await new Promise(function(ok,ko){var i=new Image();i.onload=function(){ok(i);};i.onerror=ko;i.src=url;});
+    var sc=Math.min(1,1600/Math.max(img.naturalWidth,img.naturalHeight));
+    var cv=document.createElement('canvas');cv.width=Math.round(img.naturalWidth*sc);cv.height=Math.round(img.naturalHeight*sc);
+    var cx=cv.getContext('2d');cx.fillStyle='#fff';cx.fillRect(0,0,cv.width,cv.height);cx.drawImage(img,0,0,cv.width,cv.height);
+    URL.revokeObjectURL(url);
+    var q=0.82;b64=cv.toDataURL('image/jpeg',q).split(',')[1]||'';
+    while(b64.length>1400000&&q>0.4){q-=0.15;b64=cv.toDataURL('image/jpeg',q).split(',')[1]||'';}
+    cv.width=0;cv.height=0;
+  }catch(e){setFileBadge('⚠️ Impossible d’ouvrir cette photo. Réessaie avec une photo au format JPEG ou PNG.','error');return;}
+  try{
+    var r=await fetch('/api/photo',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+((await ficheaiToken())||'')},body:JSON.stringify({image:b64,media_type:'image/jpeg'})});
+    var d={};try{d=await r.json();}catch(e){}
+    if(!r.ok){
+      if(r.status===403&&d.reason==='limit_reached'){setFileBadge('⚠️ '+(d.error||'Plus de crédits.'),'error');showLimitModal(d.error||'Il te faut 1 crédit pour lire une photo.');return;}
+      setFileBadge('⚠️ '+(d.error||'Lecture impossible. Réessaie.'),'error');return;
+    }
+    var ta=document.getElementById('course-input');var prev=ta.value.trim();
+    ta.value=(prev?prev+'\n\n':'')+d.text;courseContent=ta.value;updateCharCount();
+    if(typeof d.remaining==='number')try{applyCredits(d.remaining);}catch(e){}
+    setFileBadge('✅ Photo lue'+(prev?' et ajoutée à la suite':'')+' · tu peux corriger le texte, ou prendre une autre page','ok');
+    updateChatContext('photo');
+  }catch(e){setFileBadge('⚠️ Erreur réseau. Réessaie.','error');}
+}
 function handleFileLoad(file){
   if(file.type==='text/plain'||(file.name&&file.name.toLowerCase().endsWith('.txt'))){
     var reader=new FileReader();
@@ -1244,8 +1277,8 @@ function handleFileLoad(file){
     setFileBadge('⚠️ Ancien format Office (.'+file.name.split('.').pop()+'). Ouvre-le et enregistre-le en .'+(/\.doc$/i.test(file.name)?'docx':'pptx')+' ou en PDF, puis réessaie.','error');
   } else if(/\.md$/i.test(file.name||'')){
     var rd=new FileReader();rd.onload=function(ev){var t=ev.target.result||'';courseContent=t;document.getElementById('course-input').value=t;updateCharCount();setFileBadge('✅ '+file.name,'ok');updateChatContext(file.name);};rd.readAsText(file);
-  } else if(file.type.startsWith('image/')){
-    setFileBadge('📷 L\'analyse de photos arrive bientôt ! En attendant, copie-colle ton cours en texte.','warn');
+  } else if(file.type.startsWith('image/')||/\.(jpe?g|png|webp|heic|heif)$/i.test(file.name||'')){
+    readCoursePhoto(file);
   } else {
     setFileBadge('⚠️ Format non pris en charge ('+( file.type||'inconnu')+'). Utilise un PDF, un fichier Word ou PowerPoint, ou copie-colle ton cours.','error');
   }
@@ -1703,6 +1736,7 @@ async function deleteConversation(id){
   try{await convApi('DELETE','?id='+encodeURIComponent(id));if(id===currentConvId){currentConvId=null;}openChatHistory();}catch(e){showToast('⚠️ '+e.message);}
 }
 
+(function(){try{if(window.matchMedia('(pointer:coarse)').matches){var c=document.getElementById('camera-btn');if(c)c.style.display='';}}catch(e){}})();
 var CHAT_WELCOME_HTML=(document.getElementById('chat-messages')||{}).innerHTML||'';
 function clearChat(){
   chatHistory=[];currentConvId=null;

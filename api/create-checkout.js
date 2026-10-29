@@ -10,7 +10,7 @@ import { mfaMissing, MFA_REQUIRED } from './_mfa.js';
 const SALES_OPEN = false;
 
 // Version des CGV acceptée par le client (à changer à chaque modification des conditions de vente).
-const CGV_VERSION = '2026-10-25';
+const CGV_VERSION = '2026-10-29';
 
 const OFFERS = {
   pro_monthly:      { mode: 'subscription', plan: 'pro',      price: 'price_1TXfc5JBbEVt3aRD8UpsC4Ym', label: 'Pro mensuel',      amount: '7,99 €',  period: 'mois', trialDays: 7 },
