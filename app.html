@@ -1177,6 +1177,9 @@ async function readCoursePhoto(file){
     URL.revokeObjectURL(url);
     var q=0.82;b64=cv.toDataURL('image/jpeg',q).split(',')[1]||'';
     while(b64.length>1400000&&q>0.4){q-=0.15;b64=cv.toDataURL('image/jpeg',q).split(',')[1]||'';}
+    // Version plus légère gardée pour la génération (Pro et Ultimate), si la photo contient un schéma.
+    var sc2=Math.min(1,1240/Math.max(cv.width,cv.height)),cv2=document.createElement('canvas');cv2.width=Math.round(cv.width*sc2);cv2.height=Math.round(cv.height*sc2);
+    var cx2=cv2.getContext('2d');cx2.drawImage(cv,0,0,cv2.width,cv2.height);var keep=cv2.toDataURL('image/jpeg',0.72).split(',')[1]||'';cv2.width=0;cv2.height=0;
     cv.width=0;cv.height=0;
   }catch(e){setFileBadge('⚠️ Impossible d’ouvrir cette photo. Réessaie avec une photo au format JPEG ou PNG.','error');return;}
   try{
@@ -1187,11 +1190,18 @@ async function readCoursePhoto(file){
       setFileBadge('⚠️ '+(d.error||'Lecture impossible. Réessaie.'),'error');return;
     }
     var ta=document.getElementById('course-input');var prev=ta.value.trim();
-    ta.value=(prev?prev+'\n\n':'')+d.text;courseContent=ta.value;updateCharCount();
+    var keptImgs=pdfImagesFor(prev);
+    ta.value=(prev?prev+'\n\n':'')+d.text;courseContent=ta.value;
+    // Schéma sur la photo (Pro et Ultimate) : l'image est gardée pour que l'IA la revoie pendant la génération.
+    var plan=getPlan(),cap=plan==='ultimate'?8:plan==='pro'?4:0,schemaKept=false,schemaFull=false;
+    pdfImages=keptImgs.slice();
+    if(cap&&/\[Sch[ée]ma/i.test(d.text)&&keep&&keep.length<1150000){if(pdfImages.length<cap){pdfImages.push({page:pdfImages.length+1,media_type:'image/jpeg',data:keep});schemaKept=true;}else schemaFull=true;}
+    pdfImagesKey=pdfImages.length?ta.value.replace(/\s+/g,'').slice(0,120):'';
+    updateCharCount();
     if(typeof d.remaining==='number')try{applyCredits(d.remaining);}catch(e){}
     var nIll=(d.text.match(/\[illisible\]/gi)||[]).length;
     if(nIll)setFileBadge('⚠️ Photo lue, mais '+nIll+' passage'+(nIll>1?'s sont illisibles':' est illisible')+' (marqué'+(nIll>1?'s':'')+' [illisible] dans le texte). Corrige-'+(nIll>1?'les':'le')+' avant de générer, ou reprends la photo avec plus de lumière.','warn');
-    else setFileBadge('✅ Photo lue'+(prev?' et ajoutée à la suite':'')+' · tu peux corriger le texte, ou prendre une autre page','ok');
+    else setFileBadge('✅ Photo lue'+(prev?' et ajoutée à la suite':'')+(schemaKept?' · 📊 schéma gardé : l’IA le reverra en Approfondi (+1 crédit par groupe de 4 photos)':schemaFull?' · ℹ️ limite de '+cap+' photos de schémas atteinte, celui-ci sera seulement décrit':'')+' · tu peux corriger le texte, ou prendre une autre page','ok');
     updateChatContext('photo');
   }catch(e){setFileBadge('⚠️ Erreur réseau. Réessaie.','error');}
 }
