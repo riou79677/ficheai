@@ -16,14 +16,14 @@ const modelFor = (plan) => MODEL_BY_PLAN[plan] || MODEL_BY_PLAN.starter;
 
 // ── Suivi de consommation API : une ligne par appel IA (tokens + coût estimé en $) ──
 // Tarif Sonnet 5.5 : 2 $ / million de tokens en entrée, 10 $ / million en sortie.
-async function logApiUsage(SERVICE_KEY, email, kind, model, inTok, outTok) {
+async function logApiUsage(SERVICE_KEY, email, kind, model, inTok, outTok, credits) {
   try {
     const pr = PRICES[model] || PRICES['claude-sonnet-5-5'];
     const cost = ((inTok || 0) * pr[0] + (outTok || 0) * pr[1]) / 1e6;
     await fetch('https://qyjqtjrqnlbgtxvnjvnk.supabase.co/rest/v1/api_usage', {
       method: 'POST',
       headers: { apikey: SERVICE_KEY, Authorization: 'Bearer ' + SERVICE_KEY, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-      body: JSON.stringify({ user_email: email, kind: kind, model: model, input_tokens: inTok || 0, output_tokens: outTok || 0, cost_usd: cost })
+      body: JSON.stringify({ user_email: email, kind: kind, model: model, input_tokens: inTok || 0, output_tokens: outTok || 0, cost_usd: cost, credits: (typeof credits === "number" ? credits : null) })
     });
   } catch (e) { console.error('Log usage:', e && e.message); }
 }
@@ -305,7 +305,7 @@ Style de réponse :
         } catch (err) { /* ligne non JSON ignorée */ }
       }
     }
-    await logApiUsage(SERVICE_KEY, email, 'chat', modelFor(user.plan), inTok, outTok);
+    await logApiUsage(SERVICE_KEY, email, 'chat', modelFor(user.plan), inTok, outTok, wroteText ? 1 : 0);
     // Réponse vide : le crédit est rendu (l'élève voit « Réponse vide, réessaie »).
     if (!wroteText) await refundChat();
     await releaseReserve(SERVICE_KEY, email, reservedEur); reservedEur = 0;

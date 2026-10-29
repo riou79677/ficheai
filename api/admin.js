@@ -100,7 +100,7 @@ export default async function handler(req, res) {
       const [fR, cR, eR] = await Promise.all([
         fetch(SUPABASE_URL + '/rest/v1/fiches?select=created_at,format,format_icon,titre&user_email=' + q + '&order=created_at.desc&limit=12', { headers: sb }),
         fetch(SUPABASE_URL + '/rest/v1/fiches?select=id&user_email=' + q + '&limit=1', { headers: { ...sb, 'Prefer': 'count=exact' } }),
-        fetch(SUPABASE_URL + '/rest/v1/api_usage?select=created_at,kind,model,input_tokens,output_tokens,cost_usd&user_email=' + q + '&created_at=gte.' + since + '&order=created_at.desc&limit=400', { headers: sb })
+        fetch(SUPABASE_URL + '/rest/v1/api_usage?select=created_at,kind,model,input_tokens,output_tokens,cost_usd,credits&user_email=' + q + '&created_at=gte.' + since + '&order=created_at.desc&limit=400', { headers: sb })
       ]);
       const fiches = await fR.json();
       const events = await eR.json();
@@ -110,7 +110,7 @@ export default async function handler(req, res) {
       return res.status(200).json({
         total_fiches: parseInt((cR.headers.get('content-range') || '').split('/')[1], 10) || 0,
         fiches: Array.isArray(fiches) ? fiches : [],
-        events: evList.slice(0, 15),
+        events: evList.filter(x => !/^info:/.test(String(x.kind))).slice(0, 20),
         errors: evList.filter(x => /^erreur:/.test(String(x.kind))).length,
         per_day: perDay,
         last_activity: evList.length ? evList[0].created_at : null

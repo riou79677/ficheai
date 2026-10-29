@@ -12,14 +12,14 @@ const PRICES = { 'claude-haiku-5-5': [0.10, 0.50], 'claude-sonnet-5-5': [2, 10] 
 const modelFor = (plan) => MODEL_BY_PLAN[plan] || MODEL_BY_PLAN.starter;
 const MAX_B64 = 1500000; // ~1,1 Mo : le navigateur réduit la photo à 1 600 px avant l'envoi
 
-async function logApiUsage(SERVICE_KEY, email, kind, model, inTok, outTok) {
+async function logApiUsage(SERVICE_KEY, email, kind, model, inTok, outTok, credits) {
   try {
     const pr = PRICES[model] || PRICES['claude-sonnet-5-5'];
     const cost = ((inTok || 0) * pr[0] + (outTok || 0) * pr[1]) / 1e6;
     await fetch(SUPABASE_URL + '/rest/v1/api_usage', {
       method: 'POST',
       headers: { apikey: SERVICE_KEY, Authorization: 'Bearer ' + SERVICE_KEY, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-      body: JSON.stringify({ user_email: email, kind: kind, model: model, input_tokens: inTok || 0, output_tokens: outTok || 0, cost_usd: cost })
+      body: JSON.stringify({ user_email: email, kind: kind, model: model, input_tokens: inTok || 0, output_tokens: outTok || 0, cost_usd: cost, credits: (typeof credits === "number" ? credits : null) })
     });
   } catch (e) { console.error('Log usage:', e && e.message); }
 }
@@ -146,7 +146,7 @@ export default async function handler(req, res) {
     const data = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error((data.error && data.error.message) || 'Erreur du service IA');
     const usage = data.usage || {};
-    await logApiUsage(SERVICE_KEY, email, 'photo', model, usage.input_tokens, usage.output_tokens);
+    await logApiUsage(SERVICE_KEY, email, 'photo', model, usage.input_tokens, usage.output_tokens, 1);
     const text = ((data.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('\n') || '').trim();
     if (!text || text === 'AUCUN_TEXTE' || text.replace(/\s/g, '').length < 15) {
       await refund();

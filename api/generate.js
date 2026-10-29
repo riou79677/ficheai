@@ -30,7 +30,7 @@ const PRICES = { 'claude-haiku-5-5': [0.10, 0.50], 'claude-sonnet-5-5': [2, 10] 
 // ── Suivi de consommation API : une ligne par appel IA (tokens + coût estimé en $) ──
 // Coût calculé selon le modèle réellement utilisé (tableau PRICES ; Sonnet 5.5 par défaut).
 // Cache de prompt : écriture facturée 1,25 × le prix d'entrée, lecture 0,1 ×.
-async function logApiUsage(SERVICE_KEY, email, kind, model, inTok, outTok, cacheWrite, cacheRead) {
+async function logApiUsage(SERVICE_KEY, email, kind, model, inTok, outTok, cacheWrite, cacheRead, credits) {
   try {
     const pr = PRICES[model] || PRICES['claude-sonnet-5-5'];
     const cw = cacheWrite || 0, cr = cacheRead || 0;
@@ -39,7 +39,7 @@ async function logApiUsage(SERVICE_KEY, email, kind, model, inTok, outTok, cache
     await fetch('https://qyjqtjrqnlbgtxvnjvnk.supabase.co/rest/v1/api_usage', {
       method: 'POST',
       headers: { apikey: SERVICE_KEY, Authorization: 'Bearer ' + SERVICE_KEY, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-      body: JSON.stringify({ user_email: email, kind: kind, model: model, input_tokens: inTok || 0, output_tokens: outTok || 0, cost_usd: cost })
+      body: JSON.stringify({ user_email: email, kind: kind, model: model, input_tokens: inTok || 0, output_tokens: outTok || 0, cost_usd: cost, credits: (typeof credits === "number" ? credits : null) })
     });
   } catch (e) { console.error('Log usage:', e && e.message); }
 }
@@ -172,6 +172,7 @@ export default async function handler(req, res) {
   const imageCount = Array.isArray(reqImages) ? Math.min(reqImages.length, IMG_CAP_BY_PLAN[user.plan] || 0) : 0;
   const imgExtra = mode === 'approfondi' ? Math.ceil(imageCount / 4) : 0;
   const extra = offert ? 0 : longExtra;
+  let creditsLogged = false;
   const cost = offert ? 0 : (mode === 'approfondi' ? (isLong ? 4 : 3) : 1) + extra + imgExtra;
   // Longueur maximale de la réponse : c'est elle qui borne le coût (la sortie coûte 5 fois plus cher que l'entrée).
   const outCap = (isLong ? OUT_CAP.long : OUT_CAP.normal) + OUT_CAP.perTranche * longExtra;
@@ -553,7 +554,9 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
         d = await send();
       }
       if (d.error) throw new Error(d.error.message);
-      await logApiUsage(SERVICE_KEY, email, 'generation:' + format, payload.model, d.usage && d.usage.input_tokens, d.usage && d.usage.output_tokens, d.usage && d.usage.cache_creation_input_tokens, d.usage && d.usage.cache_read_input_tokens);
+      // Crédits débités : notés une seule fois par génération (un second appel de repli ne les recompte pas).
+      const creditsNote = creditsLogged ? 0 : cost; creditsLogged = true;
+      await logApiUsage(SERVICE_KEY, email, 'generation:' + format, payload.model, d.usage && d.usage.input_tokens, d.usage && d.usage.output_tokens, d.usage && d.usage.cache_creation_input_tokens, d.usage && d.usage.cache_read_input_tokens, creditsNote);
       d._model = payload.model;
       return d;
     };

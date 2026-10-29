@@ -14,13 +14,13 @@ const THINKING_OPTIONS = [{ type: 'disabled' }, { type: 'enabled', budget_tokens
 let thinkingOpt = 0;
 
 // Suivi de consommation (même table que generate.js) : tarif Sonnet 5.5, 2 $ / 10 $ par million de tokens.
-async function logApiUsage(SERVICE_KEY, email, kind, model, inTok, outTok) {
+async function logApiUsage(SERVICE_KEY, email, kind, model, inTok, outTok, credits) {
   try {
     const cost = ((inTok || 0) * 2 + (outTok || 0) * 10) / 1e6;
     await fetch(SUPABASE_URL + '/rest/v1/api_usage', {
       method: 'POST',
       headers: { apikey: SERVICE_KEY, Authorization: 'Bearer ' + SERVICE_KEY, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-      body: JSON.stringify({ user_email: email, kind: kind, model: model, input_tokens: inTok || 0, output_tokens: outTok || 0, cost_usd: cost })
+      body: JSON.stringify({ user_email: email, kind: kind, model: model, input_tokens: inTok || 0, output_tokens: outTok || 0, cost_usd: cost, credits: (typeof credits === "number" ? credits : null) })
     });
   } catch (e) { console.error('Log usage:', e && e.message); }
 }
@@ -403,7 +403,7 @@ export default async function handler(req, res) {
           aiData = await send();
         }
         if (!aiData || aiData.error) throw new Error((aiData && aiData.error && aiData.error.message) || 'Réponse IA vide');
-        if (aiData.usage) await logApiUsage(SERVICE_KEY, email, 'flashcards', FLASH_MODEL, aiData.usage.input_tokens, aiData.usage.output_tokens);
+        if (aiData.usage) await logApiUsage(SERVICE_KEY, email, 'flashcards', FLASH_MODEL, aiData.usage.input_tokens, aiData.usage.output_tokens, 1);
 
         // On assemble les blocs de texte : le premier bloc peut être une « réflexion » sans texte.
         let text = (Array.isArray(aiData.content) ? aiData.content : []).filter((b) => b && b.type === 'text' && typeof b.text === 'string').map((b) => b.text).join('').trim();
