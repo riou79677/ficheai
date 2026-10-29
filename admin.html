@@ -656,7 +656,7 @@ function credBar(u){
 var activityCache={};
 function fmtD(d){return new Date(d).toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'});}
 function fmtDT(d){return new Date(d).toLocaleString('fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});}
-function kindLabel(x){var k=String(x.kind||'');if(/^erreur:/.test(k))return '⚠️ Erreur';if(/^info:/.test(k))return 'ℹ️ Info';if(k.indexOf('chat')===0)return '💬 Chat';if(k.indexOf('flashcards')===0)return '🔁 Révision';return String(x.model||'').indexOf('haiku')>-1?'⚡ Rapide':'🎓 Approfondi';}
+function kindLabel(x){var k=String(x.kind||'');if(/^erreur:/.test(k))return '⚠️ Erreur';if(/^info:/.test(k))return 'ℹ️ Note technique (0 crédit)';if(k.indexOf('photo')===0)return '📷 Photo';if(k.indexOf('chat')===0)return '💬 Chat';if(k.indexOf('flashcards')===0)return '🔁 Révision';return String(x.model||'').indexOf('haiku')>-1?'⚡ Rapide':'🎓 Approfondi';}
 
 function openUserModal(email){
   var user=allUsersData.find(function(u){return u.email===email;});
