@@ -742,7 +742,7 @@ function paintActivity(email,d){
     '<p class="ud-h">Fiches récentes</p>'+
     (d.fiches&&d.fiches.length?'<ul class="ud-list">'+d.fiches.map(function(f){return '<li><span>'+escH(f.format_icon||'')+' '+escH(f.titre||f.format||'Sans titre')+'</span><em>'+fmtD(f.created_at)+'</em></li>';}).join('')+'</ul>':'<p class="ud-empty">Aucune fiche.</p>')+
     '</div><div><p class="ud-h">Dernières actions IA</p>'+
-    (d.events&&d.events.length?'<ul class="ud-list">'+d.events.map(function(x){return '<li><span>'+kindLabel(x)+(/^(erreur|info):/.test(String(x.kind))?'':' · $'+Number(x.cost_usd||0).toFixed(4))+'</span><em>'+fmtDT(x.created_at)+'</em></li>';}).join('')+'</ul>':'<p class="ud-empty">Aucune action IA récente.</p>')+
+    (d.events&&(d.events=d.events.filter(function(x){return !/^info:/.test(String(x.kind));})).length?'<ul class="ud-list">'+d.events.map(function(x){return '<li><span>'+kindLabel(x)+(/^(erreur|info):/.test(String(x.kind))?'':' · $'+Number(x.cost_usd||0).toFixed(4))+'</span><em>'+fmtDT(x.created_at)+'</em></li>';}).join('')+'</ul>':'<p class="ud-empty">Aucune action IA récente.</p>')+
     '</div></div>';
   el.innerHTML=h;
 }
