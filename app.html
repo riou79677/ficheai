@@ -312,6 +312,40 @@ textarea::placeholder{color:var(--text3)}
 html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw;overflow-x:hidden}img,svg,video,canvas{max-width:100%}pre,code{white-space:pre-wrap;word-break:break-word}button,.btn{white-space:normal}
 @media(max-width:400px){.logo{font-size:0 !important;gap:0}}
 @media(max-width:560px){.logo{font-size:1.05rem;gap:7px}.logo-icon{width:28px;height:28px}.nav-right{gap:0.4rem}.plan-badge{display:none}.nav-upgrade{padding:0.35rem 0.7rem !important;font-size:0.72rem !important;white-space:nowrap !important}.user-badge{max-width:96px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
+
+/* ── Générateur minimaliste ── */
+.app-layout.simple{max-width:760px;flex-direction:column;gap:1rem}
+.app-layout.simple .main-area{width:100%;display:flex;flex-direction:column;gap:1rem}
+.app-layout.simple #stats-card{display:none!important}
+.app-layout.simple .mode-switcher{margin:0}
+.course-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:0.7rem 1rem;border-top:1px solid var(--border)}
+.course-tools .import-btn-item{width:auto;padding:0.5rem 0.9rem}
+.course-tools .file-badge{margin:0}
+.app-layout.simple #course-input{min-height:170px}
+.gen-block{display:flex;flex-direction:column;gap:0.6rem}
+.gen-label{font-size:0.9rem;font-weight:600;color:var(--text)}
+.gen-label span{font-weight:400;font-size:0.78rem;color:var(--text3);margin-left:6px}
+.app-layout.simple .format-list{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.app-layout.simple .fmt{padding:0.6rem 0.7rem}
+.app-layout.simple .fmt:hover{transform:none}
+.app-layout.simple .fmt-desc{display:none}
+.app-layout.simple .qual-box{padding:0;background:none;border:none}
+.more-opts{border:1px solid var(--border);border-radius:12px;background:var(--bg2)}
+.more-opts summary{cursor:pointer;padding:0.7rem 1rem;font-size:0.85rem;color:var(--text2);list-style:none}
+.more-opts summary::-webkit-details-marker{display:none}
+.more-opts summary::before{content:'+';display:inline-block;width:1em;color:var(--text3)}
+.more-opts[open] summary::before{content:'−'}
+.more-opts-body{display:flex;flex-direction:column;gap:0.8rem;padding:0 1rem 1rem}
+.opt-row{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:0.84rem;color:var(--text2)}
+.opt-row.opt-col{flex-direction:column;align-items:stretch}
+.opt-row .lang-select{width:auto;min-width:160px}
+.opt-check{justify-content:flex-start;cursor:pointer}
+.opt-check input{width:auto}
+#diagrams-hint{color:var(--text3)}
+.more-opts input[type=text]{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:9px;padding:0.6rem 0.8rem;font-size:0.84rem;color:var(--text);font-family:var(--font-b);outline:none}
+.more-opts input[type=text]:focus{border-color:var(--purple)}
+.more-opts input[type=text]::placeholder{color:var(--text3)}
+@media(max-width:700px){.app-layout.simple .format-list{grid-template-columns:repeat(2,1fr)}}
 </style>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#09090f">
@@ -352,43 +386,8 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
   </div>
 </nav>
 
-<div class="app-layout">
-  <div class="sidebar">
-    <div class="sidebar-card">
-      <div class="mode-switcher">
-        <button class="mode-btn active" id="mode-express-btn" onclick="switchMode('express')">⚡ Express</button>
-        <button class="mode-btn" id="mode-chat-btn" onclick="switchMode('chat')">💬 Chat IA</button>
-      </div>
-      <div class="sidebar-label"><span class="step-num">1</span> Format de sortie</div>
-      <div class="fmt-hint">Tu peux en choisir plusieurs (4 maximum). Chaque format coûte 1 crédit en Rapide, 3 en Approfondi.</div>
-      <div class="format-list" id="format-list">
-        <div class="fmt active" data-fmt="fiche" data-icon="📄" data-name="Fiche de révision" onclick="selectFormat(this)"><span class="fmt-icon">📄</span><div class="fmt-info"><span class="fmt-name">Fiche de révision</span><span class="fmt-desc">Structurée & complète</span></div></div>
-        <div class="fmt" data-fmt="quiz" data-icon="✅" data-name="Quiz QCM" onclick="selectFormat(this)"><span class="fmt-icon">✅</span><div class="fmt-info"><span class="fmt-name">Quiz QCM</span><span class="fmt-desc">6 questions & corrections</span></div></div>
-        <div class="fmt" data-fmt="flash" data-icon="🃏" data-name="Flashcards" onclick="selectFormat(this)"><span class="fmt-icon">🃏</span><div class="fmt-info"><span class="fmt-name">Flashcards</span><span class="fmt-desc">10 cartes recto/verso</span></div></div>
-        <div class="fmt" data-fmt="mindmap" data-icon="🧠" data-name="Mind Map" onclick="selectFormat(this)"><span class="fmt-icon">🧠</span><div class="fmt-info"><span class="fmt-name">Mind Map</span><span class="fmt-desc">Carte mentale visuelle</span></div></div>
-        <div class="fmt" data-fmt="questions" data-icon="💬" data-name="Questions ouvertes" onclick="selectFormat(this)"><span class="fmt-icon">💬</span><div class="fmt-info"><span class="fmt-name">Questions ouvertes</span><span class="fmt-desc">Pour préparer les oraux</span></div></div>
-        <div class="fmt" data-fmt="chrono" data-icon="📅" data-name="Chronologie" onclick="selectFormat(this)"><span class="fmt-icon">📅</span><div class="fmt-info"><span class="fmt-name">Chronologie</span><span class="fmt-desc">Plan & frise temporelle</span></div></div>
-        <div class="fmt" data-fmt="examen" data-icon="📝" data-name="Sujet d'examen" data-premium="1" onclick="selectFormat(this)"><span class="fmt-icon">📝</span><div class="fmt-info"><span class="fmt-name">Sujet d'examen <span style="background:linear-gradient(135deg,#6c5ce7,#fd79a8);color:#fff;font-size:0.62rem;font-weight:700;padding:1px 7px;border-radius:100px;margin-left:4px;vertical-align:middle">PRO</span></span><span class="fmt-desc">Entraînement noté et corrigé, sur mesure</span></div></div>
-      </div>
-    </div>
-    <div class="sidebar-card" id="import-card">
-      <div class="sidebar-label"><span class="step-num">2</span> Importer ton cours</div>
-      <input type="file" id="file-input" accept=".pdf,.txt" style="display:none">
-      <input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none">
-      <div class="import-btns">
-        <button class="import-btn-item" onclick="document.getElementById('file-input').click()"><span class="icon">📎</span> PDF ou fichier TXT</button>
-        <button class="import-btn-item" id="camera-btn" style="display:none" onclick="document.getElementById('camera-input').click()"><span class="icon">📷</span> Prendre en photo</button>
-      </div>
-      <div class="file-badge" id="file-badge"></div>
-      <div class="sidebar-label" style="margin-top:1rem">Langue de sortie</div>
-      <select class="lang-select" id="lang-sel">
-        <option value="auto">🌍 Langue auto</option>
-        <option value="fr">🇫🇷 Français</option>
-        <option value="en">🇬🇧 English</option>
-        <option value="es">🇪🇸 Español</option>
-        <option value="de">🇩🇪 Deutsch</option>
-      </select>
-    </div>
+<div class="app-layout simple">
+  <div class="main-area">
     <div class="sidebar-card" id="stats-card" style="display:none">
       <div class="sidebar-label">Ton activité</div>
       <div class="stats-mini">
@@ -400,9 +399,6 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
         <div class="quota-bar-label"><span id="quota-bar-text">0 / 0</span><span id="quota-bar-pct">0%</span></div>
       </div>
     </div>
-  </div>
-
-  <div class="main-area">
     <div class="quota-banner" id="quota-banner">
       <span class="quota-banner-icon">⚠️</span>
       <div class="quota-banner-text">
@@ -412,34 +408,65 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
       <button class="quota-banner-close" onclick="document.getElementById('quota-banner').style.display='none'">✕</button>
     </div>
 
+    <div class="course-zone" id="course-zone">
+      <div class="course-zone-header">
+        <span class="course-zone-title">Ton cours</span>
+        <span class="char-count" id="char-count">0 caractères</span>
+      </div>
+      <textarea id="course-input" placeholder="Colle ici ton cours, ou importe un PDF."></textarea>
+      <div class="course-tools">
+        <input type="file" id="file-input" accept=".pdf,.txt" style="display:none">
+        <input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none">
+        <button type="button" class="import-btn-item" onclick="document.getElementById('file-input').click()"><span class="icon">📎</span> Importer un PDF</button>
+        <button type="button" class="import-btn-item" id="camera-btn" style="display:none" onclick="document.getElementById('camera-input').click()"><span class="icon">📷</span> Photo</button>
+        <div class="file-badge" id="file-badge"></div>
+      </div>
+    </div>
+
+    <div class="mode-switcher">
+      <button class="mode-btn active" id="mode-express-btn" onclick="switchMode('express')">📄 Créer des fiches</button>
+      <button class="mode-btn" id="mode-chat-btn" onclick="switchMode('chat')">💬 Poser une question</button>
+    </div>
+
     <div class="express-area" id="express-area">
-      <div class="course-zone">
-        <div class="course-zone-header">
-          <span class="course-zone-title"><span class="step-num" style="display:inline-flex;vertical-align:middle;margin-right:4px">3</span>📝 Ton cours</span>
-          <span class="char-count" id="char-count">0 caractères</span>
-        </div>
-        <textarea id="course-input" placeholder="Colle ici le contenu de ton cours… FicheAI va l'analyser et générer ton outil de révision."></textarea>
+      <div class="gen-block">
+        <div class="gen-label">Que veux-tu créer ? <span>plusieurs choix possibles</span></div>
+        <div class="format-list" id="format-list">
+        <div class="fmt active" data-fmt="fiche" data-icon="📄" data-name="Fiche de révision" onclick="selectFormat(this)"><span class="fmt-icon">📄</span><div class="fmt-info"><span class="fmt-name">Fiche de révision</span></div></div>
+        <div class="fmt" data-fmt="quiz" data-icon="✅" data-name="Quiz QCM" onclick="selectFormat(this)"><span class="fmt-icon">✅</span><div class="fmt-info"><span class="fmt-name">Quiz QCM</span></div></div>
+        <div class="fmt" data-fmt="flash" data-icon="🃏" data-name="Flashcards" onclick="selectFormat(this)"><span class="fmt-icon">🃏</span><div class="fmt-info"><span class="fmt-name">Flashcards</span></div></div>
+        <div class="fmt" data-fmt="mindmap" data-icon="🧠" data-name="Mind Map" onclick="selectFormat(this)"><span class="fmt-icon">🧠</span><div class="fmt-info"><span class="fmt-name">Mind Map</span></div></div>
+        <div class="fmt" data-fmt="questions" data-icon="💬" data-name="Questions ouvertes" onclick="selectFormat(this)"><span class="fmt-icon">💬</span><div class="fmt-info"><span class="fmt-name">Questions ouvertes</span></div></div>
+        <div class="fmt" data-fmt="chrono" data-icon="📅" data-name="Chronologie" onclick="selectFormat(this)"><span class="fmt-icon">📅</span><div class="fmt-info"><span class="fmt-name">Chronologie</span></div></div>
+        <div class="fmt" data-fmt="examen" data-icon="📝" data-name="Sujet d'examen" data-premium="1" onclick="selectFormat(this)"><span class="fmt-icon">📝</span><div class="fmt-info"><span class="fmt-name">Sujet d'examen <span style="background:linear-gradient(135deg,#6c5ce7,#fd79a8);color:#fff;font-size:0.62rem;font-weight:700;padding:1px 7px;border-radius:100px;margin-left:4px;vertical-align:middle">PRO</span></span></div></div>
       </div>
-      <div class="instr-zone">
-        <label for="instructions-input">🎯 Consignes pour l’IA <span>(optionnel)</span></label>
-        <input type="text" id="instructions-input" maxlength="500" placeholder="Ex : fais-le plus court, insiste sur les formules, explique comme à un débutant…">
-        <div class="prefs-hint" id="prefs-hint" style="display:none"></div>
-      </div>
-      <div class="instr-zone">
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="diagrams-input" style="width:auto"> <span>📊 Ajouter des schémas aux fiches et chronologies <span id="diagrams-hint" style="color:var(--text3)">(Pro et Ultimate)</span></span></label>
-      </div>
-      <div class="tips-row">
-        <div class="tip-card" onclick="genererDirectement()"><div class="tip-icon">⚡</div><div class="tip-title">Générer maintenant</div><div class="tip-desc">Lance la génération avec le format choisi</div></div>
-        <div class="tip-card" onclick="switchMode('chat')"><div class="tip-icon">💬</div><div class="tip-title">Mode Chat IA</div><div class="tip-desc">Discute librement sur ton cours</div></div>
-        <div class="tip-card" onclick="document.getElementById('file-input').click()"><div class="tip-icon">📎</div><div class="tip-title">Importer un fichier</div><div class="tip-desc">PDF ou TXT depuis tes documents</div></div>
       </div>
       <div class="qual-box" id="qual-box">
-        <div class="qual-label">Qualité de génération</div>
         <div class="qual-seg">
-          <button type="button" class="qual-btn" id="qual-rapide" onclick="setGenMode('rapide')"><b>⚡ Rapide</b><span>L'essentiel du cours · 1 crédit</span></button>
-          <button type="button" class="qual-btn" id="qual-approfondi" onclick="setGenMode('approfondi')"><b>🎓 Approfondi</b><span id="qual-approfondi-sub">Plus de détails et d'explications · 3 crédits</span></button>
+          <button type="button" class="qual-btn" id="qual-rapide" onclick="setGenMode('rapide')"><b>⚡ Rapide</b><span>1 crédit</span></button>
+          <button type="button" class="qual-btn" id="qual-approfondi" onclick="setGenMode('approfondi')"><b>🎓 Approfondi</b><span id="qual-approfondi-sub">Plus détaillé · 3 crédits</span></button>
         </div>
       </div>
+      <details class="more-opts">
+        <summary>Plus d'options</summary>
+        <div class="more-opts-body">
+          <label class="opt-row" for="lang-sel">Langue
+            <select class="lang-select" id="lang-sel">
+              <option value="auto">Langue du cours</option>
+              <option value="fr">Français</option>
+              <option value="en">English</option>
+              <option value="es">Español</option>
+              <option value="de">Deutsch</option>
+            </select>
+          </label>
+          <div class="opt-row opt-col">
+            <label for="instructions-input">Consignes pour l’IA</label>
+            <input type="text" id="instructions-input" maxlength="500" placeholder="Ex : fais plus court, insiste sur les formules">
+            <div class="prefs-hint" id="prefs-hint" style="display:none"></div>
+          </div>
+          <label class="opt-row opt-check"><input type="checkbox" id="diagrams-input"> <span>Ajouter des schémas <span id="diagrams-hint">(Pro et Ultimate)</span></span></label>
+        </div>
+      </details>
       <div id="multi-note" class="multi-note" style="display:none"></div>
       <div id="error-box" class="error-box" style="display:none"></div>
       <button id="gen-btn" class="gen-btn">
@@ -478,8 +505,7 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
     <div class="chat-area" id="chat-area">
       <div class="chat-context-bar">
         <span style="font-size:1rem">📄</span>
-        <span class="chat-context-text" id="chat-context-text">Aucun cours chargé — <span>colle ton cours dans la zone texte puis clique "Charger"</span></span>
-        <button class="chat-use-btn" onclick="useCourseInChat()">Charger le cours</button>
+        <span class="chat-context-text" id="chat-context-text">Colle ou importe ton cours en haut : le chat répondra à partir de lui.</span>
       </div>
       <div class="chat-header">
         <div class="chat-header-left">
@@ -496,7 +522,7 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
         <div class="chat-welcome" id="chat-welcome">
           <div class="chat-welcome-icon">✨</div>
           <h3>Bonjour ! Je suis ton assistant FicheAI</h3>
-          <p>Charge ton cours puis parle-moi librement.<br>Je génère, explique, résume et t'aide à réviser.</p><p style="font-size:0.72rem;opacity:0.75">Je suis une IA : mes réponses peuvent contenir des erreurs, vérifie-les avec ton cours.</p>
+          <p>Pose ta question : je réponds à partir de ton cours.</p><p style="font-size:0.72rem;opacity:0.75">Je suis une IA : mes réponses peuvent contenir des erreurs, vérifie-les avec ton cours.</p>
           <div class="chat-suggestions">
             <div class="chat-sug" onclick="sendSuggestion('Génère une fiche de révision complète sur mon cours')">📄 Faire une fiche</div>
             <div class="chat-sug" onclick="sendSuggestion('Crée un quiz de 5 questions sur mon cours')">✅ Créer un quiz</div>
@@ -673,7 +699,7 @@ function renderGenMode(){
     var o=offertsLeft();
     sub.textContent=o>0?(o+' fiche'+(o>1?'s':'')+' offerte'+(o>1?'s':'')+' · 0 crédit'):'🔒 Disponible avec Pro';
     a.classList.toggle('locked',o<=0);
-  } else {sub.textContent='Plus de détails et d\'explications · 3 crédits (4 pour les formats longs)';a.classList.remove('locked');}
+  } else {sub.textContent='Plus détaillé · 3 crédits (4 pour les formats longs)';a.classList.remove('locked');}
   updateGenCostNote();
 }
 // Coût en crédits : même calcul que le serveur (api/generate.js), qui garantit qu'un crédit coûte au plus 0,039 € d'IA.
@@ -733,7 +759,7 @@ function showToast(msg){
 var TOUR_VERSION=3;
 var TOUR_STEPS=[
   {id:'cours',since:1,welcome:true,title:'Colle ou importe ton cours',
-   text:function(p){return 'Colle ton texte dans la zone du milieu, ou importe un PDF ('+(p==='ultimate'?250:p==='pro'?100:15)+' pages maximum avec ton plan).';}},
+   text:function(p){return 'Colle ton texte dans la zone en haut, ou importe un PDF ('+(p==='ultimate'?250:p==='pro'?100:15)+' pages maximum avec ton plan).';}},
   {id:'formats',since:1,welcome:true,title:'Choisis tes formats',
    text:function(p){return 'Fiche, quiz, flashcards, mind map, questions ouvertes, chronologie'+(p==='starter'?'':', sujet d’examen')+'. Tu peux en cocher plusieurs d’un coup.';}},
   {id:'generer',since:1,welcome:true,title:'Génère en un clic',
@@ -996,7 +1022,13 @@ function switchMode(mode){
   document.getElementById('mode-chat-btn').classList.toggle('active',mode==='chat');
   document.getElementById('express-area').style.display=mode==='express'?'flex':'none';
   document.getElementById('chat-area').style.display=mode==='chat'?'flex':'none';
-  if(mode==='chat')renderChatMode();
+  if(mode==='chat'){syncChatCourse();renderChatMode();}
+}
+function syncChatCourse(){
+  var t=document.getElementById('course-input').value.trim();
+  var el=document.getElementById('chat-context-text');
+  if(t){courseContent=t;if(el)el.innerHTML='Le chat répond à partir de <span>ton cours ('+Math.max(1,Math.round(t.length/2000))+' page'+(t.length>3000?'s':'')+' environ)</span>';}
+  else if(el){el.textContent='Colle ou importe ton cours en haut : le chat répondra à partir de lui.';}
 }
 
 function renderChatMode(){ updateChatCount(); } // chat ouvert à tous les forfaits : 1 crédit par message
