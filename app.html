@@ -1163,6 +1163,28 @@ function setFileBadge(msg,kind){
 }
 
 
+
+// Deux photos qui se chevauchent (le bas de la page 1 repris en haut de la page 2) : les lignes en double sont retirées.
+function photoLineKey(l){return chatNorm(l).replace(/[^a-z0-9]/g,'');}
+function mergePhotoText(prev,add){
+  if(!prev)return {text:add,removed:0};
+  var a=prev.split('\n'),b=add.split('\n');
+  var A=a.map(photoLineKey),B=b.map(photoLineKey);
+  function same(x,y){if(!x||!y)return x===y;if(x===y)return true;var s=x.length<y.length?x:y,l=x.length<y.length?y:x;return s.length>=12&&l.indexOf(s)!==-1;}
+  var best=0,maxK=Math.min(40,a.length,b.length);
+  for(var k=maxK;k>=1;k--){
+    var ok=true,real=0;
+    for(var i=0;i<k;i++){var x=A[a.length-k+i],y=B[i];if(!same(x,y)){ok=false;break;}if(x)real+=x.length;}
+    if(ok&&real>=20){best=k;break;}
+  }
+  // Ligne coupée en bas de la photo 1 et reprise en entier en haut de la photo 2.
+  if(!best){var last=A[A.length-1]||'',first=B[0]||'';if(last.length>=8&&first.length>last.length&&first.indexOf(last)===0){a.pop();return {text:a.join('\n').trim()+'\n'+b.join('\n'),removed:1};}}
+  if(!best)return {text:prev+'\n\n'+add,removed:0};
+  // Lignes communes : on garde la version la plus complète de chacune (une ligne coupée en bas de photo est souvent entière sur l'autre).
+  var head=a.slice(0,a.length-best),mid=[];
+  for(var j=0;j<best;j++){var la=a[a.length-best+j],lb=b[j];mid.push((lb||'').length>(la||'').length?lb:la);}
+  return {text:head.concat(mid,b.slice(best)).join('\n').trim(),removed:best};
+}
 // Photo d'un cours → texte (1 crédit). La photo est réduite à 1 600 px dans le navigateur avant l'envoi.
 async function readCoursePhoto(file){
   if(!savedUser||!savedUser.email){showSignupPopup();return;}
@@ -1191,7 +1213,8 @@ async function readCoursePhoto(file){
     }
     var ta=document.getElementById('course-input');var prev=ta.value.trim();
     var keptImgs=pdfImagesFor(prev);
-    ta.value=(prev?prev+'\n\n':'')+d.text;courseContent=ta.value;
+    var merged=mergePhotoText(prev,d.text);
+    ta.value=merged.text;courseContent=ta.value;
     // Schéma sur la photo (Pro et Ultimate) : l'image est gardée pour que l'IA la revoie pendant la génération.
     var plan=getPlan(),cap=plan==='ultimate'?8:plan==='pro'?4:0,schemaKept=false,schemaFull=false;
     pdfImages=keptImgs.slice();
@@ -1201,7 +1224,7 @@ async function readCoursePhoto(file){
     if(typeof d.remaining==='number')try{applyCredits(d.remaining);}catch(e){}
     var nIll=(d.text.match(/\[illisible\]/gi)||[]).length;
     if(nIll)setFileBadge('⚠️ Photo lue, mais '+nIll+' passage'+(nIll>1?'s sont illisibles':' est illisible')+' (marqué'+(nIll>1?'s':'')+' [illisible] dans le texte). Corrige-'+(nIll>1?'les':'le')+' avant de générer, ou reprends la photo avec plus de lumière.','warn');
-    else setFileBadge('✅ Photo lue'+(prev?' et ajoutée à la suite':'')+(schemaKept?' · 📊 schéma gardé : l’IA le reverra en Approfondi (+1 crédit par groupe de 4 photos)':schemaFull?' · ℹ️ limite de '+cap+' photos de schémas atteinte, celui-ci sera seulement décrit':'')+' · tu peux corriger le texte, ou prendre une autre page','ok');
+    else setFileBadge('✅ Photo lue'+(prev?' et ajoutée à la suite':'')+(merged.removed?' (partie déjà présente retirée)':'')+(schemaKept?' · 📊 schéma gardé : l’IA le reverra en Approfondi (+1 crédit par groupe de 4 photos)':schemaFull?' · ℹ️ limite de '+cap+' photos de schémas atteinte, celui-ci sera seulement décrit':'')+' · tu peux corriger le texte, ou prendre une autre page','ok');
     updateChatContext('photo');
   }catch(e){setFileBadge('⚠️ Erreur réseau. Réessaie.','error');}
 }
