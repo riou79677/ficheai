@@ -487,7 +487,9 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
     const courseBlock = '---COURS---\n' + String(course).substring(0, charLimit) + '\n---FIN COURS---';
     // L'IA est prévenue de la longueur maximale, pour condenser au lieu d'être coupée en plein milieu.
     const lengthGuard = '\n\nLONGUEUR MAXIMALE : ta réponse complète (schémas compris) doit tenir en environ ' + (Math.round(outCap * 0.5 / 100) * 100) + ' mots au plus. Si le cours est très long, condense chaque partie plutôt que d\'en omettre une, et termine toujours toutes les sections.';
-    const taskBody = promptText + instructionsBlock + diagramBlock + lengthGuard;
+    // Cours issu d'une photo mal lue : l'IA ne doit jamais inventer ce qui manque (l'élève est prévenu à l'écran).
+    const illegibleNote = /\[illisible\]/i.test(String(course)) ? '\n\nATTENTION : certains passages du cours sont marqués [illisible] (photo mal lue). N\'invente jamais leur contenu et ne comble pas les trous avec tes connaissances : traite seulement ce qui est lisible.' : '';
+    const taskBody = promptText + instructionsBlock + diagramBlock + illegibleNote + lengthGuard;
     const finalLine = '\n\nGénère maintenant le contenu demandé.';
 
     // Schémas et images du PDF (plans Pro et Ultimate) : les pages concernées arrivent en images JPEG/PNG,

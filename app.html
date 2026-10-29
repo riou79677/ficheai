@@ -367,6 +367,7 @@ body.chat-fs-open{overflow:hidden}
 .course-tools .file-badge{word-break:normal;overflow-wrap:break-word;flex-basis:100%}
 @media(max-width:600px){.course-tools .import-btn-item{flex:1 1 0;justify-content:center;padding:0.55rem 0.4rem}.course-tools .import-hint{flex-basis:100%}}
 .gen-btn-cost{font-weight:500;opacity:0.85}
+.result-warn{margin:0 0 0.8rem;padding:0.6rem 0.9rem;border-radius:10px;border:1px solid rgba(251,191,36,0.3);background:rgba(251,191,36,0.08);color:#fbbf24;font-size:0.82rem;line-height:1.5}
 .course-zone.drop-on{border-color:var(--purple);box-shadow:0 0 0 3px rgba(108,92,231,0.18)}
 </style>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -507,6 +508,7 @@ body.chat-fs-open{overflow:hidden}
             <button id="reset-btn">↩ Nouveau</button>
           </div>
         </div>
+        <div id="result-warn" class="result-warn" style="display:none">⚠️ Ton cours contient des passages illisibles (marqués [illisible]) : ce résultat peut être incomplet. Corrige-les dans ton cours, puis relance la génération.</div>
         <div id="result-tabs" class="rc-tabs" style="display:none"></div>
         <div id="result-spinner" class="skeleton-wrap">
           <div class="skeleton-title"></div>
@@ -1187,7 +1189,9 @@ async function readCoursePhoto(file){
     var ta=document.getElementById('course-input');var prev=ta.value.trim();
     ta.value=(prev?prev+'\n\n':'')+d.text;courseContent=ta.value;updateCharCount();
     if(typeof d.remaining==='number')try{applyCredits(d.remaining);}catch(e){}
-    setFileBadge('✅ Photo lue'+(prev?' et ajoutée à la suite':'')+' · tu peux corriger le texte, ou prendre une autre page','ok');
+    var nIll=(d.text.match(/\[illisible\]/gi)||[]).length;
+    if(nIll)setFileBadge('⚠️ Photo lue, mais '+nIll+' passage'+(nIll>1?'s sont illisibles':' est illisible')+' (marqué'+(nIll>1?'s':'')+' [illisible] dans le texte). Corrige-'+(nIll>1?'les':'le')+' avant de générer, ou reprends la photo avec plus de lumière.','warn');
+    else setFileBadge('✅ Photo lue'+(prev?' et ajoutée à la suite':'')+' · tu peux corriger le texte, ou prendre une autre page','ok');
     updateChatContext('photo');
   }catch(e){setFileBadge('⚠️ Erreur réseau. Réessaie.','error');}
 }
@@ -1542,6 +1546,7 @@ document.getElementById('gen-btn').addEventListener('click',async function(){
     errBox.textContent='⚠️ '+partialError+' — les autres formats ont bien été générés. Relance ce format seul dans un instant.';errBox.style.display='block';
   }
   btn.disabled=false;btn.innerHTML=GEN_BTN_HTML;try{updateGenCostNote();}catch(e){}
+  try{var rw=document.getElementById('result-warn');if(rw)rw.style.display=/\[illisible\]/i.test(document.getElementById('course-input').value)?'block':'none';}catch(e){}
 });
 
 document.getElementById('copy-btn').addEventListener('click',function(){
