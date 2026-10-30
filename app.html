@@ -174,7 +174,8 @@ textarea::placeholder{color:var(--text3)}
 .result-card{background:var(--bg2);border:1px solid rgba(108,92,231,0.2);border-radius:18px;padding:1.4rem;display:none;animation:fadeUp 0.35s var(--ease)}
 .result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px}
 .result-title{font-family:var(--font-h);font-size:1rem;font-weight:700}
-.result-actions{display:flex;gap:6px}
+.result-actions{display:flex;gap:6px;flex-wrap:wrap;max-width:100%}
+@media(max-width:600px){.result-header>div:first-child{flex-basis:100%}.result-actions{width:100%}.result-actions button{flex:1 1 auto;padding:0.5rem 0.55rem;white-space:nowrap}}
 .result-actions button{background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:0.35rem 0.8rem;font-size:0.75rem;font-weight:600;color:var(--text2);cursor:pointer;font-family:var(--font-b);transition:all 0.18s}
 .result-actions button:hover{border-color:var(--purple2);color:var(--purple2)}
 .skeleton-wrap{display:flex;flex-direction:column;gap:10px;padding:0.3rem 0}
