@@ -9,6 +9,7 @@
 <script src="/prefs.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="/office.js" defer></script>
+<script src="/pdftext.js" defer></script>
 <script src="/auth.js"></script>
 <script src="/checkout.js"></script>
 <style>
@@ -370,6 +371,17 @@ body.chat-fs-open{overflow:hidden}
 .gen-btn-cost{font-weight:500;opacity:0.85}
 .result-warn{margin:0 0 0.8rem;padding:0.6rem 0.9rem;border-radius:10px;border:1px solid rgba(251,191,36,0.3);background:rgba(251,191,36,0.08);color:#fbbf24;font-size:0.82rem;line-height:1.5}
 .course-zone.drop-on{border-color:var(--purple);box-shadow:0 0 0 3px rgba(108,92,231,0.18)}
+
+.file-card{display:flex;align-items:center;gap:10px;margin:0.9rem 1rem 0.2rem;padding:0.75rem 0.9rem;border:1px solid rgba(74,222,128,0.28);background:rgba(74,222,128,0.06);border-radius:12px}
+.file-card-ico{font-size:1.4rem}
+.file-card-info{flex:1;min-width:0;display:flex;flex-direction:column}
+.file-card-info b{font-size:0.88rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.file-card-info small{font-size:0.75rem;color:#4ade80}
+.course-zone.has-file .course-tools .import-hint{display:none}
+.file-card-btn{background:transparent;border:1px solid var(--border2);border-radius:8px;padding:0.4rem 0.7rem;font-size:0.76rem;color:var(--text2);cursor:pointer;font-family:var(--font-b);white-space:nowrap}
+.file-card-x{background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:0.9rem;min-width:32px;min-height:32px}
+.course-zone.has-file:not(.show-text) #course-input{display:none}
+.course-zone.has-file .course-zone-header .char-count{visibility:hidden}
 </style>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#09090f">
@@ -436,6 +448,12 @@ body.chat-fs-open{overflow:hidden}
       <div class="course-zone-header">
         <span class="course-zone-title">Ton cours</span>
         <span class="char-count" id="char-count">0 caractères</span>
+      </div>
+      <div class="file-card" id="file-card" style="display:none">
+        <span class="file-card-ico" id="file-card-ico">📄</span>
+        <div class="file-card-info"><b id="file-card-name"></b><small id="file-card-meta"></small></div>
+        <button type="button" class="file-card-btn" id="file-card-toggle" onclick="toggleFileText()">Voir le texte</button>
+        <button type="button" class="file-card-x" onclick="removeFileCard(true)" aria-label="Retirer le fichier" title="Retirer le fichier">✕</button>
       </div>
       <textarea id="course-input" placeholder="Colle ici ton cours, ou glisse un fichier (PDF, Word, PowerPoint)."></textarea>
       <div class="course-tools">
@@ -1189,6 +1207,7 @@ function mergePhotoText(prev,add){
 // Photo d'un cours → texte (1 crédit). La photo est réduite à 1 600 px dans le navigateur avant l'envoi.
 async function readCoursePhoto(file){
   if(!savedUser||!savedUser.email){showSignupPopup();return;}
+  removeFileCard(false);
   setFileBadge('⏳ Lecture de la photo… (1 crédit)','ok');
   var b64='';
   try{
@@ -1229,7 +1248,25 @@ async function readCoursePhoto(file){
     updateChatContext('photo');
   }catch(e){setFileBadge('⚠️ Erreur réseau. Réessaie.','error');}
 }
+
+// Fichier importé : on affiche une carte propre au lieu du texte brut (visible sur demande, pour vérifier ou corriger).
+function showFileCard(name,meta){
+  var z=document.getElementById('course-zone'),c=document.getElementById('file-card');if(!z||!c)return;
+  var ext=String(name).split('.').pop().toLowerCase();
+  document.getElementById('file-card-ico').textContent=ext==='pptx'||ext==='odp'?'📊':ext==='docx'||ext==='odt'?'📝':'📄';
+  document.getElementById('file-card-name').textContent=name;
+  document.getElementById('file-card-meta').textContent=meta||'';
+  c.style.display='flex';z.classList.add('has-file');z.classList.remove('show-text');
+  document.getElementById('file-card-toggle').textContent='Voir le texte';
+}
+function toggleFileText(){var z=document.getElementById('course-zone');var on=z.classList.toggle('show-text');document.getElementById('file-card-toggle').textContent=on?'Masquer le texte':'Voir le texte';}
+function removeFileCard(clear){
+  var z=document.getElementById('course-zone'),c=document.getElementById('file-card');if(!z||!c)return;
+  c.style.display='none';z.classList.remove('has-file','show-text');
+  if(clear){var ta=document.getElementById('course-input');ta.value='';courseContent='';pdfImages=[];pdfImagesKey='';updateCharCount();var b=document.getElementById('file-badge');if(b)b.style.display='none';var ih=document.getElementById('import-hint');if(ih)ih.style.display='';}
+}
 function handleFileLoad(file){
+  removeFileCard(false);
   if(file.type==='text/plain'||(file.name&&file.name.toLowerCase().endsWith('.txt'))){
     var reader=new FileReader();
     reader.onload=function(ev){
@@ -1251,7 +1288,9 @@ function handleFileLoad(file){
         var pageLimit=plan==='ultimate'?250:plan==='pro'?100:15;
         var maxPages=Math.min(pdf.numPages,pageLimit);
         var text='';
-        for(var i=1;i<=maxPages;i++){var page=await pdf.getPage(i);var content=await page.getTextContent();text+=content.items.map(function(item){return item.str;}).join(' ')+'\n';}
+        var pagesRaw=[];for(var i=1;i<=maxPages;i++){var page=await pdf.getPage(i);var content=await page.getTextContent();pagesRaw.push({items:content.items,height:page.getViewport({scale:1}).height});text+=content.items.map(function(item){return item.str;}).join(' ')+'\n';}
+        // Texte reconstruit proprement (lignes, paragraphes, en-têtes et numéros de page retirés) ; repli sur l'ancien texte en cas de souci.
+        try{if(window.FichePdfText){var clean=FichePdfText(pagesRaw);if(clean.replace(/\s/g,'').length>=text.replace(/\s/g,'').length*0.6)text=clean;}}catch(eCl){}
         var usefulChars=text.replace(/\s/g,'').length;
         if(usefulChars<100){setFileBadge('⚠️ Ce PDF semble être un document scanné ou une photo : aucun texte lisible dedans. Copie-colle ton cours en texte à la place (la lecture des scans arrive bientôt !).','error');return;}
         // Pages avec images (photos, figures) ou beaucoup de tracés (schémas dessinés) : repérées pour tous les plans.
@@ -1286,6 +1325,8 @@ function handleFileLoad(file){
         courseContent=text;document.getElementById('course-input').value=text;updateCharCount();
         if(pdf.numPages>pageLimit){setFileBadge('⚠️ '+file.name+' : '+pdf.numPages+' pages au total, seules les '+pageLimit+' premières ont été lues (limite de ton plan '+plan.charAt(0).toUpperCase()+plan.slice(1)+'). Découpe ton PDF pour traiter la suite. '+imgNote,'warn');}
         else{setFileBadge('✅ '+file.name+' — '+maxPages+' page'+(maxPages>1?'s':'')+' lue'+(maxPages>1?'s':'')+' · '+imgNote,'ok');}
+        if(pdf.numPages<=pageLimit&&(imgNote===PDF_NOTE||pdfImages.length)){var bb2=document.getElementById('file-badge');if(bb2)bb2.style.display='none';}
+        showFileCard(file.name,maxPages+' page'+(maxPages>1?'s':'')+' lue'+(maxPages>1?'s':'')+(pdfImages.length?' · '+pdfImages.length+' schéma'+(pdfImages.length>1?'s':'')+' analysé'+(pdfImages.length>1?'s':''):''));
         updateChatContext(file.name);
       }catch(err){
         var name=(err&&err.name)||'';
@@ -1308,7 +1349,8 @@ function handleFileLoad(file){
       pdfImages=[];pdfImagesKey='';
       courseContent=txt;document.getElementById('course-input').value=txt;updateCharCount();
       var info=r.pages?(' — '+r.pages+' diapositive'+(r.pages>1?'s':'')):'';
-      setFileBadge((cut?'⚠️ ':'✅ ')+file.name+info+(cut?' : seule la première partie sera utilisée (limite de ton plan).':''),cut?'warn':'ok');
+      if(cut)setFileBadge('⚠️ '+file.name+' : seule la première partie sera utilisée (limite de ton plan).','warn');else{var bb=document.getElementById('file-badge');if(bb)bb.style.display='none';}
+      showFileCard(file.name,(r.pages?r.pages+' diapositive'+(r.pages>1?'s':'')+' · ':'')+'lu et prêt');
       updateChatContext(file.name);
     }).catch(function(){setFileBadge('⚠️ Impossible de lire ce fichier. Vérifie qu’il s’ouvre bien, ou enregistre-le en PDF.','error');});
   } else if(/\.(doc|ppt)$/i.test(file.name||'')){
