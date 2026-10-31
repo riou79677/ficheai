@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<script src="/icons.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
 <title>FicheAI — Paramètres</title>
 <link rel="preload" href="/fonts/syne-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/fonts/dm-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
@@ -287,10 +288,10 @@ html{-webkit-text-size-adjust:100%}body{overflow-wrap:break-word;max-width:100vw
           <h3>Niveau scolaire</h3><p>FicheAI adapte le vocabulaire et la difficulté de tes fiches à ton niveau.</p>
           <div class="form-group">
             <select id="pref-niveau" onchange="saveNiveau(this.value)">
-              <option value="college">📘 Collège</option>
-              <option value="lycee">📗 Lycée</option>
-              <option value="prepa">📕 Classe préparatoire</option>
-              <option value="superieur">📙 Université / École</option>
+              <option value="college">Collège</option>
+              <option value="lycee">Lycée</option>
+              <option value="prepa">Classe préparatoire</option>
+              <option value="superieur">Université / École</option>
             </select>
           </div>
           <div id="niveau-msg" style="display:none;font-size:0.8rem;margin-top:0.5rem"></div>
@@ -573,7 +574,7 @@ function showUsernameModal(){
   var overlay = document.createElement('div');
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1.5rem';
   overlay.innerHTML = '<div style="background:#13131f;border:1px solid rgba(124,109,250,0.4);border-radius:20px;padding:2rem;max-width:400px;width:100%;text-align:center">'
-    + '<div style="font-size:2rem;margin-bottom:0.8rem">👋</div>'
+    + '<div style="font-size:2rem;margin-bottom:0.8rem">✨</div>'
     + '<h3 style="font-family:inherit;font-size:1.15rem;margin-bottom:0.6rem;color:#f1f0ff">Choisis ton pseudo</h3>'
     + '<p style="font-size:0.83rem;color:#a0a0c0;line-height:1.6;margin-bottom:1.3rem">Pour continuer, il nous faut un pseudo pour t\'identifier facilement.</p>'
     + '<input type="text" id="new-username-input" placeholder="lucas_reviseur" maxlength="30" style="width:100%;background:#0f0f1a;border:1.5px solid rgba(255,255,255,0.14);border-radius:10px;padding:0.75rem 1rem;font-size:0.9rem;color:#f1f0ff;font-family:inherit;outline:none;margin-bottom:0.6rem;text-align:center">'

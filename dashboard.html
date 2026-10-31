@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<script src="/icons.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
 <title>FicheAI — Ma bibliothèque</title>
 <link rel="preload" href="/fonts/syne-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/fonts/dm-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
@@ -190,7 +191,7 @@ function showUsernameModal(){
 var overlay = document.createElement('div');
 overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1.5rem';
 overlay.innerHTML = '<div style="background:#13131f;border:1px solid rgba(124,109,250,0.4);border-radius:20px;padding:2rem;max-width:400px;width:100%;text-align:center">'
-+ '<div style="font-size:2rem;margin-bottom:0.8rem">👋</div>'
++ '<div style="font-size:2rem;margin-bottom:0.8rem">✨</div>'
 + '<h3 style="font-family:inherit;font-size:1.15rem;margin-bottom:0.6rem;color:#f1f0ff">Choisis ton pseudo</h3>'
 + '<p style="font-size:0.83rem;color:#a0a0c0;line-height:1.6;margin-bottom:1.3rem">Pour continuer, il nous faut un pseudo pour t\'identifier facilement. Ce n\'est jamais affiché publiquement.</p>'
 + '<input type="text" id="new-username-input" placeholder="lucas_reviseur" maxlength="30" style="width:100%;background:#0f0f1a;border:1.5px solid rgba(255,255,255,0.14);border-radius:10px;padding:0.75rem 1rem;font-size:0.9rem;color:#f1f0ff;font-family:inherit;outline:none;margin-bottom:0.6rem;text-align:center">'
@@ -307,6 +308,7 @@ var cleanTitle = title.replace(/[📚🎯📖⚡❓🔗━▸✦📄✅🃏🧠�
 var bodyHtml = formatContentForPDF(content);
 var container = document.createElement('div');
 container.style.cssText = 'width:780px;padding:50px 55px;font-family:Georgia,serif;background:#ffffff;color:#1a1a2e;';
+container.setAttribute('data-icons-inline', '1');
 container.innerHTML = '\
 <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #6c5ce7;padding-bottom:14px;margin-bottom:24px;">\
 <div style="display:flex;align-items:center;gap:10px;">\
