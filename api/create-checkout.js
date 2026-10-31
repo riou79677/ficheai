@@ -10,11 +10,11 @@ import { mfaMissing, MFA_REQUIRED } from './_mfa.js';
 const SALES_OPEN = false;
 
 // Version des CGV acceptée par le client (à changer à chaque modification des conditions de vente).
-const CGV_VERSION = '2026-10-29';
+const CGV_VERSION = '2026-10-31';
 
 const OFFERS = {
   pro_monthly:      { mode: 'subscription', plan: 'pro',      price: 'price_1TXfc5JBbEVt3aRD8UpsC4Ym', label: 'Pro mensuel',      amount: '7,99 €',  period: 'mois', trialDays: 7 },
-  pro_yearly:       { mode: 'subscription', plan: 'pro',      price: 'price_1USuiLJBbEVt3aRDV5FtLJtZ', label: 'Pro annuel',       amount: '79,90 €', period: 'an' },
+  pro_yearly:       { mode: 'subscription', plan: 'pro',      price: 'price_1UWcCwJBbEVt3aRDFqj1v4B6', label: 'Pro annuel',       amount: '83,90 €', period: 'an' },
   ultimate_monthly: { mode: 'subscription', plan: 'ultimate', price: 'price_1TXfiUJBbEVt3aRDXGVS7pAz', label: 'Ultimate mensuel', amount: '14,99 €', period: 'mois' },
   recharge_50:      { mode: 'payment', credits: 100, price: 'price_1TvvwjJBbEVt3aRDYw3CewZz', label: 'Recharge de 100 crédits',  amount: '6,99 €' },
   recharge_150:     { mode: 'payment', credits: 300, price: 'price_1TvvwqJBbEVt3aRDRZXro9z5', label: 'Recharge de 300 crédits', amount: '19,99 €' },

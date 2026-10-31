@@ -551,7 +551,7 @@
   };
 
   /* ═══ Tarifs : mensuel ou annuel ═══ */
-  var PRO_MONTHLY = 7.99, PRO_YEARLY = 79.90; // Doivent être identiques aux prix Stripe (price pro_monthly / pro_yearly)
+  var PRO_MONTHLY = 7.99, PRO_YEARLY = 83.90; // Doivent être identiques aux prix Stripe (price pro_monthly / pro_yearly)
   window.proBilling = 'yearly';
   function fmtEur(n) { return n.toFixed(2).replace('.', ','); }
   function placeBillPill() {

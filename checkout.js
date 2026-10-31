@@ -7,7 +7,7 @@
   var OFFERS = {
     pro_monthly: { kind: 'sub', plan: 'pro', title: '⚡ FicheAI Pro, formule mensuelle', price: '7,99 €', per: 'mois', trial: 7,
       what: '110 crédits par mois (36 fiches en qualité Approfondi, ou 110 en Rapide ; 1 crédit par message de Chat IA), Mode Révision, import de PDF jusqu\'à 100 pages, sujets d\'examen et export PDF.' },
-    pro_yearly: { kind: 'sub', plan: 'pro', title: '⚡ FicheAI Pro, formule annuelle', price: '79,90 €', per: 'an',
+    pro_yearly: { kind: 'sub', plan: 'pro', title: '⚡ FicheAI Pro, formule annuelle', price: '83,90 €', per: 'an',
       what: '110 crédits par mois pendant un an (36 fiches en qualité Approfondi, ou 110 en Rapide ; 1 crédit par message de Chat IA), Mode Révision, import de PDF jusqu\'à 100 pages, sujets d\'examen et export PDF.' },
     ultimate_monthly: { kind: 'sub', plan: 'ultimate', title: '👑 FicheAI Ultimate, formule mensuelle', price: '14,99 €', per: 'mois',
       what: '250 crédits par mois (83 fiches en qualité Approfondi, ou 250 en Rapide ; 1 crédit par message de Chat IA), Mode Révision, import de PDF jusqu\'à 250 pages, lecture des schémas, sujets d\'examen et export PDF.' },
@@ -77,7 +77,7 @@
         var first = frDate(new Date(Date.now() + trial * 86400000));
         lines.push('<b>Essai gratuit de ' + trial + ' jours :</b> rien n\'est prélevé aujourd\'hui. Sans résiliation avant le ' + esc(first) + ', ' + esc(o.price) + ' TTC seront prélevés ce jour-là, puis chaque mois.');
       } else if (o.per === 'an') {
-        lines.push('<b>Prix :</b> ' + esc(o.price) + ' TTC prélevés aujourd\'hui (soit 6,66 € par mois).');
+        lines.push('<b>Prix :</b> ' + esc(o.price) + ' TTC prélevés aujourd\'hui (soit 6,99 € par mois).');
       } else {
         lines.push('<b>Prix :</b> ' + esc(o.price) + ' TTC prélevés aujourd\'hui, puis chaque mois.');
       }
