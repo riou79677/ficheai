@@ -325,7 +325,7 @@ footer { border-top: 1px solid var(--border); padding: 1.5rem 2rem; background: 
 .pricing-card-pop:hover { box-shadow:0 20px 60px rgba(108,92,231,0.2); }
 .pricing-card-ult { border-color:rgba(253,203,110,0.3);background:linear-gradient(180deg,rgba(253,203,110,0.07) 0%,var(--bg3) 100%); }
 .pricing-card-ult:hover { box-shadow:0 20px 60px rgba(253,203,110,0.12); }
-.pop-badge { position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--purple),var(--pink));color:white;font-size:0.72rem;font-weight:700;padding:0.28rem 1.1rem;border-radius:100px;white-space:nowrap;box-shadow:0 4px 16px rgba(108,92,231,0.4); }
+.pop-badge { position:absolute;top:-13px;left:50%;width:max-content;transform:translateX(-50%);background:linear-gradient(135deg,var(--purple),var(--pink));color:white;font-size:0.72rem;font-weight:700;padding:0.28rem 1.1rem;border-radius:100px;white-space:nowrap;box-shadow:0 4px 16px rgba(108,92,231,0.4); }
 .plan-name { font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text2);margin-bottom:0.8rem; }
 .pricing-card-pop .plan-name { color:var(--purple2); }
 .pricing-card-ult .plan-name { color:var(--gold); }

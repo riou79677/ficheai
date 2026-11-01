@@ -244,7 +244,7 @@ Style de réponse :
       system: systemPrompt,
       messages: cleanMessages
     };
-    if (thinkingParamSupported) chatPayload.thinking = { type: 'disabled' };
+    if (thinkingParamSupported) chatPayload.thinking = { type: 'between_tools' }; // coupe la réflexion sur les modèles 5.5 (« disabled » y est refusé)
     const sendChat = () => fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {

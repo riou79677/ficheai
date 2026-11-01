@@ -56,7 +56,9 @@ const MAX_TOKENS = { fiche: 7000, quiz: 6000, flash: 5000, mindmap: 4500, questi
 // le 21/10, un quiz a utilisé 2 500 unités sur 2 500 sans écrire une ligne, et une fiche 3 000 sur 3 000 (coupée).
 // On désactive donc la réflexion. Si l'API refusait ce paramètre, on le retire automatiquement.
 // Réglages essayés dans l'ordre : réflexion désactivée, puis réflexion limitée à 1 024 unités, puis réglage par défaut.
-const THINKING_OPTIONS = [{ type: 'disabled' }, { type: 'enabled', budget_tokens: 1024 }, null];
+// Sonnet 5.5 et Haiku 5.5 refusent « disabled » et indiquent « between_tools » pour couper la réflexion (sans outils = aucune réflexion).
+// Les autres réglages restent en repli si l'API change.
+const THINKING_OPTIONS = [{ type: 'between_tools' }, { type: 'disabled' }, null];
 const thinkingOptBy = {}; // réglage de réflexion retenu, mémorisé séparément pour chaque modèle
 
 export default async function handler(req, res) {
@@ -542,7 +544,7 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
       let d = await send();
       // Modèle refusé (introuvable ou indisponible) : plus de bascule vers Sonnet en mode Rapide (elle coûtait 15 fois le prix
       // d'un crédit). L'erreur est journalisée, les crédits sont rendus et l'élève peut relancer.
-      if (d.error && (d.error.type === 'not_found_error' || /model/i.test(String(d.error.message || '')))) {
+      if (d.error && (d.error.type === 'not_found_error' || (/model/i.test(String(d.error.message || '')) && !/thinking/i.test(String(d.error.message || ''))))) {
         console.error('Modèle refusé :', payload.model, d.error.message);
         logApiUsage(SERVICE_KEY, email, 'info:modele-refuse:' + payload.model + ':' + String(d.error.message || '').slice(0, 80), payload.model, 0, 0);
       }

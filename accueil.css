@@ -235,7 +235,7 @@ html:not(.js) .tab.on{background:rgba(108,92,231,.26)}
 .fb{background:var(--encre2);border:1px solid var(--trait);border-radius:14px;padding:11px 13px;margin-bottom:9px}
 .fb b{display:block;font-size:.8rem;color:var(--rose);margin-bottom:4px}
 .fb span{display:block;font-size:.85rem;color:var(--t2);line-height:1.5}
-.toast{position:absolute;left:50%;bottom:4px;display:inline-flex;align-items:center;gap:.55rem;transform:translateX(-50%);padding:.62rem 1.05rem;border-radius:100px;background:#0e2a2c;border:1px solid rgba(0,206,201,.38);color:#9ef3ef;font-size:.86rem;font-weight:600;white-space:nowrap;box-shadow:0 14px 30px -14px rgba(0,206,201,.5)}
+.toast{position:absolute;left:50%;width:max-content;bottom:4px;display:inline-flex;align-items:center;gap:.55rem;transform:translateX(-50%);padding:.62rem 1.05rem;border-radius:100px;background:#0e2a2c;border:1px solid rgba(0,206,201,.38);color:#9ef3ef;font-size:.86rem;font-weight:600;white-space:nowrap;box-shadow:0 14px 30px -14px rgba(0,206,201,.5)}
 .toast b{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:var(--menthe);color:#04201f;font-size:.66rem}
 html:not(.anim) .paper,html:not(.anim) .chip,html:not(.anim) .scan{display:none}
 html:not(.anim) .steps .stage{height:calc(430px * var(--k,1))}
@@ -443,7 +443,7 @@ html:not(.anim) .chatbox{height:auto}
 .l2{right:20px;top:176px}
 .l3{left:96px;top:96px}
 .beam{position:absolute;left:0;right:0;top:0;height:60px;background:linear-gradient(180deg,rgba(108,92,231,0),rgba(108,92,231,.22));border-bottom:2px solid rgba(162,155,254,.95);opacity:0;pointer-events:none}
-.pdf-chip{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);display:inline-flex;align-items:center;gap:.5rem;padding:.6rem 1rem;border-radius:100px;background:#18182f;border:1px solid rgba(162,155,254,.35);font-size:.86rem;font-weight:600;white-space:nowrap;box-shadow:0 16px 30px -14px rgba(0,0,0,.9)}
+.pdf-chip{position:absolute;left:50%;width:max-content;bottom:8px;transform:translateX(-50%);display:inline-flex;align-items:center;gap:.5rem;padding:.6rem 1rem;border-radius:100px;background:#18182f;border:1px solid rgba(162,155,254,.35);font-size:.86rem;font-weight:600;white-space:nowrap;box-shadow:0 16px 30px -14px rgba(0,0,0,.9)}
 .pdf-chip b{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:var(--grad);color:#fff;font-size:.66rem}
 @media(max-width:560px){.pdfv{height:440px}.pg{width:250px;height:340px;margin-left:-125px}.pg:nth-child(1){transform:translateX(-62px) translateY(8px) rotate(-8deg)}.pg:nth-child(2){transform:translateX(-32px) translateY(3px) rotate(-4deg)}.pg:nth-child(3){transform:translateX(32px) translateY(3px) rotate(4deg)}.pg:nth-child(4){transform:translateX(62px) translateY(8px) rotate(8deg)}.l1{top:186px}.l2{top:152px}.l3{left:80px;top:84px}}
 
@@ -539,7 +539,7 @@ html:not(.js) .bill-toggle button.on{background:var(--violet)}
 .plan-starter{background:var(--encre);border:1px solid var(--trait)}
 .plan-pro{background:linear-gradient(180deg,rgba(108,92,231,.12),var(--encre) 55%);border:1px solid rgba(108,92,231,.45)}
 .plan-ultimate{background:linear-gradient(180deg,rgba(253,203,110,.14),var(--encre) 55%);border:1.5px solid rgba(253,203,110,.6);box-shadow:0 0 0 1px rgba(253,203,110,.08),0 26px 70px -24px rgba(253,203,110,.28)}
-.plan-badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#e17055,var(--or));color:#1a1200;font-size:.74rem;font-weight:800;padding:.3rem 1.1rem;border-radius:100px;white-space:nowrap}
+.plan-badge{position:absolute;top:-13px;left:0;right:0;margin:0 auto;width:max-content;max-width:calc(100% - 24px);display:flex;align-items:center;gap:.35rem;background:linear-gradient(135deg,#e17055,var(--or));color:#1a1200;font-size:.74rem;font-weight:800;padding:.3rem 1.1rem;border-radius:100px;white-space:nowrap}
 .plan-name{font-family:var(--fh);font-weight:800;font-size:1.2rem;letter-spacing:-.025em}
 .plan-pro .plan-name{color:var(--lavande)}
 .plan-ultimate .plan-name{color:var(--or)}
