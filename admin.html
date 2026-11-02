@@ -281,7 +281,8 @@ tr.clickable-row:hover .u-go{color:var(--purple2)}
 </div>
 
 <div class="section">
-<h2>📄 Fiches générées récemment</h2>
+<h2>📄 Fiches enregistrées récemment</h2>
+<p class="mini-note">Seulement les fiches que l’élève a sauvegardées dans sa bibliothèque. Toutes les générations et messages de chat sont dans « Consommation IA » et dans le détail de chaque élève.</p>
 <table>
 <thead><tr><th>Date</th><th>Utilisateur</th><th>Format</th><th>Titre</th></tr></thead>
 <tbody id="fiches-table"></tbody>
@@ -562,7 +563,7 @@ async function loadStats(){
       '<div class="stat-card" onclick="showDetail(\'starter\')"><div class="val">'+data.par_plan.starter+'</div><div class="lbl">Starter</div></div>'+
       '<div class="stat-card" onclick="showDetail(\'pro\')"><div class="val">'+data.par_plan.pro+'</div><div class="lbl">Pro</div></div>'+
       '<div class="stat-card" onclick="showDetail(\'ultimate\')"><div class="val">'+data.par_plan.ultimate+'</div><div class="lbl">Ultimate</div></div>'+
-      '<div class="stat-card" onclick="scrollToFiches()"><div class="val">'+data.total_fiches+'</div><div class="lbl">Fiches générées</div></div>'+
+      '<div class="stat-card" onclick="scrollToFiches()"><div class="val">'+data.total_fiches+'</div><div class="lbl">Fiches enregistrées</div></div>'+
       '<div class="stat-card" onclick="showDetail(\'bannis\')"><div class="val">'+data.bannis+'</div><div class="lbl">Comptes bannis</div></div>';
     allUsersData=data.users;renderUsers(data.users);renderMfaList(data.users);renderQuotaAlerts(data.users);loadMaintenanceStatus();loadUserMessages();
   }catch(e){if(e.message!=='WRONG_SECRET'){document.getElementById('lock-err').textContent='Erreur : '+e.message;document.getElementById('lock-err').style.display='block';}}
@@ -743,8 +744,8 @@ function paintActivity(email,d){
   for(var i=29;i>=0;i--){var k=new Date(Date.now()-i*864e5).toISOString().slice(0,10);var n=(d.per_day&&d.per_day[k])||0;days.push([k,n]);if(n>max)max=n;}
   var h='<div class="ud-cols"><div><p class="ud-h">Activité sur 30 jours</p>'+
     '<div class="ud-days">'+days.map(function(x){return '<i class="'+(x[1]?'':'z')+'" title="'+x[0]+' : '+x[1]+' action(s)" style="height:'+(x[1]?Math.max(8,x[1]/max*100):6)+'%"></i>';}).join('')+'</div>'+
-    '<p class="mini-note">Dernière action IA : '+(d.last_activity?fmtDT(d.last_activity):'aucune sur 30 jours')+' · '+(d.total_fiches||0)+' fiche(s) créée(s) au total'+(d.errors?' · '+d.errors+' erreur(s)':'')+'</p>'+
-    '<p class="ud-h">Fiches récentes</p>'+
+    '<p class="mini-note">Dernière action IA : '+(d.last_activity?fmtDT(d.last_activity):'aucune sur 30 jours')+' · '+(d.total_fiches||0)+' fiche(s) enregistrée(s) au total'+(d.errors?' · '+d.errors+' erreur(s)':'')+'</p>'+
+    '<p class="ud-h">Fiches enregistrées</p>'+
     (d.fiches&&d.fiches.length?'<ul class="ud-list">'+d.fiches.map(function(f){return '<li><span>'+escH(f.format_icon||'')+' '+escH(f.titre||f.format||'Sans titre')+'</span><em>'+fmtD(f.created_at)+'</em></li>';}).join('')+'</ul>':'<p class="ud-empty">Aucune fiche.</p>')+
     '</div><div><p class="ud-h">Dernières actions IA</p>'+
     (d.events&&(d.events=d.events.filter(function(x){return !/^info:/.test(String(x.kind));})).length?'<ul class="ud-list">'+d.events.map(function(x){var err=/^(erreur|info):/.test(String(x.kind));return '<li><span>'+kindLabel(x)+'</span><b class="ud-cr">'+(err?'0':creditsLabel(x))+'</b><small class="ud-usd">'+(err?'':Number(x.cost_usd||0).toFixed(3)+' $')+'</small><em>'+fmtDT(x.created_at)+'</em></li>';}).join('')+'</ul>':'<p class="ud-empty">Aucune action IA récente.</p>')+
@@ -908,7 +909,7 @@ async function loadFiches(){
   try{
     var data=await callAdmin('get_recent_fiches',{limit:30});
     var tbody=document.getElementById('fiches-table');
-    if(!data.fiches||data.fiches.length===0){tbody.innerHTML='<tr><td colspan="4" style="color:var(--text3)">Aucune fiche générée pour l\'instant.</td></tr>';return;}
+    if(!data.fiches||data.fiches.length===0){tbody.innerHTML='<tr><td colspan="4" style="color:var(--text3)">Aucune fiche enregistrée pour l\'instant.</td></tr>';return;}
     tbody.innerHTML=data.fiches.map(function(f){return '<tr><td>'+new Date(f.created_at).toLocaleString('fr-FR')+'</td><td>'+escH(f.user_username?'@'+f.user_username:f.user_email)+'</td><td>'+escH(f.format_icon||'')+' '+escH(f.format)+'</td><td>'+escH(f.titre||'—')+'</td></tr>';}).join('');
   }catch(e){if(e.message!=='WRONG_SECRET'){document.getElementById('fiches-msg').textContent='⚠️ Impossible de charger les fiches : '+e.message;document.getElementById('fiches-msg').className='msg error';}}
 }
