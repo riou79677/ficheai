@@ -519,7 +519,7 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
       return head.concat([courseText, { type: 'text', text: taskBody + finalLine }]);
     };
     const systemPrompt = 'Tu es FicheAI, un assistant pédagogique expert. ' + langInstruction + ' ' + niveauInstruction + ' ' + antiInjectionGuard + ' Les utilisateurs sont souvent des collégiens et des lycéens, parfois mineurs : produis uniquement un contenu adapté à leur âge (aucun contenu sexuel, aucune violence gratuite, aucun propos haineux, aucune instruction dangereuse ou illégale), et traite les sujets sensibles du programme de façon factuelle et pédagogique. Sois précis, structuré et pédagogique.';
-    const callModel = async (maxTok, withImages, forceModel) => {
+    const callModel = async (maxTok, withImages, forceModel, onDelta) => {
       const payload = {
         model: forceModel || RUN_MODEL,
         max_tokens: maxTok,
@@ -537,9 +537,31 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
             'x-api-key': process.env.ANTHROPIC_API_KEY,
             'anthropic-version': '2023-06-01'
           },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(onDelta ? Object.assign({}, payload, { stream: true }) : payload)
         });
-        return response.json();
+        if (!onDelta || !response.ok || !response.body) return response.json();
+        // Affichage progressif : le texte est transmis à l'élève au fur et à mesure qu'il est écrit.
+        // On reconstruit ensuite une réponse identique à la version non progressive (texte complet, usage, stop_reason).
+        const out = { content: [], usage: {}, stop_reason: null };
+        let full = '', buf = '';
+        const reader = response.body.getReader(), dec = new TextDecoder();
+        for (;;) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buf += dec.decode(value, { stream: true });
+          let i;
+          while ((i = buf.indexOf('\n')) >= 0) {
+            const line = buf.slice(0, i).trim(); buf = buf.slice(i + 1);
+            if (!line.startsWith('data:')) continue;
+            let ev; try { ev = JSON.parse(line.slice(5).trim()); } catch (e) { continue; }
+            if (ev.type === 'message_start' && ev.message) Object.assign(out.usage, ev.message.usage || {});
+            else if (ev.type === 'content_block_delta' && ev.delta && ev.delta.type === 'text_delta') { full += ev.delta.text; onDelta(ev.delta.text); }
+            else if (ev.type === 'message_delta') { if (ev.delta && ev.delta.stop_reason) out.stop_reason = ev.delta.stop_reason; if (ev.usage) Object.assign(out.usage, ev.usage); }
+            else if (ev.type === 'error') return { error: ev.error || { message: 'Erreur du flux IA' }, _partial: full };
+          }
+        }
+        out.content = [{ type: 'text', text: full }];
+        return out;
       };
       let d = await send();
       // Modèle refusé (introuvable ou indisponible) : plus de bascule vers Sonnet en mode Rapide (elle coûtait 15 fois le prix
@@ -567,21 +589,39 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
       .map((b) => b.text)
       .join('');
 
+    // Affichage progressif (qualité Approfondie, demandé par le navigateur) : réponse en lignes JSON (NDJSON).
+    // Le mode Rapide reste en réponse unique, car son contrôle qualité peut relancer une seconde génération.
+    const streaming = (req.body || {}).stream === true && mode !== 'rapide';
+    let streamStarted = false, sentAny = false;
+    const startStream = () => {
+      if (streamStarted) return; streamStarted = true;
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/x-ndjson; charset=utf-8');
+      res.setHeader('Cache-Control', 'no-cache, no-transform');
+      res.setHeader('X-Accel-Buffering', 'no');
+      if (res.flushHeaders) res.flushHeaders();
+    };
+    const pushDelta = streaming ? (t) => { startStream(); sentAny = true; res.write(JSON.stringify({ d: t }) + '\n'); } : undefined;
+    const finish = (code, obj) => {
+      if (streamStarted) { res.write(JSON.stringify(obj) + '\n'); return res.end(); }
+      return res.status(code).json(obj);
+    };
+
     // Un seul essai facturé : si l'IA ne renvoie aucun texte, les crédits sont rendus et l'élève relance (voir plus bas).
     const t0 = Date.now();
     let imagesUsed = images.length;
     let imagesDropped = false;
     let data;
     try {
-      data = await callModel(Math.min(outCap, baseTokens + (images.length ? 600 : 0)), true);
+      data = await callModel(Math.min(outCap, baseTokens + (images.length ? 600 : 0)), true, undefined, pushDelta);
     } catch (e) {
-      if (!images.length) throw e;
+      if (!images.length || sentAny) throw e;
       // Si l'IA refuse les images (taille, format...), la génération continue avec le texte seul.
       console.error('Images du PDF refusées, nouvel essai avec le texte seul :', e.message);
       logApiUsage(SERVICE_KEY, email, 'info:images-refusees:' + String(e.message || '').slice(0, 90), RUN_MODEL, 0, 0);
       imagesDropped = true;
       imagesUsed = 0;
-      data = await callModel(baseTokens, false);
+      data = await callModel(baseTokens, false, undefined, pushDelta);
     }
     let text = extractText(data);
 
@@ -620,16 +660,18 @@ Les points doivent couvrir uniquement les notions présentes dans le cours fourn
       console.error('Réponse IA sans texte. stop_reason =', data.stop_reason, '| types de blocs =', (data.content || []).map((b) => b && b.type));
       await logApiUsage(SERVICE_KEY, email, 'erreur:generation:' + format + ':vide:' + (data.stop_reason || '?'), RUN_MODEL, 0, 0);
       await refundGeneration();
-      return res.status(502).json({ error: "L'IA n'a pas renvoyé de texte cette fois, ta génération t'a été rendue. Réessaie dans un instant." });
+      return finish(502, { error: "L'IA n'a pas renvoyé de texte cette fois, ta génération t'a été rendue. Réessaie dans un instant." });
     }
     await releaseReserve(SERVICE_KEY, email, reservedEur); reservedEur = 0;
-    return res.status(200).json({ result: text, imagesUsed, imagesDropped, mode, offert, cost, extra, remaining: debit && debit.remaining, offertsLeft: debit && debit.offerts_left });
+    return finish(200, { done: true, result: text, imagesUsed, imagesDropped, mode, offert, cost, extra, remaining: debit && debit.remaining, offertsLeft: debit && debit.offerts_left });
 
   } catch (error) {
     console.error('Erreur API:', error);
     await logApiUsage(SERVICE_KEY, email, 'erreur:generation:' + format + ':' + String((error && error.message) || error).slice(0, 90), RUN_MODEL, 0, 0);
     await refundGeneration();
     // Le détail technique reste dans le journal (api_usage) : l'élève reçoit un message clair, sans information interne.
-    return res.status(500).json({ error: "L'IA est momentanément indisponible. Ta génération t'a été rendue : réessaie dans un instant." });
+    const msg500 = "L'IA est momentanément indisponible. Ta génération t'a été rendue : réessaie dans un instant.";
+    if (res.headersSent) { try { res.write(JSON.stringify({ error: msg500 }) + '\n'); res.end(); } catch (e) {} return; }
+    return res.status(500).json({ error: msg500 });
   }
 }

@@ -402,6 +402,10 @@ body.chat-fs-open{overflow:hidden}
 .qual-btn b .ph{color:var(--text3);font-size:1rem}
 .qual-btn.on b .ph{color:var(--purple2)}
 .file-card-ico{display:flex;color:var(--purple2);font-size:1.6rem}
+.is-streaming *{animation:none!important;transition:none!important;opacity:1!important;transform:none!important}
+.gen-caret{display:inline-block;width:.55em;height:1.05em;margin-left:2px;vertical-align:-0.15em;border-radius:2px;background:var(--purple2);animation:genBlink 1s steps(2,start) infinite}
+@keyframes genBlink{to{visibility:hidden}}
+@media(prefers-reduced-motion:reduce){.gen-caret{animation:none;opacity:.6}}
 </style>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#09090f">
@@ -1116,6 +1120,28 @@ function selectFormat(el){
   updateGenCostNote();
 }
 
+// Réveil du serveur à l'ouverture du générateur : la première génération évite le démarrage à froid (aucun appel à l'IA, aucun coût).
+try{setTimeout(function(){fetch('/api/generate',{method:'OPTIONS'}).catch(function(){});fetch('/api/chat',{method:'OPTIONS'}).catch(function(){});},1500);}catch(e){}
+// Réponse de génération : en flux (lignes JSON, qualité Approfondie) ou en une fois (JSON classique).
+async function readGenResponse(response,onPartial){
+  var ct=response.headers.get('content-type')||'';
+  if(ct.indexOf('ndjson')===-1||!response.body||!response.body.getReader)return readResponseSafely(response,'génération');
+  var reader=response.body.getReader(),dec=new TextDecoder(),buf='',text='',last=0,pending=false,fin=null;
+  function paint(){pending=false;last=Date.now();try{onPartial(text);}catch(e){}}
+  for(;;){
+    var r=await reader.read();if(r.done)break;
+    buf+=dec.decode(r.value,{stream:true});
+    var i;
+    while((i=buf.indexOf('\n'))>=0){
+      var line=buf.slice(0,i).trim();buf=buf.slice(i+1);if(!line)continue;
+      var o;try{o=JSON.parse(line);}catch(e){continue;}
+      if(typeof o.d==='string'){text+=o.d;if(Date.now()-last>120)paint();else pending=true;}
+      else fin=o;
+    }
+  }
+  if(pending)paint();
+  return fin||{error:'La connexion a été coupée pendant la génération. Vérifie ta connexion internet et réessaie.'};
+}
 async function readResponseSafely(response,contexte){
   var raw=await response.text();
   try{return JSON.parse(raw);}
@@ -1623,8 +1649,13 @@ document.getElementById('gen-btn').addEventListener('click',async function(){
     try{
       // Filet de sécurité : si la connexion se perd, le chargement s'arrête au bout de 5 min 20 au lieu de tourner sans fin.
       var genAbort=new AbortController(),genTimer=setTimeout(function(){genAbort.abort();},320000);
-      var response=await fetch('/api/generate',{signal:genAbort.signal,method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+((await ficheaiToken())||'')},body:JSON.stringify({course:input,format:f,nb_formats:formats.length,mode:genMode,language:langSel,instructions:instructions,longueur:longueur,nombre:nombres[f]||null,diagrams:!!(document.getElementById('diagrams-input')&&document.getElementById('diagrams-input').checked),images:pdfImagesFor(input)})});
-      var data=await readResponseSafely(response,'génération');clearTimeout(genTimer);
+      var response=await fetch('/api/generate',{signal:genAbort.signal,method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+((await ficheaiToken())||'')},body:JSON.stringify({course:input,format:f,nb_formats:formats.length,mode:genMode,language:langSel,instructions:instructions,longueur:longueur,nombre:nombres[f]||null,diagrams:!!(document.getElementById('diagrams-input')&&document.getElementById('diagrams-input').checked),images:pdfImagesFor(input),stream:true})});
+      var streamed=false;
+      var data=await readGenResponse(response,function(partial){
+        // Affichage progressif : la fiche s'écrit à l'écran pendant que l'IA la rédige.
+        if(!streamed){streamed=true;spinner.style.display='none';content.style.display='block';content.classList.add('is-streaming');var ra=document.querySelector('.result-actions');if(ra)ra.style.visibility='hidden';document.getElementById('result-title').textContent=meta.icon+' '+meta.name;}
+        content.innerHTML=renderResultAsCards(partial)+'<span class="gen-caret" aria-hidden="true"></span>';
+      });clearTimeout(genTimer);content.classList.remove('is-streaming');if(streamed){var ra2=document.querySelector('.result-actions');if(ra2)ra2.style.visibility='';}
       if(data.error){
         if(response.status===403&&(data.reason==='limit_reached'||data.reason==='daily_limit_reached'||/limite|crédits/i.test(data.error||''))&&generatedResults.length===0){
           spinner.style.display='none';resultCard.style.display='none';showLimitModal(data.error);btn.disabled=false;btn.innerHTML=GEN_BTN_HTML;try{updateGenCostNote();}catch(e){}return;
@@ -1646,8 +1677,9 @@ document.getElementById('gen-btn').addEventListener('click',async function(){
       if(sessionHistory.length>6)sessionHistory.pop();
       renderHistory();
       if(generatedResults.length===1){spinner.style.display='none';content.style.display='block';setActiveResultTab(0);}
+      else if(streamed){setActiveResultTab(generatedResults.length-1);}
       else{renderResultTabs();}
-    }catch(e){try{clearTimeout(genTimer);}catch(_){} failedFormats.push(meta.name+' : '+(e&&e.name==='AbortError'?'la génération a pris trop de temps ou la connexion a été coupée. Réessaie, ou découpe ton cours en parties plus courtes.':e.message));}
+    }catch(e){try{clearTimeout(genTimer);content.classList.remove('is-streaming');var ra3=document.querySelector('.result-actions');if(ra3)ra3.style.visibility='';}catch(_){} failedFormats.push(meta.name+' : '+(e&&e.name==='AbortError'?'la génération a pris trop de temps ou la connexion a été coupée. Réessaie, ou découpe ton cours en parties plus courtes.':e.message));}
   }
   if(failedFormats.length){partialError=failedFormats.join(' · ');}
   if(generatedResults.length===0){
