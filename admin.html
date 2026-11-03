@@ -536,7 +536,12 @@ document.getElementById('admin-mfa-code').addEventListener('keydown',function(e)
 document.getElementById('admin-email').addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('admin-password').focus();});
 
 async function callAdmin(action,payload){
-  var r=await fetch(ADMIN_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({secret:SECRET,action,payload:payload||{}})});
+  // Coupure réseau passagère (« Failed to fetch ») : jusqu'à 2 nouvelles tentatives avant d'afficher l'erreur.
+  var r,body=JSON.stringify({secret:SECRET,action,payload:payload||{}});
+  for(var t=0;;t++){
+    try{r=await fetch(ADMIN_API,{method:'POST',headers:{'Content-Type':'application/json'},body:body});break;}
+    catch(e){if(t>=2)throw new Error('connexion au serveur impossible, vérifie ta connexion internet puis clique sur Actualiser');await new Promise(function(ok){setTimeout(ok,1200*(t+1));});}
+  }
   var data=await r.json();
   if(r.status===403){
     sessionStorage.removeItem(SESSION_KEY);SECRET=null;
