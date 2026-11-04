@@ -148,15 +148,18 @@
   })();
 
   // Déconnexion automatique après une période d'inactivité (réglable dans Paramètres → Sécurité,
-  // propre à chaque appareil : 30 min par défaut, 2 h, 8 h ou jamais).
+  // propre à chaque appareil : par défaut jamais sur téléphone et 8 h sur ordinateur ; 30 min, 2 h, 8 h ou jamais).
   (function () {
     var pages = ['/home.html', '/app.html', '/dashboard.html', '/revision.html', '/settings.html'];
     if (pages.indexOf(location.pathname) === -1) return;
     var timer = null;
     function minutes() {
-      var v = 30;
+      // Par défaut (tant que l'élève n'a rien choisi) : jamais sur téléphone ou appli installée, 8 heures sur ordinateur.
+      var def = 480;
+      try { if (window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(display-mode: standalone)').matches || navigator.standalone) def = 0; } catch (e) {}
+      var v = def;
       try { var s = localStorage.getItem('ficheai_autologout'); if (s !== null) v = parseInt(s, 10); } catch (e) {}
-      return [0, 30, 120, 480].indexOf(v) === -1 ? 30 : v;
+      return [0, 30, 120, 480].indexOf(v) === -1 ? def : v;
     }
     function arm() {
       clearTimeout(timer);

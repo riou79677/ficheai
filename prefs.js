@@ -152,9 +152,12 @@
   // Déconnexion automatique : réglage propre à chaque appareil (en minutes, 0 = jamais).
   var device = {
     autoLogout: function () {
-      var v = 30;
+      // Par défaut (tant que l'élève n'a rien choisi) : jamais sur téléphone ou appli installée, 8 heures sur ordinateur.
+      var def = 480;
+      try { if (window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(display-mode: standalone)').matches || navigator.standalone) def = 0; } catch (e) {}
+      var v = def;
       try { var s = localStorage.getItem('ficheai_autologout'); if (s !== null) v = parseInt(s, 10); } catch (e) {}
-      return [0, 30, 120, 480].indexOf(v) === -1 ? 30 : v;
+      return [0, 30, 120, 480].indexOf(v) === -1 ? def : v;
     },
     setAutoLogout: function (min) {
       try { localStorage.setItem('ficheai_autologout', String(min)); } catch (e) {}
