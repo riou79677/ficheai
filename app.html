@@ -406,6 +406,24 @@ body.chat-fs-open{overflow:hidden}
 .gen-caret{display:inline-block;width:.55em;height:1.05em;margin-left:2px;vertical-align:-0.15em;border-radius:2px;background:var(--purple2);animation:genBlink 1s steps(2,start) infinite}
 @keyframes genBlink{to{visibility:hidden}}
 @media(prefers-reduced-motion:reduce){.gen-caret{animation:none;opacity:.6}}
+.pc-thumbs{display:flex;align-items:center}
+.pc-thumbs img{width:42px;height:42px;object-fit:cover;border-radius:9px;border:2px solid var(--bg2);box-shadow:0 2px 8px rgba(0,0,0,0.25);background:#fff}
+.pc-thumbs img+img{margin-left:-14px}
+.pc-more{margin-left:6px;font-size:0.74rem;font-weight:700;color:var(--text2)}
+/* Carte fichier / photo : version épurée (fond neutre, statut discret, actions légères) */
+.file-card{border:1px solid var(--border2);background:var(--bg3);border-radius:14px;gap:12px}
+.file-card-info b{font-size:0.92rem;font-weight:600}
+.file-card-info small{color:var(--text3);display:inline-flex;align-items:center;gap:6px;margin-top:2px}
+.file-card-info small::before{content:"";width:6px;height:6px;border-radius:50%;background:#34d399;flex-shrink:0}
+.file-card-btn{border:none;background:rgba(124,109,250,0.12);color:var(--purple2);font-weight:600;border-radius:100px;padding:0.42rem 0.85rem}
+.file-card-btn:hover{background:rgba(124,109,250,0.2)}
+.file-card-x{width:30px;height:30px;min-width:30px;min-height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:transparent;font-size:0.8rem}
+.file-card-x:hover{background:var(--border2);color:var(--text)}
+.pc-thumbs img{border-color:var(--bg3)}
+.file-card-btn{display:inline-flex;align-items:center;gap:6px}
+.file-card-btn .ph{font-size:1rem}
+.file-card-btn.on{background:var(--purple);color:#fff}
+@media(max-width:600px){.file-card-btn{width:36px;height:36px;padding:0;justify-content:center}.file-card-btn .fcb-lbl{display:none}.pc-thumbs img{width:38px;height:38px}}
 </style>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#09090f">
@@ -476,7 +494,7 @@ body.chat-fs-open{overflow:hidden}
       <div class="file-card" id="file-card" style="display:none">
         <span class="file-card-ico" id="file-card-ico"><svg class="ph" aria-hidden="true"><use href="#ph-file-text" xlink:href="#ph-file-text"/></svg></span>
         <div class="file-card-info"><b id="file-card-name"></b><small id="file-card-meta"></small></div>
-        <button type="button" class="file-card-btn" id="file-card-toggle" onclick="toggleFileText()">Voir le texte</button>
+        <button type="button" class="file-card-btn" id="file-card-toggle" onclick="toggleFileText()" aria-label="Voir le texte"><svg class="ph" aria-hidden="true"><use href="#ph-eye" xlink:href="#ph-eye"/></svg><span class="fcb-lbl">Voir le texte</span></button>
         <button type="button" class="file-card-x" onclick="removeFileCard(true)" aria-label="Retirer le fichier" title="Retirer le fichier">✕</button>
       </div>
       <textarea id="course-input" placeholder="Colle ici ton cours, ou glisse un fichier (PDF, Word, PowerPoint)."></textarea>
@@ -1268,7 +1286,7 @@ function mergePhotoText(prev,add){
 // Photo d'un cours → texte (1 crédit). La photo est réduite à 1 600 px dans le navigateur avant l'envoi.
 async function readCoursePhoto(file){
   if(!savedUser||!savedUser.email){showSignupPopup();return;}
-  removeFileCard(false);
+  if(!photoThumbs.length)removeFileCard(false);
   setFileBadge('⏳ Lecture de la photo… (1 crédit)','ok');
   var b64='';
   try{
@@ -1279,6 +1297,9 @@ async function readCoursePhoto(file){
     var cx=cv.getContext('2d');cx.fillStyle='#fff';cx.fillRect(0,0,cv.width,cv.height);cx.drawImage(img,0,0,cv.width,cv.height);
     URL.revokeObjectURL(url);
     var q=0.82;b64=cv.toDataURL('image/jpeg',q).split(',')[1]||'';
+    // Vignette affichée dans la carte photo (petite, nette).
+    var tsc=Math.min(1,160/Math.max(cv.width,cv.height)),tc=document.createElement('canvas');tc.width=Math.round(cv.width*tsc);tc.height=Math.round(cv.height*tsc);
+    tc.getContext('2d').drawImage(cv,0,0,tc.width,tc.height);var thumb=tc.toDataURL('image/jpeg',0.8);
     while(b64.length>1400000&&q>0.4){q-=0.15;b64=cv.toDataURL('image/jpeg',q).split(',')[1]||'';}
     // Version plus légère gardée pour la génération (Pro et Ultimate), si la photo contient un schéma.
     var sc2=Math.min(1,1240/Math.max(cv.width,cv.height)),cv2=document.createElement('canvas');cv2.width=Math.round(cv.width*sc2);cv2.height=Math.round(cv.height*sc2);
@@ -1306,6 +1327,8 @@ async function readCoursePhoto(file){
     var nIll=(d.text.match(/\[illisible\]/gi)||[]).length;
     if(nIll)setFileBadge('⚠️ Photo lue, mais '+nIll+' passage'+(nIll>1?'s sont illisibles':' est illisible')+' (marqué'+(nIll>1?'s':'')+' [illisible] dans le texte). Corrige-'+(nIll>1?'les':'le')+' avant de générer, ou reprends la photo avec plus de lumière.','warn');
     else setFileBadge('✅ Photo lue'+(prev?' et ajoutée à la suite':'')+(merged.removed?' (partie déjà présente retirée)':'')+(schemaKept?' · 📊 schéma gardé : l’IA le reverra en Approfondi (+1 crédit par groupe de 4 photos)':schemaFull?' · ℹ️ limite de '+cap+' photos de schémas atteinte, celui-ci sera seulement décrit':'')+' · tu peux corriger le texte, ou prendre une autre page','ok');
+    photoThumbs.push(thumb);showPhotoCard();
+    if(!nIll&&!schemaKept&&!schemaFull){var fb=document.getElementById('file-badge');if(fb)fb.style.display='none';}
     updateChatContext('photo');
   }catch(e){setFileBadge('⚠️ Erreur réseau. Réessaie.','error');}
 }
@@ -1319,16 +1342,30 @@ function showFileCard(name,meta){
   document.getElementById('file-card-name').textContent=name;
   document.getElementById('file-card-meta').textContent=meta||'';
   c.style.display='flex';z.classList.add('has-file');z.classList.remove('show-text');
-  document.getElementById('file-card-toggle').textContent='Voir le texte';
+  setFileToggle(false);
 }
-function toggleFileText(){var z=document.getElementById('course-zone');var on=z.classList.toggle('show-text');document.getElementById('file-card-toggle').textContent=on?'Masquer le texte':'Voir le texte';}
+// Photos du cours : une carte avec les vignettes, le texte lu reste caché (bouton « Voir le texte »).
+var photoThumbs=[];
+function showPhotoCard(){
+  var z=document.getElementById('course-zone'),c=document.getElementById('file-card');if(!z||!c||!photoThumbs.length)return;
+  var n=photoThumbs.length,show=photoThumbs.slice(-3);
+  document.getElementById('file-card-ico').innerHTML='<span class="pc-thumbs">'+show.map(function(t){return '<img src="'+t+'" alt="">';}).join('')+(n>3?'<span class="pc-more">+'+(n-3)+'</span>':'')+'</span>';
+  document.getElementById('file-card-name').textContent=n>1?n+' photos':'1 photo';
+  document.getElementById('file-card-meta').textContent=n>1?'Lues par l’IA':'Lue par l’IA';
+  c.style.display='flex';z.classList.add('has-file');z.classList.remove('show-text');
+  setFileToggle(false);
+}
+function toggleFileText(){var z=document.getElementById('course-zone');var on=z.classList.toggle('show-text');setFileToggle(on);}
+function setFileToggle(on){var b=document.getElementById('file-card-toggle');if(!b)return;var t=on?'Masquer le texte':'Voir le texte';var l=b.querySelector('.fcb-lbl');if(l)l.textContent=t;else b.textContent=t;b.setAttribute('aria-label',t);b.classList.toggle('on',!!on);}
 function removeFileCard(clear){
   var z=document.getElementById('course-zone'),c=document.getElementById('file-card');if(!z||!c)return;
-  c.style.display='none';z.classList.remove('has-file','show-text');
+  c.style.display='none';z.classList.remove('has-file','show-text');if(clear)photoThumbs=[];
   if(clear){var ta=document.getElementById('course-input');ta.value='';courseContent='';pdfImages=[];pdfImagesKey='';updateCharCount();var b=document.getElementById('file-badge');if(b)b.style.display='none';var ih=document.getElementById('import-hint');if(ih)ih.style.display='';}
 }
 function handleFileLoad(file){
-  removeFileCard(false);
+  var isImg=/^image\//.test(file.type||'')||/\.(jpe?g|png|webp|heic|gif)$/i.test(file.name||'');
+  if(!isImg)photoThumbs=[];
+  if(!isImg||!photoThumbs.length)removeFileCard(false);
   if(file.type==='text/plain'||(file.name&&file.name.toLowerCase().endsWith('.txt'))){
     var reader=new FileReader();
     reader.onload=function(ev){

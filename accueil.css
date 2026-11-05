@@ -462,7 +462,7 @@ html:not(.anim) .chatbox{height:auto}
 .t-2fa h3{align-self:end}
 .t-2fa p{align-self:start}
 @media(max-width:899px){.bento{grid-template-columns:1fr 1fr}.t-lang,.t-2fa{grid-column:span 2}}
-@media(max-width:560px){.bento{grid-template-columns:1fr}.t-lang,.t-2fa{grid-column:auto}.t-2fa{display:flex}.t-2fa .tv{margin-bottom:16px}}
+@media(max-width:560px){.bento{grid-template-columns:1fr}.t-lang,.t-2fa{grid-column:auto}.t-2fa{display:flex;flex-direction:column;align-items:stretch}.t-2fa h3,.t-2fa p{align-self:auto}.t-2fa .tv{margin-bottom:16px}}
 .lg{position:absolute;inset:0;display:grid;place-items:center}
 .lg span{grid-area:1/1;font-family:var(--fh);font-weight:800;font-size:clamp(1.05rem,.7rem + 1.6vw,2.2rem);letter-spacing:-.03em;opacity:0;white-space:nowrap}
 .lg span.on{opacity:1}
