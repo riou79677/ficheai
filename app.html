@@ -424,6 +424,34 @@ body.chat-fs-open{overflow:hidden}
 .file-card-btn .ph{font-size:1rem}
 .file-card-btn.on{background:var(--purple);color:#fff}
 @media(max-width:600px){.file-card-btn{width:36px;height:36px;padding:0;justify-content:center}.file-card-btn .fcb-lbl{display:none}.pc-thumbs img{width:38px;height:38px}}
+.pc-thumbs{background:none;border:none;padding:0;cursor:pointer}
+.photo-strip{display:flex;gap:10px;overflow-x:auto;margin:0.5rem 1rem 0.2rem;padding:6px 2px 8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.photo-strip::-webkit-scrollbar{display:none}
+.ps-item{position:relative;flex-shrink:0}
+.ps-img{display:block;width:76px;height:96px;padding:0;border:1px solid var(--border2);border-radius:12px;overflow:hidden;cursor:pointer;background:#fff;position:relative}
+.ps-img img{width:100%;height:100%;object-fit:cover;display:block}
+.ps-n{position:absolute;left:6px;bottom:6px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:rgba(0,0,0,0.55);color:#fff;font-size:0.68rem;font-weight:700;display:flex;align-items:center;justify-content:center}
+.ps-x{position:absolute;top:-6px;right:-6px;width:24px;height:24px;border-radius:50%;border:2px solid var(--bg2);background:var(--surface);color:var(--text);font-size:0.62rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.ps-add{flex-shrink:0;width:76px;height:96px;border-radius:12px;border:1.5px dashed var(--border2);background:transparent;color:var(--purple2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:0.72rem;font-weight:600;cursor:pointer;font-family:var(--font-b)}
+.ps-add .ph{font-size:1.3rem}
+.pv{position:fixed;inset:0;z-index:99980;display:none;flex-direction:column;background:var(--bg);padding:max(10px,env(safe-area-inset-top,0px)) 16px max(16px,env(safe-area-inset-bottom,0px))}
+.pv-top{display:flex;align-items:center;justify-content:space-between;padding:2px 0 12px}
+.pv-count{font-size:0.86rem;font-weight:600;color:var(--text2);font-variant-numeric:tabular-nums}
+.pv-icon{width:38px;height:38px;border-radius:50%;border:none;background:transparent;color:var(--text2);cursor:pointer;font-size:0.85rem;display:flex;align-items:center;justify-content:center}
+.pv-icon .ph{font-size:1.15rem}
+.pv-icon:hover{background:var(--bg3);color:var(--text)}
+.pv-del:hover{color:#f87171}
+.pv-img{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+.pv-img img{max-width:100%;max-height:100%;object-fit:contain;border-radius:14px;display:block;box-shadow:0 10px 40px rgba(0,0,0,0.35)}
+.pv-dots{display:flex;justify-content:center;gap:7px;padding:14px 0 4px;flex-wrap:wrap}
+.pv-dots button{width:7px;height:7px;padding:0;border:none;border-radius:50%;background:var(--border2);cursor:pointer}
+.pv-dots button.on{background:var(--purple2);width:18px;border-radius:4px}
+.pv-text{margin-top:10px;text-align:center}
+.pv-text summary{display:inline-block;list-style:none;cursor:pointer;font-size:0.8rem;font-weight:600;color:var(--purple2);padding:0.45rem 0.9rem;border-radius:100px;background:rgba(124,109,250,0.12)}
+.pv-text summary::-webkit-details-marker{display:none}
+.pv-text[open] summary{margin-bottom:8px}
+.pv-text textarea{display:block;width:100%;height:30vh;resize:none;border-radius:12px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);padding:0.7rem 0.8rem;font:0.86rem/1.55 var(--font-b);text-align:left}
+@media(min-width:700px){.pv{padding:28px max(28px,calc(50vw - 380px))}}
 </style>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#09090f">
@@ -497,6 +525,7 @@ body.chat-fs-open{overflow:hidden}
         <button type="button" class="file-card-btn" id="file-card-toggle" onclick="toggleFileText()" aria-label="Voir le texte"><svg class="ph" aria-hidden="true"><use href="#ph-eye" xlink:href="#ph-eye"/></svg><span class="fcb-lbl">Voir le texte</span></button>
         <button type="button" class="file-card-x" onclick="removeFileCard(true)" aria-label="Retirer le fichier" title="Retirer le fichier">✕</button>
       </div>
+      <div class="photo-strip" id="photo-strip" style="display:none"></div>
       <textarea id="course-input" placeholder="Colle ici ton cours, ou glisse un fichier (PDF, Word, PowerPoint)."></textarea>
       <div class="course-tools">
         <input type="file" id="file-input" accept=".pdf,.docx,.pptx,.odt,.odp,.txt,.md,image/*" style="display:none">
@@ -1286,7 +1315,7 @@ function mergePhotoText(prev,add){
 // Photo d'un cours → texte (1 crédit). La photo est réduite à 1 600 px dans le navigateur avant l'envoi.
 async function readCoursePhoto(file){
   if(!savedUser||!savedUser.email){showSignupPopup();return;}
-  if(!photoThumbs.length)removeFileCard(false);
+  if(!photoItems.length)removeFileCard(false);
   setFileBadge('⏳ Lecture de la photo… (1 crédit)','ok');
   var b64='';
   try{
@@ -1300,6 +1329,9 @@ async function readCoursePhoto(file){
     // Vignette affichée dans la carte photo (petite, nette).
     var tsc=Math.min(1,160/Math.max(cv.width,cv.height)),tc=document.createElement('canvas');tc.width=Math.round(cv.width*tsc);tc.height=Math.round(cv.height*tsc);
     tc.getContext('2d').drawImage(cv,0,0,tc.width,tc.height);var thumb=tc.toDataURL('image/jpeg',0.8);
+    // Aperçu moyen (affichage en grand dans la visionneuse), gardé seulement dans la page.
+    var psc=Math.min(1,1000/Math.max(cv.width,cv.height)),pc=document.createElement('canvas');pc.width=Math.round(cv.width*psc);pc.height=Math.round(cv.height*psc);
+    pc.getContext('2d').drawImage(cv,0,0,pc.width,pc.height);var preview=pc.toDataURL('image/jpeg',0.72);pc.width=0;pc.height=0;
     while(b64.length>1400000&&q>0.4){q-=0.15;b64=cv.toDataURL('image/jpeg',q).split(',')[1]||'';}
     // Version plus légère gardée pour la génération (Pro et Ultimate), si la photo contient un schéma.
     var sc2=Math.min(1,1240/Math.max(cv.width,cv.height)),cv2=document.createElement('canvas');cv2.width=Math.round(cv.width*sc2);cv2.height=Math.round(cv.height*sc2);
@@ -1327,7 +1359,7 @@ async function readCoursePhoto(file){
     var nIll=(d.text.match(/\[illisible\]/gi)||[]).length;
     if(nIll)setFileBadge('⚠️ Photo lue, mais '+nIll+' passage'+(nIll>1?'s sont illisibles':' est illisible')+' (marqué'+(nIll>1?'s':'')+' [illisible] dans le texte). Corrige-'+(nIll>1?'les':'le')+' avant de générer, ou reprends la photo avec plus de lumière.','warn');
     else setFileBadge('✅ Photo lue'+(prev?' et ajoutée à la suite':'')+(merged.removed?' (partie déjà présente retirée)':'')+(schemaKept?' · 📊 schéma gardé : l’IA le reverra en Approfondi (+1 crédit par groupe de 4 photos)':schemaFull?' · ℹ️ limite de '+cap+' photos de schémas atteinte, celui-ci sera seulement décrit':'')+' · tu peux corriger le texte, ou prendre une autre page','ok');
-    photoThumbs.push(thumb);showPhotoCard();
+    photoItems.push({thumb:thumb,preview:preview,text:d.text,schema:schemaKept?keep:null});photoBuilt=ta.value;showPhotoCard();
     if(!nIll&&!schemaKept&&!schemaFull){var fb=document.getElementById('file-badge');if(fb)fb.style.display='none';}
     updateChatContext('photo');
   }catch(e){setFileBadge('⚠️ Erreur réseau. Réessaie.','error');}
@@ -1345,27 +1377,68 @@ function showFileCard(name,meta){
   setFileToggle(false);
 }
 // Photos du cours : une carte avec les vignettes, le texte lu reste caché (bouton « Voir le texte »).
-var photoThumbs=[];
+var photoItems=[],photoBuilt='',photoStripOpen=false,photoViewIdx=-1;
 function showPhotoCard(){
-  var z=document.getElementById('course-zone'),c=document.getElementById('file-card');if(!z||!c||!photoThumbs.length)return;
-  var n=photoThumbs.length,show=photoThumbs.slice(-3);
-  document.getElementById('file-card-ico').innerHTML='<span class="pc-thumbs">'+show.map(function(t){return '<img src="'+t+'" alt="">';}).join('')+(n>3?'<span class="pc-more">+'+(n-3)+'</span>':'')+'</span>';
+  var z=document.getElementById('course-zone'),c=document.getElementById('file-card');if(!z||!c)return;
+  if(!photoItems.length){removeFileCard(false);return;}
+  var n=photoItems.length,show=photoItems.slice(-3);
+  var ico=document.getElementById('file-card-ico');
+  ico.innerHTML='<button type="button" class="pc-thumbs" onclick="openPhotoViewer(0)" aria-label="Voir les photos une par une">'+show.map(function(p){return '<img src="'+p.thumb+'" alt="">';}).join('')+(n>3?'<span class="pc-more">+'+(n-3)+'</span>':'')+'</button>';
   document.getElementById('file-card-name').textContent=n>1?n+' photos':'1 photo';
   document.getElementById('file-card-meta').textContent=n>1?'Lues par l’IA':'Lue par l’IA';
   c.style.display='flex';z.classList.add('has-file');z.classList.remove('show-text');
   setFileToggle(false);
+  renderPhotoStrip();
 }
+function renderPhotoStrip(){var s=document.getElementById('photo-strip');if(s){s.style.display='none';s.innerHTML='';}}
+function addPhoto(){var cam=document.getElementById('camera-btn');var inp=document.getElementById(cam&&cam.style.display!=='none'?'camera-input':'file-input');if(inp)inp.click();}
+// Recalcule le texte du cours et les schémas à partir des photos restantes.
+function rebuildFromPhotos(){
+  var ta=document.getElementById('course-input');
+  var t='';photoItems.forEach(function(p){t=mergePhotoText(t,p.text).text;});
+  ta.value=t;courseContent=t;photoBuilt=t;
+  var plan=getPlan(),cap=plan==='ultimate'?8:plan==='pro'?4:0,k=0;
+  pdfImages=[];photoItems.forEach(function(p){if(p.schema&&k<cap){pdfImages.push({page:++k,media_type:'image/jpeg',data:p.schema});}});
+  pdfImagesKey=pdfImages.length?t.replace(/\s+/g,'').slice(0,120):'';
+  updateCharCount();
+}
+function removePhoto(i){
+  if(!photoItems[i])return;
+  var ta=document.getElementById('course-input');
+  var edited=ta.value!==photoBuilt;
+  if(!confirmBox((edited?'Tu as modifié le texte du cours : ces modifications seront remplacées. ':'')+'Supprimer cette photo et le texte lu dessus ? Le crédit utilisé pour la lire ne sera pas rendu.'))return;
+  photoItems.splice(i,1);closePhotoViewer();
+  if(!photoItems.length){removeFileCard(true);return;}
+  rebuildFromPhotos();showPhotoCard();showToast('Photo supprimée');
+}
+function confirmBox(msg){try{return window.confirm(msg);}catch(e){return true;}}
+function openPhotoViewer(i){
+  var p=photoItems[i];if(!p)return;photoViewIdx=i;
+  var v=document.getElementById('photo-viewer');
+  if(!v){v=document.createElement('div');v.id='photo-viewer';v.className='pv';v.setAttribute('role','dialog');v.setAttribute('aria-modal','true');document.body.appendChild(v);
+    var sx=0;v.addEventListener('touchstart',function(e){sx=e.touches[0].clientX;},{passive:true});
+    v.addEventListener('touchend',function(e){var dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>60&&!e.target.closest('textarea'))openPhotoViewer(photoViewIdx+(dx<0?1:-1));},{passive:true});}
+  var n=photoItems.length;
+  v.innerHTML='<div class="pv-top"><button type="button" class="pv-icon pv-del" onclick="removePhoto('+i+')" aria-label="Supprimer cette photo"><svg class="ph" aria-hidden="true"><use href="#ph-trash" xlink:href="#ph-trash"/></svg></button><span class="pv-count">'+(i+1)+' / '+n+'</span><button type="button" class="pv-icon" onclick="closePhotoViewer()" aria-label="Fermer">✕</button></div>'
+    +'<div class="pv-img"><img src="'+p.preview+'" alt="Photo '+(i+1)+' du cours"></div>'
+    +(n>1?'<div class="pv-dots">'+photoItems.map(function(_,k){return '<button type="button" class="'+(k===i?'on':'')+'" onclick="openPhotoViewer('+k+')" aria-label="Photo '+(k+1)+'"></button>';}).join('')+'</div>':'')
+    +'<details class="pv-text"><summary>Texte lu par l’IA</summary><textarea id="pv-ta" spellcheck="false" aria-label="Texte lu par l’IA"></textarea></details>';
+  var ta=v.querySelector('#pv-ta');ta.value=p.text;
+  ta.addEventListener('change',function(){var it=photoItems[photoViewIdx];if(!it)return;var cur=document.getElementById('course-input').value;if(cur!==photoBuilt&&!confirmBox('Tu as modifié le texte du cours : ces modifications seront remplacées. Continuer ?')){ta.value=it.text;return;}it.text=ta.value;rebuildFromPhotos();});
+  v.style.display='flex';document.body.style.overflow='hidden';
+}
+function closePhotoViewer(){var v=document.getElementById('photo-viewer');if(v){var ta=v.querySelector('#pv-ta');if(ta&&document.activeElement===ta)ta.blur();v.style.display='none';}document.body.style.overflow='';photoViewIdx=-1;}
 function toggleFileText(){var z=document.getElementById('course-zone');var on=z.classList.toggle('show-text');setFileToggle(on);}
 function setFileToggle(on){var b=document.getElementById('file-card-toggle');if(!b)return;var t=on?'Masquer le texte':'Voir le texte';var l=b.querySelector('.fcb-lbl');if(l)l.textContent=t;else b.textContent=t;b.setAttribute('aria-label',t);b.classList.toggle('on',!!on);}
 function removeFileCard(clear){
   var z=document.getElementById('course-zone'),c=document.getElementById('file-card');if(!z||!c)return;
-  c.style.display='none';z.classList.remove('has-file','show-text');if(clear)photoThumbs=[];
+  c.style.display='none';z.classList.remove('has-file','show-text');if(clear){photoItems=[];photoStripOpen=false;}renderPhotoStrip();
   if(clear){var ta=document.getElementById('course-input');ta.value='';courseContent='';pdfImages=[];pdfImagesKey='';updateCharCount();var b=document.getElementById('file-badge');if(b)b.style.display='none';var ih=document.getElementById('import-hint');if(ih)ih.style.display='';}
 }
 function handleFileLoad(file){
   var isImg=/^image\//.test(file.type||'')||/\.(jpe?g|png|webp|heic|gif)$/i.test(file.name||'');
-  if(!isImg)photoThumbs=[];
-  if(!isImg||!photoThumbs.length)removeFileCard(false);
+  if(!isImg){photoItems=[];photoStripOpen=false;}
+  if(!isImg||!photoItems.length)removeFileCard(false);
   if(file.type==='text/plain'||(file.name&&file.name.toLowerCase().endsWith('.txt'))){
     var reader=new FileReader();
     reader.onload=function(ev){
