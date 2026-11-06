@@ -551,7 +551,7 @@
   };
 
   /* ═══ Tarifs : mensuel ou annuel ═══ */
-  var PRO_MONTHLY = 7.99, PRO_YEARLY = 83.90; // Doivent être identiques aux prix Stripe (price pro_monthly / pro_yearly)
+  var TF = window.FicheTarifs, PRO_MONTHLY = TF.prix.pro_monthly, PRO_YEARLY = TF.prix.pro_yearly; // Prix centralisés dans /tarifs.js
   window.proBilling = 'yearly';
   function fmtEur(n) { return n.toFixed(2).replace('.', ','); }
   function placeBillPill() {
@@ -572,7 +572,7 @@
       ? Math.round(PRO_MONTHLY * 12 - PRO_YEARLY) + ' € économisés par rapport au mensuel'
       : '7 jours d\'essai gratuit pour un premier abonnement';
     var ulti = $('.plan-ultimate .price-note');
-    if (ulti) ulti.textContent = yearly ? '0,06 € le crédit, sans t\'engager sur un an' : '0,06 € le crédit : 17 % moins cher qu\'en Pro';
+    if (ulti) ulti.textContent = yearly ? TF.ultimateCredit() + ' le crédit, sans t\'engager sur un an' : TF.ultimateCredit() + ' le crédit : ' + TF.ultimateVsPro() + ' % moins cher qu\'en Pro';
     var c = $('#pro-cta'); if (c && !c.disabled) c.textContent = yearly ? 'S\'abonner à l\'année' : 'Essayer 7 jours gratuits';
     ['monthly', 'yearly'].forEach(function (k) {
       var el = $('#pro-btn-' + k); if (!el) return;

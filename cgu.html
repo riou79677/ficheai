@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <script src="/icons.js"></script>
+<script src="/tarifs.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
 <title>Conditions générales d'utilisation et de vente — FicheAI</title>
 <link rel="preload" href="/fonts/syne-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/fonts/dm-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
@@ -137,12 +138,12 @@ FicheAI
   <p>Les caractéristiques de chaque offre (quotas, fonctionnalités, taille des imports) sont présentées sur la <a href="/#tarifs">page des tarifs</a> et rappelées dans le récapitulatif avant toute commande. Au 29 octobre 2026 :</p>
   <ul>
     <li><strong>Starter</strong> : gratuit, 10 crédits par mois en qualité Rapide et 2 générations en qualité Approfondi offertes une seule fois, sans carte bancaire.</li>
-    <li><strong>Pro mensuel</strong> : 7,99 € par mois, 110 crédits par mois. Un essai gratuit de 7 jours est proposé pour un premier abonnement Pro mensuel, une seule fois par compte.</li>
-    <li><strong>Pro annuel</strong> : 83,90 € par an, 110 crédits par mois.</li>
-    <li><strong>Ultimate mensuel</strong> : 14,99 € par mois, 250 crédits par mois.</li>
-    <li><strong>Recharges</strong> (abonnés Pro et Ultimate) : 100 crédits pour 6,99 €, 300 pour 19,99 €, 800 pour 49,99 €, valables 12 mois après l'achat et utilisés une fois les crédits du mois épuisés.</li>
+    <li><strong>Pro mensuel</strong> : <span data-prix="pro_monthly">7,99 €</span> par mois, 110 crédits par mois. Un essai gratuit de 7 jours est proposé pour un premier abonnement Pro mensuel, une seule fois par compte.</li>
+    <li><strong>Pro annuel</strong> : <span data-prix="pro_yearly">83,90 €</span> par an, 110 crédits par mois.</li>
+    <li><strong>Ultimate mensuel</strong> : <span data-prix="ultimate_monthly">14,99 €</span> par mois, 250 crédits par mois.</li>
+    <li><strong>Recharges</strong> (abonnés Pro et Ultimate) : 100 crédits pour <span data-prix="recharge_50">6,99 €</span>, 300 pour <span data-prix="recharge_150">19,99 €</span>, 800 pour <span data-prix="recharge_400">49,99 €</span>, valables 12 mois après l'achat et utilisés une fois les crédits du mois épuisés.</li>
   </ul>
-  <p>Les prix sont indiqués en euros, toutes taxes comprises. TVA non applicable, article 293 B du Code général des impôts. Chaque format généré coûte 1 crédit en qualité Rapide et 3 crédits en qualité Approfondi (4 pour les formats longs : fiche détaillée, quiz de 10 questions, 20 flashcards, 10 questions ouvertes et sujet d'examen) ; pour un cours de plus de 20 pages (environ 40 000 caractères), chaque format coûte 1 crédit de plus par tranche de 20 pages supplémentaires, dans les deux qualités ; en qualité Approfondi, l'analyse des pages contenant des schémas ou des images coûte 1 crédit de plus par groupe de 4 pages ; le coût exact s'affiche toujours avant chaque génération ; un message de Chat IA, la lecture d'une photo de cours et un paquet de cartes du Mode Révision coûtent 1 crédit chacun ; une photo sans texte lisible ne coûte rien. Les crédits du mois se renouvellent chaque mois à la date anniversaire de la période et ne se cumulent pas d'un mois sur l'autre. Les crédits inclus dans un abonnement souscrit à prix réduit (code promotionnel ou offre particulière) sont calculés en proportion du montant effectivement payé ; leur nombre est indiqué dans l'offre et dans l'espace du compte. Les crédits du mois sont utilisables en totalité, sans autre limite que leur nombre. Des limites de fréquence s'appliquent aussi pour éviter les abus automatisés. Si une génération échoue pour une raison technique, les crédits sont rendus.</p>
+  <p>Les prix sont indiqués en euros, toutes taxes comprises. <span data-tva="longue">TVA non applicable, article 293 B du Code général des impôts.</span> Chaque format généré coûte 1 crédit en qualité Rapide et 3 crédits en qualité Approfondi (4 pour les formats longs : fiche détaillée, quiz de 10 questions, 20 flashcards, 10 questions ouvertes et sujet d'examen) ; pour un cours de plus de 20 pages (environ 40 000 caractères), chaque format coûte 1 crédit de plus par tranche de 20 pages supplémentaires, dans les deux qualités ; en qualité Approfondi, l'analyse des pages contenant des schémas ou des images coûte 1 crédit de plus par groupe de 4 pages ; le coût exact s'affiche toujours avant chaque génération ; un message de Chat IA, la lecture d'une photo de cours et un paquet de cartes du Mode Révision coûtent 1 crédit chacun ; une photo sans texte lisible ne coûte rien. Les crédits du mois se renouvellent chaque mois à la date anniversaire de la période et ne se cumulent pas d'un mois sur l'autre. Les crédits inclus dans un abonnement souscrit à prix réduit (code promotionnel ou offre particulière) sont calculés en proportion du montant effectivement payé ; leur nombre est indiqué dans l'offre et dans l'espace du compte. Les crédits du mois sont utilisables en totalité, sans autre limite que leur nombre. Des limites de fréquence s'appliquent aussi pour éviter les abus automatisés. Si une génération échoue pour une raison technique, les crédits sont rendus.</p>
   <p>Une évolution de prix est annoncée au moins 30 jours avant de s'appliquer, et seulement à partir de la période suivante. L'abonné qui la refuse peut résilier sans frais avant son entrée en vigueur.</p>
 
   <h2 id="a6">6. Commande et paiement</h2>
@@ -158,7 +159,7 @@ FicheAI
   <ul>
     <li><strong>Formules mensuelles</strong> : sans engagement, renouvelées automatiquement chaque mois à la date anniversaire, jusqu'à résiliation.</li>
     <li><strong>Formule annuelle</strong> : conclue pour un an et renouvelée automatiquement pour un an. FicheAI informe l'abonné par e-mail, au plus tôt trois mois et au plus tard un mois avant la date limite pour refuser le renouvellement, de la possibilité de ne pas reconduire son abonnement. À défaut de cette information, l'abonné peut résilier gratuitement à tout moment après la date de renouvellement et se faire rembourser la part payée d'avance pour la période restante (article L215-1 du Code de la consommation).</li>
-    <li><strong>Essai gratuit</strong> (Pro mensuel) : 7 jours, sans prélèvement. La carte bancaire est enregistrée lors de la souscription. Sans résiliation avant la fin de l'essai, 7,99 € sont prélevés le jour où il se termine, puis chaque mois. Résilier pendant l'essai n'entraîne aucun prélèvement.</li>
+    <li><strong>Essai gratuit</strong> (Pro mensuel) : 7 jours, sans prélèvement. La carte bancaire est enregistrée lors de la souscription. Sans résiliation avant la fin de l'essai, <span data-prix="pro_monthly">7,99 €</span> sont prélevés le jour où il se termine, puis chaque mois. Résilier pendant l'essai n'entraîne aucun prélèvement.</li>
   </ul>
 
   <h2 id="a8">8. Résiliation</h2>

@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <script src="/icons.js"></script>
+<script src="/tarifs.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
 <title>FicheAI — Paramètres</title>
 <link rel="preload" href="/fonts/syne-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/fonts/dm-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
@@ -643,18 +644,18 @@ function renderPlanSection(plan) {
     displayZone.innerHTML = '<div class="plan-card starter"><div class="plan-card-left"><div class="plan-card-icon">🆓</div><div><div class="plan-card-name starter">Starter</div><div class="plan-card-desc">Gratuit · ' + remaining + ' crédits restants ce mois-ci</div></div></div></div><div class="plan-feats"><div class="plan-feat"><span>✅</span> 10 crédits par mois (Rapide)</div><div class="plan-feat"><span>✅</span> 2 fiches Approfondi offertes</div><div class="plan-feat"><span>✅</span> Chat IA : 1 crédit par message</div><div class="plan-feat"><span>✅</span> Import PDF jusqu\'à 15 pages</div><div class="plan-feat"><span>✅</span> Bibliothèque de fiches</div><div class="plan-feat"><span>❌</span> Qualité Approfondi à volonté — Pro requis</div></div>';
     actionsZone.innerHTML = '<div class="settings-card"><h3>Passe à la vitesse supérieure 🚀</h3><p>110 crédits par mois, la qualité Approfondi à chaque génération, le Mode Révision et les sujets d\'examen.</p>'
       + '<div style="display:flex;gap:0.8rem;flex-wrap:wrap;margin-bottom:0.8rem;">'
-      + '<a href="' + PRO_M + '" target="_blank" class="btn btn-primary">⚡ Pro — 7,99€/mois</a>'
-      + '<a href="' + PRO_A + '" target="_blank" class="btn btn-secondary">⚡ Pro — 83,90€/an</a>'
+      + '<a href="' + PRO_M + '" target="_blank" class="btn btn-primary">⚡ Pro — ' + FicheTarifs.num('pro_monthly') + '€/mois</a>'
+      + '<a href="' + PRO_A + '" target="_blank" class="btn btn-secondary">⚡ Pro — ' + FicheTarifs.num('pro_yearly') + '€/an</a>'
       + '</div>'
       + '<div style="display:flex;gap:0.8rem;flex-wrap:wrap;">'
-      + '<a href="' + ULT_M + '" target="_blank" class="btn btn-gold">👑 Ultimate — 14,99€/mois</a>'
+      + '<a href="' + ULT_M + '" target="_blank" class="btn btn-gold">👑 Ultimate — ' + FicheTarifs.num('ultimate_monthly') + '€/mois</a>'
       + '</div></div>';
 
   } else if (plan === 'pro') {
     displayZone.innerHTML = '<div class="plan-card pro"><div class="plan-card-left"><div class="plan-card-icon">⚡</div><div><div class="plan-card-name pro">Pro</div><div class="plan-card-desc">' + remaining + ' crédits restants ce mois-ci</div></div></div></div><div class="plan-feats"><div class="plan-feat highlight"><span>✅</span> 110 crédits par mois</div><div class="plan-feat highlight"><span>✅</span> Qualité Approfondi à chaque génération</div><div class="plan-feat"><span>✅</span> Mode Révision des flashcards</div><div class="plan-feat"><span>✅</span> Import PDF jusqu\'à 100 pages</div><div class="plan-feat"><span>✅</span> Bibliothèque de fiches</div><div class="plan-feat"><span>❌</span> 250 crédits par mois — Ultimate requis</div></div>';
     actionsZone.innerHTML = '<div class="settings-card"><h3>Passe à Ultimate 👑</h3><p>250 crédits par mois, import PDF jusqu\'à 250 pages, 8 pages de schémas lues par l\'IA.</p>'
       + '<div style="display:flex;gap:0.8rem;flex-wrap:wrap;margin-bottom:1rem;">'
-      + '<a href="' + ULT_M + '" target="_blank" class="btn btn-gold">👑 Ultimate — 14,99€/mois</a>'
+      + '<a href="' + ULT_M + '" target="_blank" class="btn btn-gold">👑 Ultimate — ' + FicheTarifs.num('ultimate_monthly') + '€/mois</a>'
       + '</div></div>'
       + subscriptionCard('Pro');
 

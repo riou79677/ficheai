@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <script src="/icons.js"></script>
+<script src="/tarifs.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
 <title>FicheAI — Panneau Admin</title>
 <link rel="preload" href="/fonts/syne-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/fonts/dm-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
@@ -558,6 +559,14 @@ async function callAdmin(action,payload){
 
 var currentDetailView=null;
 
+// Chiffre d'affaires de l'année et seuil de franchise de TVA (37 500 €). À partir de 30 000 € : prévenir Claude pour la bascule (BASCULE_TVA.md).
+function caCard(ca){
+  if(!ca)return '';
+  var eur=Math.round(ca.eur).toLocaleString('fr-FR'), alerte=ca.eur>=30000;
+  return '<div class="stat-card" style="cursor:default'+(alerte?';border-color:#f59e0b':'')+'"><div class="val"'+(alerte?' style="color:#f59e0b"':'')+'>'+eur+' €</div><div class="lbl">'
+    +(alerte?'Seuil de TVA proche : demande la bascule TVA':'Chiffre d’affaires '+ca.annee+' · seuil TVA 37 500 €')+'</div></div>';
+}
+
 async function loadStats(){
   try{
     var data=await callAdmin('get_stats');
@@ -569,7 +578,8 @@ async function loadStats(){
       '<div class="stat-card" onclick="showDetail(\'pro\')"><div class="val">'+data.par_plan.pro+'</div><div class="lbl">Pro</div></div>'+
       '<div class="stat-card" onclick="showDetail(\'ultimate\')"><div class="val">'+data.par_plan.ultimate+'</div><div class="lbl">Ultimate</div></div>'+
       '<div class="stat-card" onclick="scrollToFiches()"><div class="val">'+data.total_fiches+'</div><div class="lbl">Fiches enregistrées</div></div>'+
-      '<div class="stat-card" onclick="showDetail(\'bannis\')"><div class="val">'+data.bannis+'</div><div class="lbl">Comptes bannis</div></div>';
+      '<div class="stat-card" onclick="showDetail(\'bannis\')"><div class="val">'+data.bannis+'</div><div class="lbl">Comptes bannis</div></div>'+
+      caCard(data.ca_annee);
     allUsersData=data.users;renderUsers(data.users);renderMfaList(data.users);renderQuotaAlerts(data.users);loadMaintenanceStatus();loadUserMessages();
   }catch(e){if(e.message!=='WRONG_SECRET'){document.getElementById('lock-err').textContent='Erreur : '+e.message;document.getElementById('lock-err').style.display='block';}}
 }

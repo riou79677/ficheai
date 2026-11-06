@@ -5,15 +5,15 @@
 // Les anciens liens de paiement Stripe (buy.stripe.com) présents dans les pages sont redirigés ici automatiquement.
 (function () {
   var OFFERS = {
-    pro_monthly: { kind: 'sub', plan: 'pro', title: '⚡ FicheAI Pro, formule mensuelle', price: '7,99 €', per: 'mois', trial: 7,
+    pro_monthly: { kind: 'sub', plan: 'pro', title: '⚡ FicheAI Pro, formule mensuelle', price: FicheTarifs.txt('pro_monthly'), per: 'mois', trial: 7,
       what: '110 crédits par mois (36 fiches en qualité Approfondi, ou 110 en Rapide ; 1 crédit par message de Chat IA), Mode Révision, import de PDF jusqu\'à 100 pages, sujets d\'examen et export PDF.' },
-    pro_yearly: { kind: 'sub', plan: 'pro', title: '⚡ FicheAI Pro, formule annuelle', price: '83,90 €', per: 'an',
+    pro_yearly: { kind: 'sub', plan: 'pro', title: '⚡ FicheAI Pro, formule annuelle', price: FicheTarifs.txt('pro_yearly'), per: 'an',
       what: '110 crédits par mois pendant un an (36 fiches en qualité Approfondi, ou 110 en Rapide ; 1 crédit par message de Chat IA), Mode Révision, import de PDF jusqu\'à 100 pages, sujets d\'examen et export PDF.' },
-    ultimate_monthly: { kind: 'sub', plan: 'ultimate', title: '👑 FicheAI Ultimate, formule mensuelle', price: '14,99 €', per: 'mois',
+    ultimate_monthly: { kind: 'sub', plan: 'ultimate', title: '👑 FicheAI Ultimate, formule mensuelle', price: FicheTarifs.txt('ultimate_monthly'), per: 'mois',
       what: '250 crédits par mois (83 fiches en qualité Approfondi, ou 250 en Rapide ; 1 crédit par message de Chat IA), Mode Révision, import de PDF jusqu\'à 250 pages, lecture des schémas, sujets d\'examen et export PDF.' },
-    recharge_50: { kind: 'pack', title: '🔋 Recharge de 100 crédits', price: '6,99 €', credits: 100 },
-    recharge_150: { kind: 'pack', title: '🔋 Recharge de 300 crédits', price: '19,99 €', credits: 300 },
-    recharge_400: { kind: 'pack', title: '🔋 Recharge de 800 crédits', price: '49,99 €', credits: 800 }
+    recharge_50: { kind: 'pack', title: '🔋 Recharge de 100 crédits', price: FicheTarifs.txt('recharge_50'), credits: 100 },
+    recharge_150: { kind: 'pack', title: '🔋 Recharge de 300 crédits', price: FicheTarifs.txt('recharge_150'), credits: 300 },
+    recharge_400: { kind: 'pack', title: '🔋 Recharge de 800 crédits', price: FicheTarifs.txt('recharge_400'), credits: 800 }
   };
   // Anciens liens de paiement Stripe -> offre correspondante.
   var LINKS = {
@@ -77,7 +77,7 @@
         var first = frDate(new Date(Date.now() + trial * 86400000));
         lines.push('<b>Essai gratuit de ' + trial + ' jours :</b> rien n\'est prélevé aujourd\'hui. Sans résiliation avant le ' + esc(first) + ', ' + esc(o.price) + ' TTC seront prélevés ce jour-là, puis chaque mois.');
       } else if (o.per === 'an') {
-        lines.push('<b>Prix :</b> ' + esc(o.price) + ' TTC prélevés aujourd\'hui (soit 6,99 € par mois).');
+        lines.push('<b>Prix :</b> ' + esc(o.price) + ' TTC prélevés aujourd\'hui (soit ' + FicheTarifs.annuelParMois() + ' par mois).');
       } else {
         lines.push('<b>Prix :</b> ' + esc(o.price) + ' TTC prélevés aujourd\'hui, puis chaque mois.');
       }
@@ -91,7 +91,7 @@
       lines.push('<b>Prix :</b> paiement unique de ' + esc(o.price) + ' TTC, sans abonnement.');
       lines.push('<b>Rétractation :</b> comme les crédits sont fournis immédiatement, le droit de rétractation prend fin dès qu\'ils sont ajoutés (si tu coches la case ci-dessous).');
     }
-    lines.push('Prix TTC, TVA non applicable (article 293 B du CGI). Paiement sécurisé par Stripe.');
+    lines.push('Prix TTC, ' + (FicheTarifs.tva ? 'TVA de 20 % incluse' : 'TVA non applicable (article 293 B du CGI)') + '. Paiement sécurisé par Stripe.');
 
     var c2 = o.kind === 'sub'
       ? 'Je demande à accéder à mon abonnement dès maintenant, sans attendre la fin du délai de rétractation de 14 jours. Si je me rétracte, je paierai seulement la part du service déjà fournie (rien pendant l\'essai gratuit).'

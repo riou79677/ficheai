@@ -76,6 +76,26 @@ export default async function handler(req, res) {
         (Array.isArray(mfa) ? mfa : []).forEach(m => { if (m && m.email) since[String(m.email).toLowerCase()] = m.since; });
         users.forEach(u => { u.mfa_since = since[String(u.email || '').toLowerCase()] || null; });
       } catch (e) { /* information facultative */ }
+      // Chiffre d'affaires encaissé depuis le 1er janvier (Paris), pour surveiller le seuil de franchise de TVA (BASCULE_TVA.md).
+      let caAnnee = null;
+      try {
+        const key = process.env.STRIPE_SECRET_KEY;
+        if (key) {
+          const an = new Date().toLocaleString('en-CA', { timeZone: 'Europe/Paris', year: 'numeric' });
+          const debut = Math.floor(new Date(an + '-01-01T00:00:00+01:00').getTime() / 1000);
+          let total = 0, after = null;
+          for (let page = 0; page < 60; page++) {
+            const q = 'https://api.stripe.com/v1/charges?limit=100&created[gte]=' + debut + (after ? '&starting_after=' + after : '');
+            const cr = await fetch(q, { headers: { Authorization: 'Bearer ' + key } });
+            const cd = await cr.json();
+            const list = Array.isArray(cd.data) ? cd.data : [];
+            list.forEach(c => { if (c.status === 'succeeded' && c.currency === 'eur') total += (c.amount_captured || 0) - (c.amount_refunded || 0); });
+            if (!cd.has_more || !list.length) break;
+            after = list[list.length - 1].id;
+          }
+          caAnnee = { annee: Number(an), eur: Math.round(total) / 100 };
+        }
+      } catch (e) { /* information facultative */ }
       const fichesR = await fetch(SUPABASE_URL + '/rest/v1/fiches?select=id&limit=1', { headers: { ...sb, 'Prefer': 'count=exact' } });
       const fichesCount = fichesR.headers.get('content-range')?.split('/')[1] || '0';
       return res.status(200).json({
@@ -87,6 +107,7 @@ export default async function handler(req, res) {
         },
         bannis: users.filter(u => u.banned).length,
         total_fiches: fichesCount,
+        ca_annee: caAnnee,
         users: users
       });
     }

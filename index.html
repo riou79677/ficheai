@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <script src="/icons.js"></script>
+<script src="/tarifs.js"></script>
 <script>/* Lien de réinitialisation arrivé sur l'accueil : on l'envoie vers la page du nouveau mot de passe. */try{if(/[#&?]type=recovery/.test(location.hash+location.search))location.replace('/update-password.html'+location.search+location.hash);}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
 <title>FicheAI — Transforme tes cours en fiches de révision avec l'IA</title>
@@ -531,7 +532,7 @@ FicheAI
 <div class="plan-badge">👑 Meilleur rapport qualité-prix</div>
 <div class="plan-name">Ultimate</div>
 <div class="plan-tag">Pour réviser beaucoup, toute l'année</div>
-<div class="price"><span class="amount">14,99</span><span class="cur">€</span><span class="per">par mois</span></div>
+<div class="price"><span class="amount" data-prix="ultimate_monthly" data-sans-euro>14,99</span><span class="cur">€</span><span class="per">par mois</span></div>
 <div class="price-sub">Sans engagement</div>
 <div class="price-note gold">0,06 € le crédit : 17 % moins cher qu'en Pro</div>
 <ul class="feat">
@@ -546,7 +547,7 @@ FicheAI
 </div>
 </div>
 </div>
-<p class="legal">Prix TTC en euros · TVA non applicable, article 293 B du CGI · Abonnements sans engagement pour les formules mensuelles, résiliables en quelques clics · Voir les <a href="/cgu.html#cgv">conditions générales de vente</a></p>
+<p class="legal">Prix TTC en euros · <span data-tva>TVA non applicable, article 293 B du CGI</span> · Abonnements sans engagement pour les formules mensuelles, résiliables en quelques clics · Voir les <a href="/cgu.html#cgv">conditions générales de vente</a></p>
 </section>
 
 <!-- ═══════════ FAQ ═══════════ -->

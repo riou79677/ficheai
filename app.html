@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <script src="/icons.js"></script>
+<script src="/tarifs.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
 <title>FicheAI — Générateur de fiches IA</title>
 <link rel="preload" href="/fonts/syne-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/fonts/dm-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
@@ -1036,9 +1037,9 @@ function updateQuotaUI(){
       ? 'Tu as utilisé <b>'+pct+'%</b> de tes crédits ce mois-ci ('+used+' / '+tokensLimit+'). Plus que '+tokensLeft+' crédit'+(tokensLeft>1?'s':'')+' !'
       : 'Tu approches de ta limite : <b>'+pct+'%</b> de tes crédits utilisés ce mois-ci ('+used+' / '+tokensLimit+').';
     var bp=getPlan();
-    var rl='<a href="'+RECHARGE_400+'" target="_blank">⭐ +800 crédits — 49,99€ (meilleur prix)</a><a href="'+RECHARGE_150+'" target="_blank">+300 crédits — 19,99€</a><a href="'+RECHARGE_50+'" target="_blank">+100 crédits — 6,99€</a>';
+    var TF=window.FicheTarifs, rl='<a href="'+RECHARGE_400+'" target="_blank">⭐ +800 crédits — '+TF.num('recharge_400')+'€ (meilleur prix)</a><a href="'+RECHARGE_150+'" target="_blank">+300 crédits — '+TF.num('recharge_150')+'€</a><a href="'+RECHARGE_50+'" target="_blank">+100 crédits — '+TF.num('recharge_50')+'€</a>';
     document.getElementById('quota-banner-links').innerHTML=bp==='starter'
-      ? '<a href="'+PRO_M+'" target="_blank">⚡ Passer à Pro — 7,99€/mois</a><a href="'+ULT_M+'" target="_blank">👑 Ultimate</a>'
+      ? '<a href="'+PRO_M+'" target="_blank">⚡ Passer à Pro — '+TF.num('pro_monthly')+'€/mois</a><a href="'+ULT_M+'" target="_blank">👑 Ultimate</a>'
       : bp==='pro' ? '<a href="'+ULT_M+'" target="_blank">👑 Passer à Ultimate</a>'+rl : rl;
   } else {
     banner.style.display='none';
@@ -1240,10 +1241,11 @@ function limitOption(href,label,price,primary){
 }
 function rechargeOptions(){
   // Le plus gros pack en premier : c'est le crédit le moins cher (prix réels, arrondis).
-  return '<div style="font-size:0.72rem;color:#fbbf24;font-weight:700;text-align:left;margin:0 0 -0.2rem 0.2rem">⭐ Meilleur prix : 0,062 € le crédit, 11 % moins cher que le pack de 100 crédits</div>'
-    +limitOption(RECHARGE_400,'+800 crédits · 0,062 €/crédit','49,99€',true)
-    +limitOption(RECHARGE_150,'+300 crédits · 0,067 €/crédit','19,99€',false)
-    +limitOption(RECHARGE_50,'+100 crédits · 0,070 €/crédit','6,99€',false);
+  var TF=window.FicheTarifs, P=TF.prix, gain=Math.round((1-(P.recharge_400/800)/(P.recharge_50/100))*100);
+  return '<div style="font-size:0.72rem;color:#fbbf24;font-weight:700;text-align:left;margin:0 0 -0.2rem 0.2rem">⭐ Meilleur prix : '+TF.parCredit('recharge_400',800)+' le crédit, '+gain+' % moins cher que le pack de 100 crédits</div>'
+    +limitOption(RECHARGE_400,'+800 crédits · '+TF.parCredit('recharge_400',800).replace(' €',' €/crédit'),TF.num('recharge_400')+'€',true)
+    +limitOption(RECHARGE_150,'+300 crédits · '+TF.parCredit('recharge_150',300).replace(' €',' €/crédit'),TF.num('recharge_150')+'€',false)
+    +limitOption(RECHARGE_50,'+100 crédits · '+TF.parCredit('recharge_50',100).replace(' €',' €/crédit'),TF.num('recharge_50')+'€',false);
 }
 // Fenêtre affichée quand la limite est atteinte : Starter -> abonnements, Pro -> Ultimate (+ recharges), Ultimate -> recharges.
 function showLimitModal(message,kind){
@@ -1253,7 +1255,7 @@ function showLimitModal(message,kind){
   if(plan==='starter'){
     title=kind==='approfondi'?'Passe à la qualité Approfondi':'Tu as utilisé tes crédits gratuits 🎉';
     intro=(kind==='approfondi'&&message?message+' ':'')+'Pro : 110 crédits par mois (36 fiches Approfondi), Mode Révision, export PDF et sujets d’examen. Ultimate : 250 crédits par mois.'+(kind==='approfondi'?'':' Tes crédits gratuits reviennent à 10 le mois prochain.');
-    opts=limitOption(PRO_M,'⚡ Pro','7,99€/mois',true)+limitOption(ULT_M,'👑 Ultimate','Voir l’offre',false);
+    opts=limitOption(PRO_M,'⚡ Pro',FicheTarifs.num('pro_monthly')+'€/mois',true)+limitOption(ULT_M,'👑 Ultimate','Voir l’offre',false);
   } else {
     title='Plus de crédits pour ce mois-ci';
     intro=(message?message+' ':'')+'Ultimate offre 250 crédits par mois, ou tu peux recharger des crédits tout de suite (valables 12 mois) :';

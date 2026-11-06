@@ -1,3 +1,4 @@
+import { partNette } from './_tarifs.js';
 import crypto from 'node:crypto';
 
 // IMPORTANT : le webhook a besoin du corps brut (non parsé) pour vérifier la signature Stripe.
@@ -80,6 +81,10 @@ export default async function handler(req, res) {
     'price_1UWcCwJBbEVt3aRDFqj1v4B6': { plan: 'pro',      credits: 110, genLimit: 50,  chatLimit: 20,  fcLimit: 100 },  // Pro annuel 83,90 € (actuel)
     'price_1TXfiUJBbEVt3aRDXGVS7pAz': { plan: 'ultimate', credits: 250, genLimit: 300, chatLimit: 300, fcLimit: 500 },  // Ultimate mensuel
     'price_1TXfj3JBbEVt3aRDei6gdSy0': { plan: 'ultimate', credits: 250, genLimit: 300, chatLimit: 300, fcLimit: 500 },  // Ultimate annuel
+    // Tarifs avec TVA (voir _tarifs.js et BASCULE_TVA.md)
+    'price_1UYsuNJBbEVt3aRD9PYwbphi': { plan: 'pro',      credits: 110, genLimit: 50,  chatLimit: 20,  fcLimit: 100 },  // Pro mensuel 8,99 € TTC
+    'price_1UYsuNJBbEVt3aRDJnTqSAld': { plan: 'pro',      credits: 110, genLimit: 50,  chatLimit: 20,  fcLimit: 100 },  // Pro annuel 101,90 € TTC
+    'price_1UYsuOJBbEVt3aRDUOLW727w': { plan: 'ultimate', credits: 250, genLimit: 300, chatLimit: 300, fcLimit: 500 },  // Ultimate mensuel 18,99 € TTC
   };
 
   // Paliers de recharge ponctuelle (paiement unique, pas d'abonnement) : créditent un solde séparé
@@ -88,6 +93,9 @@ export default async function handler(req, res) {
     'price_1TvvwjJBbEVt3aRDYw3CewZz': 100,  // Recharge 100 crédits — 6,99€ (= 50 générations Approfondi)
     'price_1TvvwqJBbEVt3aRDRZXro9z5': 300,  // Recharge 300 crédits — 19,99€
     'price_1TvvwxJBbEVt3aRDJN6pTiYz': 800,  // Recharge 800 crédits — 49,99€
+    'price_1UYsuPJBbEVt3aRDeCGXHtF1': 100,  // Recharge 100 crédits — 7,99 € TTC (avec TVA)
+    'price_1UYsuQJBbEVt3aRDuiLU6Xyu': 300,  // Recharge 300 crédits — 20,99 € TTC (avec TVA)
+    'price_1UYsuQJBbEVt3aRDvKvkYwK3': 800,  // Recharge 800 crédits — 53,99 € TTC (avec TVA)
   };
 
   // Récupère les articles achetés lors d'une session de paiement ponctuel.
@@ -305,9 +313,10 @@ export default async function handler(req, res) {
             const priceId = item.price?.id;
             const amount = CREDIT_PACKS[priceId];
             if (amount) {
-              // Plafond de coût IA offert par cette recharge : 73,5 % du montant réellement payé - 0,80 € (même règle que les abonnements).
+              // Plafond de coût IA offert par cette recharge : part nette du montant réellement payé - 0,80 €
+              // (marge > 0,55 €). La part nette dépend de la TVA : voir partNette dans _tarifs.js.
               const paidEur = (item.amount_total || 0) / 100;
-              const capEur = Math.max(0, Math.floor((0.735 * paidEur - 0.80) * 100) / 100);
+              const capEur = Math.max(0, Math.floor((partNette(priceId) * paidEur - 0.80) * 100) / 100);
               // event.id est unique par événement Stripe : sert de clé anti-doublon.
               // Si le crédit échoue vraiment (pas juste "déjà traité"), on sort avec une
               // erreur 500 : Stripe considère alors le webhook en échec et réessaiera

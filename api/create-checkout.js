@@ -1,4 +1,5 @@
 import { mfaMissing, MFA_REQUIRED } from './_mfa.js';
+import { OFFERS, MENTION_TVA, PIED_FACTURE } from './_tarifs.js';
 // Création des paiements Stripe : abonnements (Pro, Ultimate) et recharges de crédits.
 // Toute commande passe par le récapitulatif du site (checkout.js) : le client y voit le prix, la durée et les
 // conditions, accepte les CGV et demande l'exécution immédiate. Ces consentements sont exigés ici et conservés
@@ -12,14 +13,7 @@ const SALES_OPEN = false;
 // Version des CGV acceptée par le client (à changer à chaque modification des conditions de vente).
 const CGV_VERSION = '2026-10-31';
 
-const OFFERS = {
-  pro_monthly:      { mode: 'subscription', plan: 'pro',      price: 'price_1TXfc5JBbEVt3aRD8UpsC4Ym', label: 'Pro mensuel',      amount: '7,99 €',  period: 'mois', trialDays: 7 },
-  pro_yearly:       { mode: 'subscription', plan: 'pro',      price: 'price_1UWcCwJBbEVt3aRDFqj1v4B6', label: 'Pro annuel',       amount: '83,90 €', period: 'an' },
-  ultimate_monthly: { mode: 'subscription', plan: 'ultimate', price: 'price_1TXfiUJBbEVt3aRDXGVS7pAz', label: 'Ultimate mensuel', amount: '14,99 €', period: 'mois' },
-  recharge_50:      { mode: 'payment', credits: 100, price: 'price_1TvvwjJBbEVt3aRDYw3CewZz', label: 'Recharge de 100 crédits',  amount: '6,99 €' },
-  recharge_150:     { mode: 'payment', credits: 300, price: 'price_1TvvwqJBbEVt3aRDRZXro9z5', label: 'Recharge de 300 crédits', amount: '19,99 €' },
-  recharge_400:     { mode: 'payment', credits: 800, price: 'price_1TvvwxJBbEVt3aRDJN6pTiYz', label: 'Recharge de 800 crédits', amount: '49,99 €' },
-};
+// Les offres (prix Stripe, montants affichés) sont dans _tarifs.js, avec l'interrupteur de TVA.
 
 const SITE_ORIGINS = ['https://www.ficheai.fr', 'https://ficheai.fr', 'https://studyai-kappa-swart.vercel.app'];
 
@@ -30,7 +24,7 @@ function frDate(d) {
 // Texte affiché juste au-dessus du bouton de paiement Stripe (1 200 caractères maximum).
 function submitMessage(offer, trialDays, base) {
   const cgv = '[conditions générales](' + base + '/cgu.html#cgv)';
-  const tva = 'Prix TTC, TVA non applicable (art. 293 B du CGI).';
+  const tva = MENTION_TVA;
   if (offer.mode === 'payment') {
     return '**Commande avec obligation de paiement** : paiement unique de ' + offer.amount + '. ' + tva
       + ' Les crédits sont ajoutés immédiatement et restent valables 12 mois. Tu as demandé leur fourniture immédiate'
@@ -213,7 +207,7 @@ export default async function handler(req, res) {
     if (!dbUser.stripe_customer_id) params.append('customer_creation', 'always');
     // Facture automatique pour les achats ponctuels.
     params.append('invoice_creation[enabled]', 'true');
-    params.append('invoice_creation[invoice_data][footer]', 'TVA non applicable, art. 293 B du CGI.');
+    params.append('invoice_creation[invoice_data][footer]', PIED_FACTURE);
     Object.entries(meta).forEach(([k, v]) => params.append('payment_intent_data[metadata][' + k + ']', v));
   }
 
