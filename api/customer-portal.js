@@ -90,7 +90,7 @@ export default async function handler(req, res) {
   // 4. Créer une session portail Stripe dynamique.
   // Avec { flow: 'cancel' } (bouton « Résilier mon abonnement »), le portail s'ouvre directement sur la
   // résiliation de l'abonnement en cours (fonction de résiliation « en trois clics », art. L215-1-1).
-  const SITE_ORIGINS = ['https://studyai-kappa-swart.vercel.app', 'https://ficheai.fr', 'https://www.ficheai.fr'];
+  const SITE_ORIGINS = ['https://www.ficheai.fr', 'https://ficheai.fr', 'https://studyai-kappa-swart.vercel.app'];
   const BASE_URL = SITE_ORIGINS.includes(req.headers.origin) ? req.headers.origin : SITE_ORIGINS[0];
   const sh = { 'Authorization': 'Bearer ' + STRIPE_SECRET_KEY, 'Content-Type': 'application/x-www-form-urlencoded' };
   const wantsCancel = !!(req.body && req.body.flow === 'cancel');

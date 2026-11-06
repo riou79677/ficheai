@@ -10,4 +10,4 @@ Disallow: /revision.html
 Disallow: /onboarding.html
 Disallow: /update-password.html
 
-Sitemap: https://studyai-kappa-swart.vercel.app/sitemap.xml
+Sitemap: https://www.ficheai.fr/sitemap.xml

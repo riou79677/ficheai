@@ -21,7 +21,7 @@ const OFFERS = {
   recharge_400:     { mode: 'payment', credits: 800, price: 'price_1TvvwxJBbEVt3aRDJN6pTiYz', label: 'Recharge de 800 crédits', amount: '49,99 €' },
 };
 
-const SITE_ORIGINS = ['https://studyai-kappa-swart.vercel.app', 'https://ficheai.fr', 'https://www.ficheai.fr'];
+const SITE_ORIGINS = ['https://www.ficheai.fr', 'https://ficheai.fr', 'https://studyai-kappa-swart.vercel.app'];
 
 function frDate(d) {
   return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Paris' });
