@@ -309,13 +309,11 @@ document.getElementById('forgot-link').addEventListener('click',async function()
   errBox.style.display='none';successBox.style.display='none';
   if(!email){errBox.textContent='Entre ton email ci-dessus puis clique sur "Mot de passe oublié".';errBox.style.display='block';return;}
   try{
-    await fetch(SUPABASE_URL+'/auth/v1/recover',{
+    // L'adresse de retour se passe dans l'URL (redirect_to) : dans le corps de la requête, elle était ignorée.
+    await fetch(SUPABASE_URL+'/auth/v1/recover?redirect_to='+encodeURIComponent(location.origin+'/update-password.html'),{
       method:'POST',
       headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},
-      body:JSON.stringify({
-        email:email,
-        options:{redirectTo:'https://www.ficheai.fr/update-password.html'}
-      })
+      body:JSON.stringify({email:email})
     });
     successBox.textContent='Email de réinitialisation envoyé ! Vérifie ta boîte mail.';successBox.style.display='block';
   }catch(e){
