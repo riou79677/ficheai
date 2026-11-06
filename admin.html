@@ -34,6 +34,20 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height
 .stat-card.active{border-color:var(--purple);background:rgba(124,109,250,0.08)}
 .stat-card .val{font-family:var(--font-h);font-size:1.8rem;font-weight:800;color:var(--purple2)}
 .stat-card .lbl{font-size:0.75rem;color:var(--text3);margin-top:4px}
+.ca-panel{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:1.3rem 1.5rem 1.2rem;margin:-0.8rem 0 2rem}
+.ca-top{display:flex;justify-content:space-between;align-items:flex-end;gap:1rem;margin-bottom:0.9rem}
+.ca-lbl{font-size:0.78rem;color:var(--text3);margin-bottom:0.3rem}
+.ca-val{font-family:var(--font-h);font-size:2rem;font-weight:800;line-height:1;color:var(--text);letter-spacing:-0.01em}
+.ca-val small{font-family:var(--font-b);font-size:0.55em;font-weight:600;color:var(--text2);margin-left:0.25em}
+.ca-seuil{text-align:right;font-size:0.85rem;font-weight:600;color:var(--text2);line-height:1.35}
+.ca-seuil span{font-size:0.72rem;font-weight:400;color:var(--text3)}
+.ca-bar{height:6px;border-radius:100px;background:rgba(255,255,255,0.07);overflow:hidden}
+.ca-bar i{display:block;height:100%;min-width:6px;border-radius:100px;background:linear-gradient(90deg,var(--purple),var(--purple2));transition:width .6s ease}
+.ca-note{font-size:0.75rem;color:var(--text3);margin-top:0.7rem}
+.ca-panel.alerte{border-color:rgba(251,191,36,0.45)}
+.ca-panel.alerte .ca-bar i{background:linear-gradient(90deg,#f59e0b,var(--gold))}
+.ca-panel.alerte .ca-note{color:var(--gold);font-weight:600}
+@media (max-width:520px){.ca-panel{padding:1.1rem 1.1rem 1rem}.ca-val{font-size:1.6rem}}
 .section{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:1.5rem;margin-bottom:1.5rem}
 .section h2{font-family:var(--font-h);font-size:1.05rem;margin-bottom:1rem}
 .maintenance-row{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
@@ -198,6 +212,7 @@ tr.clickable-row:hover .u-go{color:var(--purple2)}
 </div>
 
 <div class="stats-grid" id="stats-grid"></div>
+<div class="ca-panel" id="ca-panel" hidden></div>
 
 <div class="section hidden-section" id="detail-section">
 <h2 id="detail-title">Détail</h2>
@@ -559,12 +574,17 @@ async function callAdmin(action,payload){
 
 var currentDetailView=null;
 
-// Chiffre d'affaires de l'année et seuil de franchise de TVA (37 500 €). À partir de 30 000 € : prévenir Claude pour la bascule (BASCULE_TVA.md).
-function caCard(ca){
-  if(!ca)return '';
-  var eur=Math.round(ca.eur).toLocaleString('fr-FR'), alerte=ca.eur>=30000;
-  return '<div class="stat-card" style="cursor:default'+(alerte?';border-color:#f59e0b':'')+'"><div class="val"'+(alerte?' style="color:#f59e0b"':'')+'>'+eur+' €</div><div class="lbl">'
-    +(alerte?'Seuil de TVA proche : demande la bascule TVA':'Chiffre d’affaires '+ca.annee+' · seuil TVA 37 500 €')+'</div></div>';
+// Chiffre d'affaires de l'année et seuil de franchise de TVA. À partir de 30 000 € : demander la bascule TVA (BASCULE_TVA.md).
+var SEUIL_TVA=37500, ALERTE_TVA=30000;
+function renderCa(ca){
+  var el=document.getElementById('ca-panel'); if(!el)return;
+  if(!ca){el.hidden=true;return;}
+  var eur=ca.eur, pct=Math.min(100,eur/SEUIL_TVA*100), alerte=eur>=ALERTE_TVA, fmt=function(n){return Math.round(n).toLocaleString('fr-FR')+' €';};
+  el.hidden=false; el.classList.toggle('alerte',alerte);
+  el.innerHTML='<div class="ca-top"><div><div class="ca-lbl">Chiffre d’affaires '+ca.annee+'</div><div class="ca-val">'+Math.round(eur).toLocaleString('fr-FR')+'<small>€</small></div></div>'
+    +'<div class="ca-seuil">sur '+fmt(SEUIL_TVA)+'<br><span>seuil de TVA</span></div></div>'
+    +'<div class="ca-bar"><i style="width:'+pct.toFixed(1)+'%"></i></div>'
+    +'<div class="ca-note">'+(eur>=SEUIL_TVA?'Seuil dépassé : demande la bascule TVA sans attendre.':alerte?'Seuil proche : demande la bascule TVA.':'Encore '+fmt(SEUIL_TVA-eur)+' avant de facturer la TVA.')+'</div>';
 }
 
 async function loadStats(){
@@ -578,8 +598,8 @@ async function loadStats(){
       '<div class="stat-card" onclick="showDetail(\'pro\')"><div class="val">'+data.par_plan.pro+'</div><div class="lbl">Pro</div></div>'+
       '<div class="stat-card" onclick="showDetail(\'ultimate\')"><div class="val">'+data.par_plan.ultimate+'</div><div class="lbl">Ultimate</div></div>'+
       '<div class="stat-card" onclick="scrollToFiches()"><div class="val">'+data.total_fiches+'</div><div class="lbl">Fiches enregistrées</div></div>'+
-      '<div class="stat-card" onclick="showDetail(\'bannis\')"><div class="val">'+data.bannis+'</div><div class="lbl">Comptes bannis</div></div>'+
-      caCard(data.ca_annee);
+      '<div class="stat-card" onclick="showDetail(\'bannis\')"><div class="val">'+data.bannis+'</div><div class="lbl">Comptes bannis</div></div>';
+    renderCa(data.ca_annee);
     allUsersData=data.users;renderUsers(data.users);renderMfaList(data.users);renderQuotaAlerts(data.users);loadMaintenanceStatus();loadUserMessages();
   }catch(e){if(e.message!=='WRONG_SECRET'){document.getElementById('lock-err').textContent='Erreur : '+e.message;document.getElementById('lock-err').style.display='block';}}
 }
