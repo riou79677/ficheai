@@ -98,6 +98,6 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Méthode non autorisée' });
   } catch (e) {
     console.error('Erreur conversations:', e);
-    return res.status(500).json({ error: 'Erreur serveur' });
+    return res.status(500).json({ error: 'Le serveur n’a pas pu traiter ta demande. Réessaie dans un instant.' });
   }
 }

@@ -406,6 +406,6 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.error('Erreur admin:', error);
-    return res.status(500).json({ error: 'Erreur serveur' });
+    return res.status(500).json({ error: 'Erreur du serveur pendant cette action. Réessaie dans un instant.' });
   }
 }

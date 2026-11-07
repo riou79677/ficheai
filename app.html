@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <script src="/icons.js"></script>
 <script src="/tarifs.js"></script>
+<script src="/erreurs.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
 <title>FicheAI — Générateur de fiches IA</title>
 <link rel="preload" href="/fonts/syne-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/fonts/dm-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
@@ -1791,7 +1792,7 @@ document.getElementById('gen-btn').addEventListener('click',async function(){
       if(generatedResults.length===1){spinner.style.display='none';content.style.display='block';setActiveResultTab(0);}
       else if(streamed){setActiveResultTab(generatedResults.length-1);}
       else{renderResultTabs();}
-    }catch(e){try{clearTimeout(genTimer);content.classList.remove('is-streaming');var ra3=document.querySelector('.result-actions');if(ra3)ra3.style.visibility='';}catch(_){} failedFormats.push(meta.name+' : '+(e&&e.name==='AbortError'?'la génération a pris trop de temps ou la connexion a été coupée. Réessaie, ou découpe ton cours en parties plus courtes.':e.message));}
+    }catch(e){try{clearTimeout(genTimer);content.classList.remove('is-streaming');var ra3=document.querySelector('.result-actions');if(ra3)ra3.style.visibility='';}catch(_){} failedFormats.push(meta.name+' : '+(e&&e.name==='AbortError'?'la génération a pris trop de temps ou la connexion a été coupée. Réessaie, ou découpe ton cours en parties plus courtes.':ficheaiErreur(e)));}
   }
   if(failedFormats.length){partialError=failedFormats.join(' · ');}
   if(generatedResults.length===0){
@@ -1946,7 +1947,7 @@ async function convApi(method,qs,body){
   var t=await ficheaiToken();
   var r=await fetch('/api/conversations'+(qs||''),{method:method,headers:{'Content-Type':'application/json','Authorization':'Bearer '+(t||'')},body:body?JSON.stringify(body):undefined});
   var d={};try{d=await r.json();}catch(e){}
-  if(!r.ok)throw new Error(d.error||'Erreur');
+  if(!r.ok)throw new Error(d.error||(r.status===401?'Ta session a expiré. Reconnecte-toi.':'Le serveur n’a pas pu traiter ta demande. Réessaie dans un instant.'));
   return d;
 }
 async function saveConversation(){
@@ -1973,7 +1974,7 @@ async function openChatHistory(){
         +'<button title="Renommer" onclick="renameConversation(\''+c.id+'\')" style="background:none;border:none;cursor:pointer;color:var(--text2)">✏️</button>'
         +'<button title="Supprimer" onclick="deleteConversation(\''+c.id+'\')" style="background:none;border:none;cursor:pointer;color:var(--text2)">🗑️</button></div>';
     }).join('');
-  }catch(e){list.innerHTML='<p style="color:#f09595;font-size:0.85rem">⚠️ '+escHist(e.message)+'</p>';}
+  }catch(e){list.innerHTML='<p style="color:#f09595;font-size:0.85rem">⚠️ '+escHist(ficheaiErreur(e,'Impossible de charger tes conversations. Réessaie dans un instant.'))+'</p>';}
 }
 function closeChatHistory(){document.getElementById('chat-history-modal').style.display='none';}
 async function openConversation(id){
@@ -1985,16 +1986,16 @@ async function openConversation(id){
     chatHistory.forEach(function(m){addMessage(m.role==='user'?'user':'ai',m.content,fs);});
     closeChatHistory();
     var box=document.getElementById(fs?'chat-fullscreen-messages':'chat-messages');if(box)box.scrollTop=box.scrollHeight;
-  }catch(e){showToast('⚠️ '+e.message);}
+  }catch(e){showToast('⚠️ '+ficheaiErreur(e));}
 }
 async function renameConversation(id){
   var t=prompt('Nouveau nom de la conversation :');
   if(!t||!t.trim())return;
-  try{await convApi('PATCH','?id='+encodeURIComponent(id),{title:t.trim()});openChatHistory();}catch(e){showToast('⚠️ '+e.message);}
+  try{await convApi('PATCH','?id='+encodeURIComponent(id),{title:t.trim()});openChatHistory();}catch(e){showToast('⚠️ '+ficheaiErreur(e,'Impossible de renommer la conversation. Réessaie.'));}
 }
 async function deleteConversation(id){
   if(!confirm('Supprimer définitivement cette conversation ?'))return;
-  try{await convApi('DELETE','?id='+encodeURIComponent(id));if(id===currentConvId){currentConvId=null;}openChatHistory();}catch(e){showToast('⚠️ '+e.message);}
+  try{await convApi('DELETE','?id='+encodeURIComponent(id));if(id===currentConvId){currentConvId=null;}openChatHistory();}catch(e){showToast('⚠️ '+ficheaiErreur(e,'Impossible de supprimer la conversation. Réessaie.'));}
 }
 
 (function(){try{if(window.matchMedia('(pointer:coarse)').matches){var c=document.getElementById('camera-btn');if(c)c.style.display='';}}catch(e){}})();

@@ -128,7 +128,7 @@
         if (d.code === 'SALES_CLOSED') { closedView(o); return; }
         throw new Error(d.error || 'Le paiement est momentanément indisponible. Réessaie dans un instant.');
       } catch (e) {
-        err.textContent = '⚠️ ' + e.message; err.style.display = 'block';
+        err.textContent = '⚠️ ' + (window.ficheaiErreur ? ficheaiErreur(e, 'Le paiement est momentanément indisponible. Réessaie dans un instant.') : e.message); err.style.display = 'block';
         go.textContent = 'Commander avec obligation de paiement'; upd();
       }
     });

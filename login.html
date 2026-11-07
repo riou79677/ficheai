@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <script src="/icons.js"></script>
 <script src="/tarifs.js"></script>
+<script src="/erreurs.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
 <title>Connexion — FicheAI</title>
 <link rel="preload" href="/fonts/syne-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/fonts/dm-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
@@ -164,7 +165,7 @@ async function handleLogin(){
         isLoading=false;btn.disabled=false;btn.textContent='Se connecter →';
         return;
       }
-      errBox.textContent='Email ou mot de passe incorrect.';
+      errBox.textContent=(response.status===429||data.error_code==='over_request_rate_limit')?ficheaiErreurAuth(data,429):(response.status>=500?ficheaiErreurAuth(data,response.status):'Email ou mot de passe incorrect.');
       errBox.style.display='block';
       isLoading=false;btn.disabled=false;btn.textContent='Se connecter →';
       return;
@@ -271,7 +272,7 @@ async function submitMfa(){
     s.user=s.user||pendingLogin.session.user;
     await finishLogin(pendingLogin.email,s);
   }catch(e){
-    errBox.textContent=e.message||'Code incorrect.';errBox.style.display='block';
+    errBox.textContent=ficheaiErreur(e,'Code incorrect.');errBox.style.display='block';
     document.getElementById('mfa-code').value='';document.getElementById('mfa-code').focus();
     isLoading=false;btn.disabled=false;btn.textContent='Valider →';
   }
@@ -311,14 +312,19 @@ document.getElementById('forgot-link').addEventListener('click',async function()
   if(!email){errBox.textContent='Entre ton email ci-dessus puis clique sur "Mot de passe oublié".';errBox.style.display='block';return;}
   try{
     // L'adresse de retour se passe dans l'URL (redirect_to) : dans le corps de la requête, elle était ignorée.
-    await fetch(SUPABASE_URL+'/auth/v1/recover?redirect_to='+encodeURIComponent(location.origin+'/update-password.html'),{
+    var rr=await fetch(SUPABASE_URL+'/auth/v1/recover?redirect_to='+encodeURIComponent(location.origin+'/update-password.html'),{
       method:'POST',
       headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},
       body:JSON.stringify({email:email})
     });
-    successBox.textContent='Email de réinitialisation envoyé ! Vérifie ta boîte mail.';successBox.style.display='block';
+    if(!rr.ok){
+      var rd={};try{rd=await rr.json();}catch(_){}
+      errBox.textContent=(rr.status===429||/security purposes|rate limit/i.test(rd.msg||''))?'Un email vient déjà d’être envoyé. Attends une minute avant d’en redemander un, et pense à regarder dans tes spams.':ficheaiErreurAuth(rd,rr.status);
+      errBox.style.display='block';return;
+    }
+    successBox.textContent='Si un compte existe avec cette adresse, un email de réinitialisation vient d’être envoyé. Vérifie ta boîte mail (et les spams).';successBox.style.display='block';
   }catch(e){
-    errBox.textContent="Erreur lors de l'envoi. Réessaie.";errBox.style.display='block';
+    errBox.textContent=ficheaiErreur(e);errBox.style.display='block';
   }
 });
 </script>

@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <script src="/icons.js"></script>
 <script src="/tarifs.js"></script>
+<script src="/erreurs.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
 <title>FicheAI — Panneau Admin</title>
 <link rel="preload" href="/fonts/syne-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/fonts/dm-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
@@ -446,7 +447,7 @@ async function unlockMfa(){
   try{
     var s=await FicheMFA.verify(adminPending.token,adminPending.factor.id,document.getElementById('admin-mfa-code').value);
     await finishUnlock(adminPending.email,s.access_token);
-  }catch(e){errBox.textContent=e.message||'Code incorrect.';errBox.style.display='block';document.getElementById('admin-mfa-code').value='';}
+  }catch(e){errBox.textContent=ficheaiErreur(e,'Code incorrect.');errBox.style.display='block';document.getElementById('admin-mfa-code').value='';}
 }
 
 async function finishUnlock(email,accessToken){
@@ -487,7 +488,7 @@ async function sendUserMessage(){
     if(!r||!r.success)throw new Error((r&&r.error)||'envoi refusé');
     document.getElementById('um-body').value='';
     showMsg('um-msg','✅ Message enregistré : il s\'affichera à sa prochaine visite.','ok');loadUserMessages();
-  }catch(e){if(e.message!=='WRONG_SECRET')showMsg('um-msg','⚠️ '+e.message,'error');}
+  }catch(e){if(e.message!=='WRONG_SECRET')showMsg('um-msg','⚠️ '+ficheaiErreur(e),'error');}
 }
 // ── Double authentification ──
 function renderMfaList(users){
@@ -506,7 +507,7 @@ async function checkMfa(){
     var d=await callAdmin('get_mfa_status',{email:email});
     if(d&&d.error)throw new Error(d.error);
     showMsg('mfa-admin-msg',d.enabled?'🔐 Double authentification activée depuis le '+new Date(d.since).toLocaleDateString('fr-FR')+'.':'🔓 Pas de double authentification sur ce compte.','ok');
-  }catch(e){if(e.message!=='WRONG_SECRET')showMsg('mfa-admin-msg','⚠️ '+e.message,'error');}
+  }catch(e){if(e.message!=='WRONG_SECRET')showMsg('mfa-admin-msg','⚠️ '+ficheaiErreur(e),'error');}
 }
 async function resetMfa(){
   var email=document.getElementById('mfa-email').value.trim();
@@ -516,7 +517,7 @@ async function resetMfa(){
     var d=await callAdmin('reset_mfa',{email:email});
     if(d&&d.error)throw new Error(d.error);
     showMsg('mfa-admin-msg',d.had2fa?'✅ Double authentification désactivée. L\'élève peut se reconnecter avec son seul mot de passe, puis la réactiver dans ses Paramètres.':'ℹ️ Ce compte n\'avait pas de double authentification active.','ok');
-  }catch(e){if(e.message!=='WRONG_SECRET')showMsg('mfa-admin-msg','⚠️ '+e.message,'error');}
+  }catch(e){if(e.message!=='WRONG_SECRET')showMsg('mfa-admin-msg','⚠️ '+ficheaiErreur(e),'error');}
 }
 function refreshDashboard(){Promise.all([loadStats(),loadFiches(),loadUsage(),loadLegal()]).catch(function(){});}
 
@@ -533,7 +534,7 @@ async function loadLegal(){
       return '<tr><td>'+escH(when)+'</td><td>'+(r.kind==='retractation'?'↩️ Rétractation':'🛑 Résiliation')+'</td><td>'+escH(r.full_name)+'</td><td>'+escH(r.account_email)+(r.ack_email&&r.ack_email!==r.account_email?'<br><span class="mini-note">accusé à '+escH(r.ack_email)+'</span>':'')+'</td><td>'+escH(r.contract)+(r.contract_date?'<br><span class="mini-note">'+escH(r.contract_date)+'</span>':'')+(r.details?'<br><span class="mini-note">'+escH(r.details)+'</span>':'')+'</td><td>'+(r.user_verified?'oui':'non')+'</td><td>'+escH(labels[r.status]||r.status)+'</td><td>'+acts+'</td></tr>';
     }).join('');
     document.getElementById('legal-table').innerHTML=rows||'<tr><td colspan="8" style="color:var(--text3)">Aucune déclaration pour l\'instant.</td></tr>';
-  }catch(e){if(e.message!=='WRONG_SECRET'){var m=document.getElementById('legal-msg');m.textContent='⚠️ Impossible de charger les déclarations : '+e.message;m.className='msg error';m.style.display='block';}}
+  }catch(e){if(e.message!=='WRONG_SECRET'){var m=document.getElementById('legal-msg');m.textContent='⚠️ Impossible de charger les déclarations : '+ficheaiErreur(e);m.className='msg error';m.style.display='block';}}
   try{
     var c=await callAdmin('get_contact_messages',{limit:30});
     var msgs=(c.messages||[]).map(function(x){
@@ -544,7 +545,7 @@ async function loadLegal(){
 }
 async function setLegalStatus(id,status){
   try{await callAdmin('set_legal_request_status',{id:id,status:status});showMsg('legal-msg','✅ Statut mis à jour.','ok');await loadLegal();}
-  catch(e){if(e.message!=='WRONG_SECRET')showMsg('legal-msg','⚠️ Erreur : '+e.message,'error');}
+  catch(e){if(e.message!=='WRONG_SECRET')showMsg('legal-msg','⚠️ Erreur : '+ficheaiErreur(e),'error');}
 }
 
 document.getElementById('admin-password').addEventListener('keydown',function(e){if(e.key==='Enter')unlock();});
@@ -601,7 +602,7 @@ async function loadStats(){
       '<div class="stat-card" onclick="showDetail(\'bannis\')"><div class="val">'+data.bannis+'</div><div class="lbl">Comptes bannis</div></div>';
     renderCa(data.ca_annee);
     allUsersData=data.users;renderUsers(data.users);renderMfaList(data.users);renderQuotaAlerts(data.users);loadMaintenanceStatus();loadUserMessages();
-  }catch(e){if(e.message!=='WRONG_SECRET'){document.getElementById('lock-err').textContent='Erreur : '+e.message;document.getElementById('lock-err').style.display='block';}}
+  }catch(e){if(e.message!=='WRONG_SECRET'){document.getElementById('lock-err').textContent='Erreur : '+ficheaiErreur(e);document.getElementById('lock-err').style.display='block';}}
 }
 
 function showDetail(filter){
@@ -768,7 +769,7 @@ async function loadUserActivity(email){
     paintActivity(email,d);
   }catch(e){
     var el=document.getElementById('ud-act');
-    if(el&&currentModalUser&&currentModalUser.email===email)el.innerHTML='<p class="ud-empty" style="margin-top:1.4rem">⚠️ Activité indisponible : '+escH(e.message)+'</p>';
+    if(el&&currentModalUser&&currentModalUser.email===email)el.innerHTML='<p class="ud-empty" style="margin-top:1.4rem">⚠️ Activité indisponible : '+escH(ficheaiErreur(e))+'</p>';
   }
 }
 
@@ -835,7 +836,7 @@ async function confirmPlanChange(){
     closePlanModal();
     showMsg('users-msg','✅ Forfait de '+currentModalUser.email+' changé en '+selectedPlan.toUpperCase()+' (limites mises à jour).','ok');
     await loadStats();
-  }catch(e){btn.textContent='Confirmer le changement';btn.disabled=false;errEl.textContent='Erreur : '+e.message;errEl.style.display='block';}
+  }catch(e){btn.textContent='Confirmer le changement';btn.disabled=false;errEl.textContent='Erreur : '+ficheaiErreur(e);errEl.style.display='block';}
 }
 
 function closePlanModal(){document.getElementById('plan-modal-overlay').classList.remove('active');document.body.style.overflow=(document.getElementById('user-modal-overlay').classList.contains('active')?'hidden':'');selectedPlan=null;planConfirmCode=null;var b=document.getElementById('plan-confirm-btn');if(b){b.textContent='Confirmer le changement';b.disabled=false;}}
@@ -869,7 +870,7 @@ async function confirmGift(){
     closeGiftModal();
     showMsg('quota-msg','✅ +'+selectedGift+' crédits offerts à '+giftTargetEmail+' (solde de recharge : '+res.new_bonus+').','ok');
     await loadStats();
-  }catch(e){btn.textContent='Offrir';btn.disabled=false;errEl.textContent='Erreur : '+e.message;errEl.style.display='block';}
+  }catch(e){btn.textContent='Offrir';btn.disabled=false;errEl.textContent='Erreur : '+ficheaiErreur(e);errEl.style.display='block';}
 }
 function closeGiftModal(){document.getElementById('gift-modal-overlay').classList.remove('active');document.body.style.overflow=(document.getElementById('user-modal-overlay').classList.contains('active')?'hidden':'');giftTargetEmail=null;selectedGift=null;var b=document.getElementById('gift-confirm-btn');if(b)b.textContent='Offrir';}
 
@@ -909,7 +910,7 @@ async function confirmBan(){
 
 async function debanUser(email){
   try{await callAdmin('set_ban',{email,banned:false});showMsg('users-msg','✅ Compte débanni.','ok');await loadStats();}
-  catch(e){showMsg('users-msg','⚠️ Erreur : '+e.message,'error');}
+  catch(e){showMsg('users-msg','⚠️ Erreur : '+ficheaiErreur(e),'error');}
 }
 
 function closeBanModal(){document.getElementById('ban-modal-overlay').classList.remove('active');document.body.style.overflow=(document.getElementById('user-modal-overlay').classList.contains('active')?'hidden':'');selectedBanDuration=undefined;}
@@ -918,7 +919,7 @@ async function deleteUser(email){
   if(!confirm('SUPPRIMER DÉFINITIVEMENT le compte '+email+' ? Action irréversible.'))return;
   if(!confirm('Es-tu vraiment sûr ? Toutes ses fiches seront perdues.'))return;
   try{await callAdmin('delete_account',{email});showMsg('users-msg','✅ Compte supprimé.','ok');closeUserModalDirect();await loadStats();}
-  catch(e){showMsg('users-msg','⚠️ Erreur : '+e.message,'error');}
+  catch(e){showMsg('users-msg','⚠️ Erreur : '+ficheaiErreur(e),'error');}
 }
 
 function exportCSV(){
@@ -937,7 +938,7 @@ async function loadUsage(){
     var tot=Number(d.total_cost_usd||0);
     document.getElementById('usage-total').textContent='Consommation IA des 30 derniers jours : $'+tot.toFixed(3)+' (≈ '+(tot*0.86).toFixed(2)+' €) au total.';
     if(allUsersData){var q=document.getElementById('search-input');filterUsers(q?q.value:'');}
-  }catch(e){if(e.message!=='WRONG_SECRET'){var m=document.getElementById('usage-msg');m.textContent='⚠️ Impossible de charger la consommation : '+e.message;m.className='msg error';m.style.display='block';}}
+  }catch(e){if(e.message!=='WRONG_SECRET'){var m=document.getElementById('usage-msg');m.textContent='⚠️ Impossible de charger la consommation : '+ficheaiErreur(e);m.className='msg error';m.style.display='block';}}
 }
 
 async function loadFiches(){
@@ -946,7 +947,7 @@ async function loadFiches(){
     var tbody=document.getElementById('fiches-table');
     if(!data.fiches||data.fiches.length===0){tbody.innerHTML='<tr><td colspan="4" style="color:var(--text3)">Aucune fiche enregistrée pour l\'instant.</td></tr>';return;}
     tbody.innerHTML=data.fiches.map(function(f){return '<tr><td>'+new Date(f.created_at).toLocaleString('fr-FR')+'</td><td>'+escH(f.user_username?'@'+f.user_username:f.user_email)+'</td><td>'+escH(f.format_icon||'')+' '+escH(f.format)+'</td><td>'+escH(f.titre||'—')+'</td></tr>';}).join('');
-  }catch(e){if(e.message!=='WRONG_SECRET'){document.getElementById('fiches-msg').textContent='⚠️ Impossible de charger les fiches : '+e.message;document.getElementById('fiches-msg').className='msg error';}}
+  }catch(e){if(e.message!=='WRONG_SECRET'){document.getElementById('fiches-msg').textContent='⚠️ Impossible de charger les fiches : '+ficheaiErreur(e);document.getElementById('fiches-msg').className='msg error';}}
 }
 
 var maintState=null;
@@ -980,7 +981,7 @@ async function toggleMaintenance(){
     await loadMaintenanceStatus();
     if(maintenanceOn!==nouveauEtat)throw new Error('le réglage n\'a pas été enregistré');
     showMsg('maint-msg','✅ Mode maintenance '+(maintenanceOn?'activé : blocage dans 2 minutes':'désactivé')+'.','ok');
-  }catch(e){showMsg('maint-msg','⚠️ Erreur : '+e.message,'error');}
+  }catch(e){showMsg('maint-msg','⚠️ Erreur : '+ficheaiErreur(e),'error');}
 }
 
 function showMsg(id,text,type){var el=document.getElementById(id);el.textContent=text;el.className='msg '+type;el.style.display='block';setTimeout(function(){el.style.display='none';},4000);}

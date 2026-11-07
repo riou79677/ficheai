@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <script src="/icons.js"></script>
 <script src="/tarifs.js"></script>
+<script src="/erreurs.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
 <title>Créer un compte gratuit — FicheAI</title>
 <link rel="preload" href="/fonts/syne-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/fonts/dm-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
@@ -109,8 +110,8 @@ FicheAI
 <div class="form-group"><label>Email</label><input type="email" id="email" placeholder="ton@email.com" autocomplete="email"></div>
 <div class="form-group">
 <label>Mot de passe</label>
-<input type="password" id="password" placeholder="8 caractères minimum" autocomplete="new-password">
-<small>Utilise au moins 8 caractères, avec des lettres et des chiffres.</small>
+<input type="password" id="password" placeholder="10 caractères minimum" autocomplete="new-password">
+<small>Utilise au moins 10 caractères, avec des lettres et des chiffres.</small>
 </div>
 <div class="consent-group">
 <input type="checkbox" id="consent-cgu">
@@ -146,25 +147,7 @@ submitBtn.disabled = !(consentCheckbox.checked && ageCheckbox.checked);
 });
 
 function translateSignupError(data, status){
-if(data && data.error_code==='weak_password'){
-var reasons=(data.weak_password && data.weak_password.reasons)||[];
-var reasonMap={length:'trop court',characters:'doit contenir des lettres ET des chiffres',pwned:'a été trouvé dans une fuite de données connue, choisis-en un autre'};
-var readable=reasons.map(function(r){return reasonMap[r]||r;}).join(', ');
-return 'Mot de passe trop faible'+(readable?' : '+readable:'')+'. Essaie un mot de passe plus solide (lettres + chiffres, 8 caractères minimum).';
-}
-if(data && data.error_code==='user_already_exists'){
-return 'Un compte existe déjà avec cet email. Connecte-toi plutôt.';
-}
-if(data && data.error_code==='validation_failed'){
-return 'Adresse email invalide.';
-}
-if(data && data.error_code==='over_email_send_rate_limit'){
-return 'Trop de tentatives. Attends une minute et réessaie.';
-}
-if(data && (data.msg||data.error_description||data.error)){
-return data.msg||data.error_description||data.error;
-}
-return 'Erreur lors de la création du compte (code '+status+'). Réessaie.';
+return ficheaiErreurAuth(data, status);
 }
 
 async function handleSignup(){
@@ -181,7 +164,8 @@ if(!ageCheckbox.checked){errBox.textContent='⚠️ Tu dois confirmer avoir au m
 if(!firstname||!username||!email||!password){errBox.textContent='⚠️ Remplis tous les champs !';errBox.style.display='block';return;}
 if(username.length<3){errBox.textContent='⚠️ Le pseudo doit contenir au moins 3 caractères.';errBox.style.display='block';return;}
 if(!/^[a-zA-Z0-9_]+$/.test(username)){errBox.textContent='⚠️ Le pseudo ne peut contenir que des lettres, chiffres et underscores (_).';errBox.style.display='block';return;}
-if(password.length<8){errBox.textContent='⚠️ Le mot de passe doit contenir au moins 8 caractères.';errBox.style.display='block';return;}
+if(password.length<10){errBox.textContent='⚠️ Le mot de passe doit contenir au moins 10 caractères.';errBox.style.display='block';return;}
+if(!/[A-Za-zÀ-ÿ]/.test(password)||!/[0-9]/.test(password)){errBox.textContent='⚠️ Le mot de passe doit contenir au moins une lettre et un chiffre.';errBox.style.display='block';return;}
 if(!/[a-zA-Z]/.test(password)||!/[0-9]/.test(password)){errBox.textContent='⚠️ Le mot de passe doit contenir des lettres ET des chiffres.';errBox.style.display='block';return;}
 
 isLoading=true;btn.textContent='Création en cours...';btn.disabled=true;
